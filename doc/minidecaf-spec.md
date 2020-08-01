@@ -1,12 +1,13 @@
 
-- * means the preceding element is repeated zero or more times
-- + means one or more repeats
-- ? means optional(zero or one)
+- `*` means the preceding element is repeated zero or more times
+- `+` means one or more repeats
+- `?` means optional(zero or one)
 
 ## 步骤1：有整数表示
 只有正整数，大致形式是 `0` 或 `5`
 ```
-digit  =  [0-9]
+num = digit+
+digit = [0-9]
 ```
 ## 步骤2：可执行加减
 ```

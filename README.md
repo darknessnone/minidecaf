@@ -1,5 +1,16 @@
-# minidecaf
+# MiniDecaf (Antlr + Java)
 
-## status
-### 2020.07.28:
-- cy: step 11 finished.
+## 环境依赖
+- Antlr4
+- Gradle 6.5.1
+- JDK 11.0.1
+
+编译
+```bash
+./gradlew build
+```
+
+运行
+```bash
+java -jar build/libs/minidecaf.jar <filename>
+```

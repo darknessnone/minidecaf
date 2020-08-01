@@ -1,11 +1,11 @@
-Cargo.lock
-target
-test/out
-*.bak
-*.old
-*~
-*.org
-.idea
-*.S
-*.s
-a.out
+.gradle/
+.metals/
+# Ignore Gradle project-specific cache directory
+.gradle
+out/
+
+# Ignore Gradle build output directory
+build
+
+# Ignore antlr plugin cache directory
+*.antlr/
