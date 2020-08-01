@@ -4,12 +4,12 @@ assert() {
     echo $1 > out/tmp.mdf
     java -jar build/libs/minidecaf.jar out/tmp.mdf out/tmp.S
 
-    riscv64-unknown-elf-gcc out/S.S -o out/run
-    qemu-riscv64 out/run
+    riscv64-unknown-elf-gcc out/tmp.S -o out/tmp.out
+    qemu-riscv64 out/tmp.out
 
     res=$?
-    
-    if [ $res == $ans ]; then
+
+    if [ $res == $2 ]; then
         echo "OK"
     else
         echo -e "\033[0;31mNG\033[0;39m"
@@ -19,6 +19,9 @@ assert() {
 
 
 cd $(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
+
+echo $PWD
+
 mkdir -p out
 
 assert "0;" 0
