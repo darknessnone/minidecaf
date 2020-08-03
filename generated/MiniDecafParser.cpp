@@ -2,7 +2,6 @@
 // Generated from MiniDecaf.g4 by ANTLR 4.8
 
 
-#include "MiniDecafListener.h"
 #include "MiniDecafVisitor.h"
 
 #include "MiniDecafParser.h"
@@ -89,18 +88,6 @@ MiniDecafParser::TypeNameContext* MiniDecafParser::PrimaryExpressionContext::typ
 
 size_t MiniDecafParser::PrimaryExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RulePrimaryExpression;
-}
-
-void MiniDecafParser::PrimaryExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterPrimaryExpression(this);
-}
-
-void MiniDecafParser::PrimaryExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitPrimaryExpression(this);
 }
 
 
@@ -279,18 +266,6 @@ size_t MiniDecafParser::GenericSelectionContext::getRuleIndex() const {
   return MiniDecafParser::RuleGenericSelection;
 }
 
-void MiniDecafParser::GenericSelectionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterGenericSelection(this);
-}
-
-void MiniDecafParser::GenericSelectionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitGenericSelection(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::GenericSelectionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -352,18 +327,6 @@ tree::TerminalNode* MiniDecafParser::GenericAssocListContext::Comma() {
 
 size_t MiniDecafParser::GenericAssocListContext::getRuleIndex() const {
   return MiniDecafParser::RuleGenericAssocList;
-}
-
-void MiniDecafParser::GenericAssocListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterGenericAssocList(this);
-}
-
-void MiniDecafParser::GenericAssocListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitGenericAssocList(this);
 }
 
 
@@ -455,18 +418,6 @@ tree::TerminalNode* MiniDecafParser::GenericAssociationContext::Default() {
 
 size_t MiniDecafParser::GenericAssociationContext::getRuleIndex() const {
   return MiniDecafParser::RuleGenericAssociation;
-}
-
-void MiniDecafParser::GenericAssociationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterGenericAssociation(this);
-}
-
-void MiniDecafParser::GenericAssociationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitGenericAssociation(this);
 }
 
 
@@ -628,18 +579,6 @@ tree::TerminalNode* MiniDecafParser::PostfixExpressionContext::MinusMinus() {
 
 size_t MiniDecafParser::PostfixExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RulePostfixExpression;
-}
-
-void MiniDecafParser::PostfixExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterPostfixExpression(this);
-}
-
-void MiniDecafParser::PostfixExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitPostfixExpression(this);
 }
 
 
@@ -908,18 +847,6 @@ size_t MiniDecafParser::ArgumentExpressionListContext::getRuleIndex() const {
   return MiniDecafParser::RuleArgumentExpressionList;
 }
 
-void MiniDecafParser::ArgumentExpressionListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterArgumentExpressionList(this);
-}
-
-void MiniDecafParser::ArgumentExpressionListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitArgumentExpressionList(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::ArgumentExpressionListContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -1045,18 +972,6 @@ tree::TerminalNode* MiniDecafParser::UnaryExpressionContext::Identifier() {
 
 size_t MiniDecafParser::UnaryExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleUnaryExpression;
-}
-
-void MiniDecafParser::UnaryExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterUnaryExpression(this);
-}
-
-void MiniDecafParser::UnaryExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitUnaryExpression(this);
 }
 
 
@@ -1203,18 +1118,6 @@ size_t MiniDecafParser::UnaryOperatorContext::getRuleIndex() const {
   return MiniDecafParser::RuleUnaryOperator;
 }
 
-void MiniDecafParser::UnaryOperatorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterUnaryOperator(this);
-}
-
-void MiniDecafParser::UnaryOperatorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitUnaryOperator(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::UnaryOperatorContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -1292,18 +1195,6 @@ tree::TerminalNode* MiniDecafParser::CastExpressionContext::DigitSequence() {
 
 size_t MiniDecafParser::CastExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleCastExpression;
-}
-
-void MiniDecafParser::CastExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterCastExpression(this);
-}
-
-void MiniDecafParser::CastExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitCastExpression(this);
 }
 
 
@@ -1408,18 +1299,6 @@ tree::TerminalNode* MiniDecafParser::MultiplicativeExpressionContext::Mod() {
 
 size_t MiniDecafParser::MultiplicativeExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleMultiplicativeExpression;
-}
-
-void MiniDecafParser::MultiplicativeExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterMultiplicativeExpression(this);
-}
-
-void MiniDecafParser::MultiplicativeExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitMultiplicativeExpression(this);
 }
 
 
@@ -1547,18 +1426,6 @@ size_t MiniDecafParser::AdditiveExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleAdditiveExpression;
 }
 
-void MiniDecafParser::AdditiveExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterAdditiveExpression(this);
-}
-
-void MiniDecafParser::AdditiveExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitAdditiveExpression(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::AdditiveExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -1669,18 +1536,6 @@ tree::TerminalNode* MiniDecafParser::ShiftExpressionContext::RightShift() {
 
 size_t MiniDecafParser::ShiftExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleShiftExpression;
-}
-
-void MiniDecafParser::ShiftExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterShiftExpression(this);
-}
-
-void MiniDecafParser::ShiftExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitShiftExpression(this);
 }
 
 
@@ -1801,18 +1656,6 @@ tree::TerminalNode* MiniDecafParser::RelationalExpressionContext::GreaterEqual()
 
 size_t MiniDecafParser::RelationalExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleRelationalExpression;
-}
-
-void MiniDecafParser::RelationalExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterRelationalExpression(this);
-}
-
-void MiniDecafParser::RelationalExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitRelationalExpression(this);
 }
 
 
@@ -1953,18 +1796,6 @@ size_t MiniDecafParser::EqualityExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleEqualityExpression;
 }
 
-void MiniDecafParser::EqualityExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterEqualityExpression(this);
-}
-
-void MiniDecafParser::EqualityExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitEqualityExpression(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::EqualityExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -2073,18 +1904,6 @@ size_t MiniDecafParser::AndExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleAndExpression;
 }
 
-void MiniDecafParser::AndExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterAndExpression(this);
-}
-
-void MiniDecafParser::AndExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitAndExpression(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::AndExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -2170,18 +1989,6 @@ tree::TerminalNode* MiniDecafParser::ExclusiveOrExpressionContext::Caret() {
 
 size_t MiniDecafParser::ExclusiveOrExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleExclusiveOrExpression;
-}
-
-void MiniDecafParser::ExclusiveOrExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterExclusiveOrExpression(this);
-}
-
-void MiniDecafParser::ExclusiveOrExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitExclusiveOrExpression(this);
 }
 
 
@@ -2271,18 +2078,6 @@ size_t MiniDecafParser::InclusiveOrExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleInclusiveOrExpression;
 }
 
-void MiniDecafParser::InclusiveOrExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterInclusiveOrExpression(this);
-}
-
-void MiniDecafParser::InclusiveOrExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitInclusiveOrExpression(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::InclusiveOrExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -2370,18 +2165,6 @@ size_t MiniDecafParser::LogicalAndExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleLogicalAndExpression;
 }
 
-void MiniDecafParser::LogicalAndExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterLogicalAndExpression(this);
-}
-
-void MiniDecafParser::LogicalAndExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitLogicalAndExpression(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::LogicalAndExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -2467,18 +2250,6 @@ tree::TerminalNode* MiniDecafParser::LogicalOrExpressionContext::OrOr() {
 
 size_t MiniDecafParser::LogicalOrExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleLogicalOrExpression;
-}
-
-void MiniDecafParser::LogicalOrExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterLogicalOrExpression(this);
-}
-
-void MiniDecafParser::LogicalOrExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitLogicalOrExpression(this);
 }
 
 
@@ -2576,18 +2347,6 @@ size_t MiniDecafParser::ConditionalExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleConditionalExpression;
 }
 
-void MiniDecafParser::ConditionalExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterConditionalExpression(this);
-}
-
-void MiniDecafParser::ConditionalExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitConditionalExpression(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::ConditionalExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -2664,18 +2423,6 @@ tree::TerminalNode* MiniDecafParser::AssignmentExpressionContext::DigitSequence(
 
 size_t MiniDecafParser::AssignmentExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleAssignmentExpression;
-}
-
-void MiniDecafParser::AssignmentExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterAssignmentExpression(this);
-}
-
-void MiniDecafParser::AssignmentExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitAssignmentExpression(this);
 }
 
 
@@ -2789,18 +2536,6 @@ size_t MiniDecafParser::AssignmentOperatorContext::getRuleIndex() const {
   return MiniDecafParser::RuleAssignmentOperator;
 }
 
-void MiniDecafParser::AssignmentOperatorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterAssignmentOperator(this);
-}
-
-void MiniDecafParser::AssignmentOperatorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitAssignmentOperator(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::AssignmentOperatorContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -2871,18 +2606,6 @@ tree::TerminalNode* MiniDecafParser::ExpressionContext::Comma() {
 
 size_t MiniDecafParser::ExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleExpression;
-}
-
-void MiniDecafParser::ExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterExpression(this);
-}
-
-void MiniDecafParser::ExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitExpression(this);
 }
 
 
@@ -2964,18 +2687,6 @@ size_t MiniDecafParser::ConstantExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleConstantExpression;
 }
 
-void MiniDecafParser::ConstantExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterConstantExpression(this);
-}
-
-void MiniDecafParser::ConstantExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitConstantExpression(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::ConstantExpressionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -3031,18 +2742,6 @@ MiniDecafParser::StaticAssertDeclarationContext* MiniDecafParser::DeclarationCon
 
 size_t MiniDecafParser::DeclarationContext::getRuleIndex() const {
   return MiniDecafParser::RuleDeclaration;
-}
-
-void MiniDecafParser::DeclarationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDeclaration(this);
-}
-
-void MiniDecafParser::DeclarationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDeclaration(this);
 }
 
 
@@ -3122,18 +2821,6 @@ size_t MiniDecafParser::DeclarationSpecifiersContext::getRuleIndex() const {
   return MiniDecafParser::RuleDeclarationSpecifiers;
 }
 
-void MiniDecafParser::DeclarationSpecifiersContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDeclarationSpecifiers(this);
-}
-
-void MiniDecafParser::DeclarationSpecifiersContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDeclarationSpecifiers(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::DeclarationSpecifiersContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -3198,18 +2885,6 @@ MiniDecafParser::DeclarationSpecifierContext* MiniDecafParser::DeclarationSpecif
 
 size_t MiniDecafParser::DeclarationSpecifiers2Context::getRuleIndex() const {
   return MiniDecafParser::RuleDeclarationSpecifiers2;
-}
-
-void MiniDecafParser::DeclarationSpecifiers2Context::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDeclarationSpecifiers2(this);
-}
-
-void MiniDecafParser::DeclarationSpecifiers2Context::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDeclarationSpecifiers2(this);
 }
 
 
@@ -3288,18 +2963,6 @@ MiniDecafParser::AlignmentSpecifierContext* MiniDecafParser::DeclarationSpecifie
 
 size_t MiniDecafParser::DeclarationSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleDeclarationSpecifier;
-}
-
-void MiniDecafParser::DeclarationSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDeclarationSpecifier(this);
-}
-
-void MiniDecafParser::DeclarationSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDeclarationSpecifier(this);
 }
 
 
@@ -3391,18 +3054,6 @@ size_t MiniDecafParser::InitDeclaratorListContext::getRuleIndex() const {
   return MiniDecafParser::RuleInitDeclaratorList;
 }
 
-void MiniDecafParser::InitDeclaratorListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterInitDeclaratorList(this);
-}
-
-void MiniDecafParser::InitDeclaratorListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitInitDeclaratorList(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::InitDeclaratorListContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -3490,18 +3141,6 @@ size_t MiniDecafParser::InitDeclaratorContext::getRuleIndex() const {
   return MiniDecafParser::RuleInitDeclarator;
 }
 
-void MiniDecafParser::InitDeclaratorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterInitDeclarator(this);
-}
-
-void MiniDecafParser::InitDeclaratorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitInitDeclarator(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::InitDeclaratorContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -3584,18 +3223,6 @@ tree::TerminalNode* MiniDecafParser::StorageClassSpecifierContext::Register() {
 
 size_t MiniDecafParser::StorageClassSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleStorageClassSpecifier;
-}
-
-void MiniDecafParser::StorageClassSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStorageClassSpecifier(this);
-}
-
-void MiniDecafParser::StorageClassSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStorageClassSpecifier(this);
 }
 
 
@@ -3731,18 +3358,6 @@ MiniDecafParser::PointerContext* MiniDecafParser::TypeSpecifierContext::pointer(
 
 size_t MiniDecafParser::TypeSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleTypeSpecifier;
-}
-
-void MiniDecafParser::TypeSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterTypeSpecifier(this);
-}
-
-void MiniDecafParser::TypeSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitTypeSpecifier(this);
 }
 
 
@@ -3941,18 +3556,6 @@ size_t MiniDecafParser::StructOrUnionSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleStructOrUnionSpecifier;
 }
 
-void MiniDecafParser::StructOrUnionSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStructOrUnionSpecifier(this);
-}
-
-void MiniDecafParser::StructOrUnionSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStructOrUnionSpecifier(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::StructOrUnionSpecifierContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -4034,18 +3637,6 @@ size_t MiniDecafParser::StructOrUnionContext::getRuleIndex() const {
   return MiniDecafParser::RuleStructOrUnion;
 }
 
-void MiniDecafParser::StructOrUnionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStructOrUnion(this);
-}
-
-void MiniDecafParser::StructOrUnionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStructOrUnion(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::StructOrUnionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -4103,18 +3694,6 @@ MiniDecafParser::StructDeclarationListContext* MiniDecafParser::StructDeclaratio
 
 size_t MiniDecafParser::StructDeclarationListContext::getRuleIndex() const {
   return MiniDecafParser::RuleStructDeclarationList;
-}
-
-void MiniDecafParser::StructDeclarationListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStructDeclarationList(this);
-}
-
-void MiniDecafParser::StructDeclarationListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStructDeclarationList(this);
 }
 
 
@@ -4204,18 +3783,6 @@ MiniDecafParser::StaticAssertDeclarationContext* MiniDecafParser::StructDeclarat
 
 size_t MiniDecafParser::StructDeclarationContext::getRuleIndex() const {
   return MiniDecafParser::RuleStructDeclaration;
-}
-
-void MiniDecafParser::StructDeclarationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStructDeclaration(this);
-}
-
-void MiniDecafParser::StructDeclarationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStructDeclaration(this);
 }
 
 
@@ -4327,18 +3894,6 @@ size_t MiniDecafParser::SpecifierQualifierListContext::getRuleIndex() const {
   return MiniDecafParser::RuleSpecifierQualifierList;
 }
 
-void MiniDecafParser::SpecifierQualifierListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterSpecifierQualifierList(this);
-}
-
-void MiniDecafParser::SpecifierQualifierListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitSpecifierQualifierList(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::SpecifierQualifierListContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -4429,18 +3984,6 @@ size_t MiniDecafParser::StructDeclaratorListContext::getRuleIndex() const {
   return MiniDecafParser::RuleStructDeclaratorList;
 }
 
-void MiniDecafParser::StructDeclaratorListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStructDeclaratorList(this);
-}
-
-void MiniDecafParser::StructDeclaratorListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStructDeclaratorList(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::StructDeclaratorListContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -4526,18 +4069,6 @@ MiniDecafParser::ConstantExpressionContext* MiniDecafParser::StructDeclaratorCon
 
 size_t MiniDecafParser::StructDeclaratorContext::getRuleIndex() const {
   return MiniDecafParser::RuleStructDeclarator;
-}
-
-void MiniDecafParser::StructDeclaratorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStructDeclarator(this);
-}
-
-void MiniDecafParser::StructDeclaratorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStructDeclarator(this);
 }
 
 
@@ -4633,18 +4164,6 @@ tree::TerminalNode* MiniDecafParser::EnumSpecifierContext::Comma() {
 
 size_t MiniDecafParser::EnumSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleEnumSpecifier;
-}
-
-void MiniDecafParser::EnumSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterEnumSpecifier(this);
-}
-
-void MiniDecafParser::EnumSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitEnumSpecifier(this);
 }
 
 
@@ -4755,18 +4274,6 @@ size_t MiniDecafParser::EnumeratorListContext::getRuleIndex() const {
   return MiniDecafParser::RuleEnumeratorList;
 }
 
-void MiniDecafParser::EnumeratorListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterEnumeratorList(this);
-}
-
-void MiniDecafParser::EnumeratorListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitEnumeratorList(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::EnumeratorListContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -4854,18 +4361,6 @@ size_t MiniDecafParser::EnumeratorContext::getRuleIndex() const {
   return MiniDecafParser::RuleEnumerator;
 }
 
-void MiniDecafParser::EnumeratorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterEnumerator(this);
-}
-
-void MiniDecafParser::EnumeratorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitEnumerator(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::EnumeratorContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -4930,18 +4425,6 @@ size_t MiniDecafParser::EnumerationConstantContext::getRuleIndex() const {
   return MiniDecafParser::RuleEnumerationConstant;
 }
 
-void MiniDecafParser::EnumerationConstantContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterEnumerationConstant(this);
-}
-
-void MiniDecafParser::EnumerationConstantContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitEnumerationConstant(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::EnumerationConstantContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -4997,18 +4480,6 @@ tree::TerminalNode* MiniDecafParser::AtomicTypeSpecifierContext::RightParen() {
 
 size_t MiniDecafParser::AtomicTypeSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleAtomicTypeSpecifier;
-}
-
-void MiniDecafParser::AtomicTypeSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterAtomicTypeSpecifier(this);
-}
-
-void MiniDecafParser::AtomicTypeSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitAtomicTypeSpecifier(this);
 }
 
 
@@ -5072,18 +4543,6 @@ tree::TerminalNode* MiniDecafParser::TypeQualifierContext::Atomic() {
 
 size_t MiniDecafParser::TypeQualifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleTypeQualifier;
-}
-
-void MiniDecafParser::TypeQualifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterTypeQualifier(this);
-}
-
-void MiniDecafParser::TypeQualifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitTypeQualifier(this);
 }
 
 
@@ -5161,18 +4620,6 @@ tree::TerminalNode* MiniDecafParser::FunctionSpecifierContext::RightParen() {
 
 size_t MiniDecafParser::FunctionSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleFunctionSpecifier;
-}
-
-void MiniDecafParser::FunctionSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterFunctionSpecifier(this);
-}
-
-void MiniDecafParser::FunctionSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitFunctionSpecifier(this);
 }
 
 
@@ -5281,18 +4728,6 @@ size_t MiniDecafParser::AlignmentSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleAlignmentSpecifier;
 }
 
-void MiniDecafParser::AlignmentSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterAlignmentSpecifier(this);
-}
-
-void MiniDecafParser::AlignmentSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitAlignmentSpecifier(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::AlignmentSpecifierContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -5375,18 +4810,6 @@ MiniDecafParser::GccDeclaratorExtensionContext* MiniDecafParser::DeclaratorConte
 
 size_t MiniDecafParser::DeclaratorContext::getRuleIndex() const {
   return MiniDecafParser::RuleDeclarator;
-}
-
-void MiniDecafParser::DeclaratorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDeclarator(this);
-}
-
-void MiniDecafParser::DeclaratorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDeclarator(this);
 }
 
 
@@ -5520,18 +4943,6 @@ MiniDecafParser::IdentifierListContext* MiniDecafParser::DirectDeclaratorContext
 
 size_t MiniDecafParser::DirectDeclaratorContext::getRuleIndex() const {
   return MiniDecafParser::RuleDirectDeclarator;
-}
-
-void MiniDecafParser::DirectDeclaratorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDirectDeclarator(this);
-}
-
-void MiniDecafParser::DirectDeclaratorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDirectDeclarator(this);
 }
 
 
@@ -5856,18 +5267,6 @@ size_t MiniDecafParser::GccDeclaratorExtensionContext::getRuleIndex() const {
   return MiniDecafParser::RuleGccDeclaratorExtension;
 }
 
-void MiniDecafParser::GccDeclaratorExtensionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterGccDeclaratorExtension(this);
-}
-
-void MiniDecafParser::GccDeclaratorExtensionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitGccDeclaratorExtension(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::GccDeclaratorExtensionContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -5961,18 +5360,6 @@ size_t MiniDecafParser::GccAttributeSpecifierContext::getRuleIndex() const {
   return MiniDecafParser::RuleGccAttributeSpecifier;
 }
 
-void MiniDecafParser::GccAttributeSpecifierContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterGccAttributeSpecifier(this);
-}
-
-void MiniDecafParser::GccAttributeSpecifierContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitGccAttributeSpecifier(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::GccAttributeSpecifierContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -6038,18 +5425,6 @@ tree::TerminalNode* MiniDecafParser::GccAttributeListContext::Comma(size_t i) {
 
 size_t MiniDecafParser::GccAttributeListContext::getRuleIndex() const {
   return MiniDecafParser::RuleGccAttributeList;
-}
-
-void MiniDecafParser::GccAttributeListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterGccAttributeList(this);
-}
-
-void MiniDecafParser::GccAttributeListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitGccAttributeList(this);
 }
 
 
@@ -6142,18 +5517,6 @@ MiniDecafParser::ArgumentExpressionListContext* MiniDecafParser::GccAttributeCon
 
 size_t MiniDecafParser::GccAttributeContext::getRuleIndex() const {
   return MiniDecafParser::RuleGccAttribute;
-}
-
-void MiniDecafParser::GccAttributeContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterGccAttribute(this);
-}
-
-void MiniDecafParser::GccAttributeContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitGccAttribute(this);
 }
 
 
@@ -6399,18 +5762,6 @@ tree::TerminalNode* MiniDecafParser::NestedParenthesesBlockContext::RightParen(s
 
 size_t MiniDecafParser::NestedParenthesesBlockContext::getRuleIndex() const {
   return MiniDecafParser::RuleNestedParenthesesBlock;
-}
-
-void MiniDecafParser::NestedParenthesesBlockContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterNestedParenthesesBlock(this);
-}
-
-void MiniDecafParser::NestedParenthesesBlockContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitNestedParenthesesBlock(this);
 }
 
 
@@ -6740,18 +6091,6 @@ size_t MiniDecafParser::PointerContext::getRuleIndex() const {
   return MiniDecafParser::RulePointer;
 }
 
-void MiniDecafParser::PointerContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterPointer(this);
-}
-
-void MiniDecafParser::PointerContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitPointer(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::PointerContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -6881,18 +6220,6 @@ size_t MiniDecafParser::TypeQualifierListContext::getRuleIndex() const {
   return MiniDecafParser::RuleTypeQualifierList;
 }
 
-void MiniDecafParser::TypeQualifierListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterTypeQualifierList(this);
-}
-
-void MiniDecafParser::TypeQualifierListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitTypeQualifierList(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::TypeQualifierListContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -6978,18 +6305,6 @@ size_t MiniDecafParser::ParameterTypeListContext::getRuleIndex() const {
   return MiniDecafParser::RuleParameterTypeList;
 }
 
-void MiniDecafParser::ParameterTypeListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterParameterTypeList(this);
-}
-
-void MiniDecafParser::ParameterTypeListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitParameterTypeList(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::ParameterTypeListContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -7060,18 +6375,6 @@ tree::TerminalNode* MiniDecafParser::ParameterListContext::Comma() {
 
 size_t MiniDecafParser::ParameterListContext::getRuleIndex() const {
   return MiniDecafParser::RuleParameterList;
-}
-
-void MiniDecafParser::ParameterListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterParameterList(this);
-}
-
-void MiniDecafParser::ParameterListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitParameterList(this);
 }
 
 
@@ -7165,18 +6468,6 @@ size_t MiniDecafParser::ParameterDeclarationContext::getRuleIndex() const {
   return MiniDecafParser::RuleParameterDeclaration;
 }
 
-void MiniDecafParser::ParameterDeclarationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterParameterDeclaration(this);
-}
-
-void MiniDecafParser::ParameterDeclarationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitParameterDeclaration(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::ParameterDeclarationContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -7256,18 +6547,6 @@ tree::TerminalNode* MiniDecafParser::IdentifierListContext::Comma() {
 
 size_t MiniDecafParser::IdentifierListContext::getRuleIndex() const {
   return MiniDecafParser::RuleIdentifierList;
-}
-
-void MiniDecafParser::IdentifierListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterIdentifierList(this);
-}
-
-void MiniDecafParser::IdentifierListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitIdentifierList(this);
 }
 
 
@@ -7353,18 +6632,6 @@ size_t MiniDecafParser::TypeNameContext::getRuleIndex() const {
   return MiniDecafParser::RuleTypeName;
 }
 
-void MiniDecafParser::TypeNameContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterTypeName(this);
-}
-
-void MiniDecafParser::TypeNameContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitTypeName(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::TypeNameContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -7433,18 +6700,6 @@ MiniDecafParser::GccDeclaratorExtensionContext* MiniDecafParser::AbstractDeclara
 
 size_t MiniDecafParser::AbstractDeclaratorContext::getRuleIndex() const {
   return MiniDecafParser::RuleAbstractDeclarator;
-}
-
-void MiniDecafParser::AbstractDeclaratorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterAbstractDeclarator(this);
-}
-
-void MiniDecafParser::AbstractDeclaratorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitAbstractDeclarator(this);
 }
 
 
@@ -7577,18 +6832,6 @@ MiniDecafParser::DirectAbstractDeclaratorContext* MiniDecafParser::DirectAbstrac
 
 size_t MiniDecafParser::DirectAbstractDeclaratorContext::getRuleIndex() const {
   return MiniDecafParser::RuleDirectAbstractDeclarator;
-}
-
-void MiniDecafParser::DirectAbstractDeclaratorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDirectAbstractDeclarator(this);
-}
-
-void MiniDecafParser::DirectAbstractDeclaratorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDirectAbstractDeclarator(this);
 }
 
 
@@ -8034,18 +7277,6 @@ size_t MiniDecafParser::TypedefNameContext::getRuleIndex() const {
   return MiniDecafParser::RuleTypedefName;
 }
 
-void MiniDecafParser::TypedefNameContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterTypedefName(this);
-}
-
-void MiniDecafParser::TypedefNameContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitTypedefName(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::TypedefNameContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -8105,18 +7336,6 @@ tree::TerminalNode* MiniDecafParser::InitializerContext::Comma() {
 
 size_t MiniDecafParser::InitializerContext::getRuleIndex() const {
   return MiniDecafParser::RuleInitializer;
-}
-
-void MiniDecafParser::InitializerContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterInitializer(this);
-}
-
-void MiniDecafParser::InitializerContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitInitializer(this);
 }
 
 
@@ -8206,18 +7425,6 @@ tree::TerminalNode* MiniDecafParser::InitializerListContext::Comma() {
 
 size_t MiniDecafParser::InitializerListContext::getRuleIndex() const {
   return MiniDecafParser::RuleInitializerList;
-}
-
-void MiniDecafParser::InitializerListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterInitializerList(this);
-}
-
-void MiniDecafParser::InitializerListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitInitializerList(this);
 }
 
 
@@ -8323,18 +7530,6 @@ size_t MiniDecafParser::DesignationContext::getRuleIndex() const {
   return MiniDecafParser::RuleDesignation;
 }
 
-void MiniDecafParser::DesignationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDesignation(this);
-}
-
-void MiniDecafParser::DesignationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDesignation(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::DesignationContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -8384,18 +7579,6 @@ MiniDecafParser::DesignatorListContext* MiniDecafParser::DesignatorListContext::
 
 size_t MiniDecafParser::DesignatorListContext::getRuleIndex() const {
   return MiniDecafParser::RuleDesignatorList;
-}
-
-void MiniDecafParser::DesignatorListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDesignatorList(this);
-}
-
-void MiniDecafParser::DesignatorListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDesignatorList(this);
 }
 
 
@@ -8489,18 +7672,6 @@ tree::TerminalNode* MiniDecafParser::DesignatorContext::Identifier() {
 
 size_t MiniDecafParser::DesignatorContext::getRuleIndex() const {
   return MiniDecafParser::RuleDesignator;
-}
-
-void MiniDecafParser::DesignatorContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDesignator(this);
-}
-
-void MiniDecafParser::DesignatorContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDesignator(this);
 }
 
 
@@ -8597,18 +7768,6 @@ tree::TerminalNode* MiniDecafParser::StaticAssertDeclarationContext::StringLiter
 
 size_t MiniDecafParser::StaticAssertDeclarationContext::getRuleIndex() const {
   return MiniDecafParser::RuleStaticAssertDeclaration;
-}
-
-void MiniDecafParser::StaticAssertDeclarationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStaticAssertDeclaration(this);
-}
-
-void MiniDecafParser::StaticAssertDeclarationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStaticAssertDeclaration(this);
 }
 
 
@@ -8735,18 +7894,6 @@ tree::TerminalNode* MiniDecafParser::StatementContext::Comma(size_t i) {
 
 size_t MiniDecafParser::StatementContext::getRuleIndex() const {
   return MiniDecafParser::RuleStatement;
-}
-
-void MiniDecafParser::StatementContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterStatement(this);
-}
-
-void MiniDecafParser::StatementContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitStatement(this);
 }
 
 
@@ -8981,18 +8128,6 @@ size_t MiniDecafParser::LabeledStatementContext::getRuleIndex() const {
   return MiniDecafParser::RuleLabeledStatement;
 }
 
-void MiniDecafParser::LabeledStatementContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterLabeledStatement(this);
-}
-
-void MiniDecafParser::LabeledStatementContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitLabeledStatement(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::LabeledStatementContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -9082,18 +8217,6 @@ MiniDecafParser::BlockItemListContext* MiniDecafParser::CompoundStatementContext
 
 size_t MiniDecafParser::CompoundStatementContext::getRuleIndex() const {
   return MiniDecafParser::RuleCompoundStatement;
-}
-
-void MiniDecafParser::CompoundStatementContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterCompoundStatement(this);
-}
-
-void MiniDecafParser::CompoundStatementContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitCompoundStatement(this);
 }
 
 
@@ -9227,18 +8350,6 @@ size_t MiniDecafParser::BlockItemListContext::getRuleIndex() const {
   return MiniDecafParser::RuleBlockItemList;
 }
 
-void MiniDecafParser::BlockItemListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterBlockItemList(this);
-}
-
-void MiniDecafParser::BlockItemListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitBlockItemList(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::BlockItemListContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -9320,18 +8431,6 @@ size_t MiniDecafParser::BlockItemContext::getRuleIndex() const {
   return MiniDecafParser::RuleBlockItem;
 }
 
-void MiniDecafParser::BlockItemContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterBlockItem(this);
-}
-
-void MiniDecafParser::BlockItemContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitBlockItem(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::BlockItemContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -9394,18 +8493,6 @@ MiniDecafParser::ExpressionContext* MiniDecafParser::ExpressionStatementContext:
 
 size_t MiniDecafParser::ExpressionStatementContext::getRuleIndex() const {
   return MiniDecafParser::RuleExpressionStatement;
-}
-
-void MiniDecafParser::ExpressionStatementContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterExpressionStatement(this);
-}
-
-void MiniDecafParser::ExpressionStatementContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitExpressionStatement(this);
 }
 
 
@@ -9508,18 +8595,6 @@ tree::TerminalNode* MiniDecafParser::SelectionStatementContext::Switch() {
 
 size_t MiniDecafParser::SelectionStatementContext::getRuleIndex() const {
   return MiniDecafParser::RuleSelectionStatement;
-}
-
-void MiniDecafParser::SelectionStatementContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterSelectionStatement(this);
-}
-
-void MiniDecafParser::SelectionStatementContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitSelectionStatement(this);
 }
 
 
@@ -9645,18 +8720,6 @@ size_t MiniDecafParser::IterationStatementContext::getRuleIndex() const {
   return MiniDecafParser::RuleIterationStatement;
 }
 
-void MiniDecafParser::IterationStatementContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterIterationStatement(this);
-}
-
-void MiniDecafParser::IterationStatementContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitIterationStatement(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::IterationStatementContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -9772,18 +8835,6 @@ MiniDecafParser::ExpressionContext* MiniDecafParser::ForConditionContext::expres
 
 size_t MiniDecafParser::ForConditionContext::getRuleIndex() const {
   return MiniDecafParser::RuleForCondition;
-}
-
-void MiniDecafParser::ForConditionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterForCondition(this);
-}
-
-void MiniDecafParser::ForConditionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitForCondition(this);
 }
 
 
@@ -9997,18 +9048,6 @@ size_t MiniDecafParser::ForDeclarationContext::getRuleIndex() const {
   return MiniDecafParser::RuleForDeclaration;
 }
 
-void MiniDecafParser::ForDeclarationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterForDeclaration(this);
-}
-
-void MiniDecafParser::ForDeclarationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitForDeclaration(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::ForDeclarationContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -10077,18 +9116,6 @@ tree::TerminalNode* MiniDecafParser::ForExpressionContext::Comma() {
 
 size_t MiniDecafParser::ForExpressionContext::getRuleIndex() const {
   return MiniDecafParser::RuleForExpression;
-}
-
-void MiniDecafParser::ForExpressionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterForExpression(this);
-}
-
-void MiniDecafParser::ForExpressionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitForExpression(this);
 }
 
 
@@ -10196,18 +9223,6 @@ MiniDecafParser::UnaryExpressionContext* MiniDecafParser::JumpStatementContext::
 
 size_t MiniDecafParser::JumpStatementContext::getRuleIndex() const {
   return MiniDecafParser::RuleJumpStatement;
-}
-
-void MiniDecafParser::JumpStatementContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterJumpStatement(this);
-}
-
-void MiniDecafParser::JumpStatementContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitJumpStatement(this);
 }
 
 
@@ -10338,18 +9353,6 @@ size_t MiniDecafParser::CompilationUnitContext::getRuleIndex() const {
   return MiniDecafParser::RuleCompilationUnit;
 }
 
-void MiniDecafParser::CompilationUnitContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterCompilationUnit(this);
-}
-
-void MiniDecafParser::CompilationUnitContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitCompilationUnit(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::CompilationUnitContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -10450,18 +9453,6 @@ size_t MiniDecafParser::TranslationUnitContext::getRuleIndex() const {
   return MiniDecafParser::RuleTranslationUnit;
 }
 
-void MiniDecafParser::TranslationUnitContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterTranslationUnit(this);
-}
-
-void MiniDecafParser::TranslationUnitContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitTranslationUnit(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::TranslationUnitContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -10547,18 +9538,6 @@ size_t MiniDecafParser::ExternalDeclarationContext::getRuleIndex() const {
   return MiniDecafParser::RuleExternalDeclaration;
 }
 
-void MiniDecafParser::ExternalDeclarationContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterExternalDeclaration(this);
-}
-
-void MiniDecafParser::ExternalDeclarationContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitExternalDeclaration(this);
-}
-
 
 antlrcpp::Any MiniDecafParser::ExternalDeclarationContext::accept(tree::ParseTreeVisitor *visitor) {
   if (auto parserVisitor = dynamic_cast<MiniDecafVisitor*>(visitor))
@@ -10636,18 +9615,6 @@ MiniDecafParser::DeclarationListContext* MiniDecafParser::FunctionDefinitionCont
 
 size_t MiniDecafParser::FunctionDefinitionContext::getRuleIndex() const {
   return MiniDecafParser::RuleFunctionDefinition;
-}
-
-void MiniDecafParser::FunctionDefinitionContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterFunctionDefinition(this);
-}
-
-void MiniDecafParser::FunctionDefinitionContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitFunctionDefinition(this);
 }
 
 
@@ -10756,18 +9723,6 @@ MiniDecafParser::DeclarationListContext* MiniDecafParser::DeclarationListContext
 
 size_t MiniDecafParser::DeclarationListContext::getRuleIndex() const {
   return MiniDecafParser::RuleDeclarationList;
-}
-
-void MiniDecafParser::DeclarationListContext::enterRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->enterDeclarationList(this);
-}
-
-void MiniDecafParser::DeclarationListContext::exitRule(tree::ParseTreeListener *listener) {
-  auto parserListener = dynamic_cast<MiniDecafListener *>(listener);
-  if (parserListener != nullptr)
-    parserListener->exitDeclarationList(this);
 }
 
 
