@@ -18,7 +18,7 @@ priority = [
   { assoc = 'left', terms = ['Eq', 'Ne'] },
   { assoc = 'left', terms = ['Le', 'Ge', 'Lt', 'Gt'] },
   { assoc = 'left', terms = ['Add', 'Sub'] },
-  { assoc = 'left', terms = ['Mul', 'Div'] },
+  { assoc = 'left', terms = ['Mul', 'Div', 'Mod'] },
   { assoc = 'left', terms = ['BNot', 'LNot'] },
   { assoc = 'left', terms = ['Else'] },
 ]
@@ -28,10 +28,16 @@ priority = [
 'return' = 'Return'
 'if' = 'If'
 'else' = 'Else'
+'while' = 'While'
+'for' = 'For'
+'do' = 'Do'
+'break' = 'Break'
+'continue' = 'Continue'
 '\+' = 'Add'
 '-' = 'Sub'
 '\*' = 'Mul'
 '/' = 'Div'
+'%' = 'Mod'
 '<' = 'Lt'
 '<=' = 'Le'
 '>=' = 'Ge'
@@ -69,24 +75,50 @@ impl<'p> Parser {
   #[rule = "StmtList -> StmtList Stmt"]
   fn stmt_list1(mut l: Vec<Stmt<'p>>, r: Stmt<'p>) -> Vec<Stmt<'p>> { (l.push(r), l).1 }
 
+  #[rule = "Stmt -> Semi"]
+  fn stmt_empty(_s: Token) -> Stmt<'p> { Stmt::Empty }
   #[rule = "Stmt -> Return Expr Semi"]
   fn stmt_ret(_r: Token, e: Expr<'p>, _s: Token) -> Stmt<'p> { Stmt::Ret(e) }
-  #[rule = "Stmt -> Int Id Semi"]
-  fn stmt_def0(_i: Token, name: Token, _s: Token) -> Stmt<'p> { Stmt::Def(name.str(), None) }
-  #[rule = "Stmt -> Int Id Assign Expr Semi"]
-  fn stmt_def1(_i: Token, name: Token, _a: Token, e: Expr<'p>, _s: Token) -> Stmt<'p> { Stmt::Def(name.str(), Some(e)) }
+  #[rule = "Stmt -> Int Id MaybeInit Semi"]
+  fn stmt_def0(_i: Token, name: Token, init: Option<Expr<'p>>, _s: Token) -> Stmt<'p> { Stmt::Def(name.str(), init) }
   #[rule = "Stmt -> Expr Semi"]
   fn stmt_expr(e: Expr<'p>, _s: Token) -> Stmt<'p> { Stmt::Expr(e) }
   #[rule = "Stmt -> If LPar Expr RPar Stmt MaybeElse"]
   fn stmt_if(_i: Token, _l: Token, cond: Expr<'p>, _r: Token, t: Stmt<'p>, f: Option<Block<'p>>) -> Stmt<'p> { Stmt::If(cond, mk_block(t), f) }
   #[rule = "Stmt -> LBrc StmtList RBrc"]
   fn stmt_block(_l: Token, stmts: Vec<Stmt<'p>>, _r: Token) -> Stmt<'p> { Stmt::Block(Block(stmts)) }
+  #[rule = "Stmt -> While LPar Expr RPar Stmt"]
+  fn stmt_while(_w: Token, _l: Token, cond: Expr<'p>, _r: Token, body: Stmt<'p>) -> Stmt<'p> { Stmt::While(cond, mk_block(body)) }
+  #[rule = "Stmt -> Do Stmt While LPar Expr RPar Semi"]
+  fn stmt_do_while(_d: Token, body: Stmt<'p>, _w: Token, _l: Token, cond: Expr<'p>, _r: Token, _s: Token) -> Stmt<'p> { Stmt::DoWhile(mk_block(body), cond) }
+  #[rule = "Stmt -> For LPar MaybeExpr Semi MaybeExpr Semi MaybeExpr RPar Stmt"]
+  fn stmt_for0(_f: Token, _l: Token, init: Option<Expr<'p>>, _s1: Token, cond: Option<Expr<'p>>, _s2: Token, update: Option<Expr<'p>>, _r: Token, body: Stmt<'p>) -> Stmt<'p> {
+    Stmt::For { init: init.map(|x| Box::new(Stmt::Expr(x))), cond, update, body: mk_block(body) }
+  }
+  #[rule = "Stmt -> For LPar Int Id MaybeInit Semi MaybeExpr Semi MaybeExpr RPar Stmt"]
+  fn stmt_for1(_f: Token, _l: Token, _i: Token, name: Token, init: Option<Expr<'p>>, _s1: Token, cond: Option<Expr<'p>>, _s2: Token, update: Option<Expr<'p>>, _r: Token, body: Stmt<'p>) -> Stmt<'p> {
+    Stmt::For { init: Some(Box::new(Stmt::Def(name.str(), init))), cond, update, body: mk_block(body) }
+  }
+  #[rule = "Stmt -> Break Semi"]
+  fn stmt_break(_b: Token, _s: Token) -> Stmt<'p> { Stmt::Break }
+  #[rule = "Stmt -> Continue Semi"]
+  fn stmt_continue(_c: Token, _s: Token) -> Stmt<'p> { Stmt::Continue }
+
+  #[rule = "MaybeInit ->"]
+  fn maybe_init0() -> Option<Expr<'p>> { None }
+  #[rule = "MaybeInit -> Assign Expr"]
+  fn maybe_init1(_a: Token, e: Expr<'p>) -> Option<Expr<'p>> { Some(e) }
 
   #[rule = "MaybeElse ->"]
   #[prec = "BNot"]
   fn maybe_else0() -> Option<Block<'p>> { None }
   #[rule = "MaybeElse -> Else Stmt"]
   fn maybe_else1(_e: Token, s: Stmt<'p>) -> Option<Block<'p>> { Some(mk_block(s)) }
+
+  #[rule = "MaybeExpr ->"]
+  fn maybe_expr0() -> Option<Expr<'p>> { None }
+  #[rule = "MaybeExpr -> Expr"]
+  fn maybe_expr1(e: Expr<'p>) -> Option<Expr<'p>> { Some(e) }
 
   #[rule = "Expr -> LPar Expr RPar"]
   fn expr_par(_l: Token, e: Expr<'p>, _r: Token) -> Expr<'p> { e }
@@ -107,6 +139,8 @@ impl<'p> Parser {
   fn expr_mul(l: Expr<'p>, _: Token, r: Expr<'p>) -> Expr<'p> { Expr::Binary(Mul, Box::new(l), Box::new(r)) }
   #[rule = "Expr -> Expr Div Expr"]
   fn expr_div(l: Expr<'p>, _: Token, r: Expr<'p>) -> Expr<'p> { Expr::Binary(Div, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr Mod Expr"]
+  fn expr_mod(l: Expr<'p>, _: Token, r: Expr<'p>) -> Expr<'p> { Expr::Binary(Mod, Box::new(l), Box::new(r)) }
   #[rule = "Expr -> Expr Lt Expr"]
   fn expr_lt(l: Expr<'p>, _: Token, r: Expr<'p>) -> Expr<'p> { Expr::Binary(Lt, Box::new(l), Box::new(r)) }
   #[rule = "Expr -> Expr Le Expr"]
