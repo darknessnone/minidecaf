@@ -11,6 +11,7 @@ pub enum Stmt<'a> {
   Ret(Expr<'a>),
   Def(&'a str, Option<Expr<'a>>),
   Expr(Expr<'a>),
+  If(Expr<'a>, Box<Stmt<'a>>, Option<Box<Stmt<'a>>>),
 }
 
 #[derive(Copy, Clone)]
@@ -25,4 +26,5 @@ pub enum Expr<'a> {
   Binary(BinaryOp, Box<Expr<'a>>, Box<Expr<'a>>),
   Var(&'a str),
   Assign(&'a str, Box<Expr<'a>>),
+  Condition(Box<Expr<'a>>, Box<Expr<'a>>, Box<Expr<'a>>),
 }

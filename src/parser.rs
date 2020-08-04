@@ -10,18 +10,22 @@ impl<'p> Token<'p> {
 #[lex = r#"
 priority = [
   { assoc = 'right', terms = ['Assign'] },
+  { assoc = 'right', terms = ['Question'] },
   { assoc = 'left', terms = ['Or'] },
   { assoc = 'left', terms = ['And'] },
   { assoc = 'left', terms = ['Eq', 'Ne'] },
   { assoc = 'left', terms = ['Le', 'Ge', 'Lt', 'Gt'] },
   { assoc = 'left', terms = ['Add', 'Sub'] },
   { assoc = 'left', terms = ['Mul', 'Div'] },
-  { assoc = 'left', terms = ['Neg', 'BNot', 'LNot'] },
+  { assoc = 'left', terms = ['BNot', 'LNot'] },
+  { assoc = 'left', terms = ['Else'] },
 ]
 
 [lexical]
 'int' = 'Int'
 'return' = 'Return'
+'if' = 'If'
+'else' = 'Else'
 '\+' = 'Add'
 '-' = 'Sub'
 '\*' = 'Mul'
@@ -37,6 +41,8 @@ priority = [
 '~' = 'BNot'
 '!' = 'LNot'
 '=' = 'Assign'
+'\?' = 'Question'
+':' = 'Colon'
 ';' = 'Semi' # short for semicolon
 '\(' = 'LPar' # short for parenthesis
 '\)' = 'RPar'
@@ -69,13 +75,21 @@ impl<'p> Parser {
   fn stmt_def1(_i: Token, name: Token, _a: Token, e: Expr<'p>, _s: Token) -> Stmt<'p> { Stmt::Def(name.str(), Some(e)) }
   #[rule = "Stmt -> Expr Semi"]
   fn stmt_expr(e: Expr<'p>, _s: Token) -> Stmt<'p> { Stmt::Expr(e) }
+  #[rule = "Stmt -> If LPar Expr RPar Stmt MaybeElse"]
+  fn stmt_if(_i: Token, _l: Token, cond: Expr<'p>, _r: Token, t: Stmt<'p>, f: Option<Box<Stmt<'p>>>) -> Stmt<'p> { Stmt::If(cond, Box::new(t), f) }
+
+  #[rule = "MaybeElse ->"]
+  #[prec = "BNot"]
+  fn maybe_else0() -> Option<Box<Stmt<'p>>> { None }
+  #[rule = "MaybeElse -> Else Stmt"]
+  fn maybe_else1(_e: Token, s: Stmt<'p>) -> Option<Box<Stmt<'p>>> { Some(Box::new(s)) }
 
   #[rule = "Expr -> LPar Expr RPar"]
   fn expr_par(_l: Token, e: Expr<'p>, _r: Token) -> Expr<'p> { e }
   #[rule = "Expr -> IntConst"]
   fn expr_int(i: Token) -> Expr<'p> { Expr::Int(i.str().parse().expect("failed to parse int const")) }
   #[rule = "Expr -> Sub Expr"]
-  #[prec = "Neg"]
+  #[prec = "BNot"]
   fn expr_neg(_: Token, e: Expr<'p>) -> Expr<'p> { Expr::Unary(Neg, Box::new(e)) }
   #[rule = "Expr -> BNot Expr"]
   fn expr_bnot(_: Token, e: Expr<'p>) -> Expr<'p> { Expr::Unary(BNot, Box::new(e)) }
@@ -109,4 +123,7 @@ impl<'p> Parser {
   fn expr_var(name: Token) -> Expr<'p> { Expr::Var(name.str()) }
   #[rule = "Expr -> Id Assign Expr"]
   fn expr_assign(name: Token, _a: Token, r: Expr<'p>) -> Expr<'p> { Expr::Assign(name.str(), Box::new(r)) }
+  #[rule = "Expr -> Expr Question Expr Colon Expr"]
+  #[prec = "Question"]
+  fn expr_condition(cond: Expr<'p>, _q: Token, t: Expr<'p>, _c: Token, f: Expr<'p>) -> Expr<'p> { Expr::Condition(Box::new(cond), Box::new(t), Box::new(f)) }
 }
