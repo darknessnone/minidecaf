@@ -4,12 +4,13 @@ pub struct Prog<'a> {
 
 pub struct Func<'a> {
   pub name: &'a str,
-  pub stmt: Stmt<'a>,
+  pub stmts: Vec<Stmt<'a>>,
 }
 
 pub enum Stmt<'a> {
-  Ret(Expr),
-  Def(&'a str, Expr),
+  Ret(Expr<'a>),
+  Def(&'a str, Option<Expr<'a>>),
+  Expr(Expr<'a>),
 }
 
 #[derive(Copy, Clone)]
@@ -18,8 +19,10 @@ pub enum UnaryOp { Neg, BNot, LNot }
 #[derive(Copy, Clone)]
 pub enum BinaryOp { Add, Sub, Mul, Div, Lt, Le, Ge, Gt, Eq, Ne, And, Or }
 
-pub enum Expr {
+pub enum Expr<'a> {
   Int(i32),
-  Unary(UnaryOp, Box<Expr>),
-  Binary(BinaryOp, Box<Expr>, Box<Expr>),
+  Unary(UnaryOp, Box<Expr<'a>>),
+  Binary(BinaryOp, Box<Expr<'a>>, Box<Expr<'a>>),
+  Var(&'a str),
+  Assign(&'a str, Box<Expr<'a>>),
 }
