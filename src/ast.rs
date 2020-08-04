@@ -1,10 +1,11 @@
 pub struct Prog<'a> {
-  pub func: Func<'a>,
+  pub funcs: Vec<Func<'a>>,
 }
 
 pub struct Func<'a> {
   pub name: &'a str,
-  pub stmts: Vec<Stmt<'a>>,
+  pub params: Vec<&'a str>,
+  pub stmts: Option<Vec<Stmt<'a>>>,
 }
 
 pub enum Stmt<'a> {
@@ -41,4 +42,5 @@ pub enum Expr<'a> {
   Var(&'a str),
   Assign(&'a str, Box<Expr<'a>>),
   Condition(Box<Expr<'a>>, Box<Expr<'a>>, Box<Expr<'a>>),
+  Call(&'a str, Vec<Expr<'a>>),
 }

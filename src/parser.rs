@@ -56,19 +56,33 @@ priority = [
 '\)' = 'RPar'
 '\{' = 'LBrc' # short for brace
 '\}' = 'RBrc'
+',' = 'Comma'
 '\s+' = '_Eps'
 '\d+' = 'IntConst'
 '[a-zA-Z]\w*' = 'Id'
 '.' = '_Err'
 "#]
 impl<'p> Parser {
-  #[rule = "Prog -> Func"]
-  fn prog(func: Func<'p>) -> Prog<'p> { Prog { func } }
+  #[rule = "Prog ->"]
+  fn prog0() -> Prog<'p> { Prog { funcs: Vec::new() } }
+  #[rule = "Prog -> Prog Func"]
+  fn prog_func(mut l: Prog<'p>, r: Func<'p>) -> Prog<'p> { (l.funcs.push(r), l).1 }
 
-  #[rule = "Func -> Int Id LPar RPar LBrc StmtList RBrc"]
-  fn func(_i: Token, name: Token, _lp: Token, _rp: Token, _lb: Token, stmts: Vec<Stmt<'p>>, _rb: Token) -> Func<'p> {
-    Func { name: name.str(), stmts }
+  #[rule = "Func -> Int Id LPar ParamList RPar Semi"]
+  fn func0(_i: Token, name: Token, _lp: Token, params: Vec<&'p str>, _rp: Token, _s: Token) -> Func<'p> { Func { name: name.str(), params, stmts: None } }
+  #[rule = "Func -> Int Id LPar ParamList RPar LBrc StmtList RBrc"]
+  fn func1(_i: Token, name: Token, _lp: Token, params: Vec<&'p str>, _rp: Token, _lb: Token, stmts: Vec<Stmt<'p>>, _rb: Token) -> Func<'p> {
+    Func { name: name.str(), params, stmts: Some(stmts) }
   }
+
+  #[rule = "ParamList ->"]
+  fn param_list0() -> Vec<&'p str> { Vec::new() }
+  #[rule = "ParamList -> ParamList1"]
+  fn param_list1(x: Vec<&'p str>) -> Vec<&'p str> { x }
+  #[rule = "ParamList1 -> Int Id"]
+  fn param_list10(_i: Token, name: Token) -> Vec<&'p str> { vec![name.str()] }
+  #[rule = "ParamList1 -> ParamList1 Comma Int Id"]
+  fn param_list11(mut l: Vec<&'p str>, _c: Token, _i: Token, r: Token) -> Vec<&'p str> { (l.push(r.str()), l).1 }
 
   #[rule = "StmtList ->"]
   fn stmt_list0() -> Vec<Stmt<'p>> { Vec::new() }
@@ -164,4 +178,15 @@ impl<'p> Parser {
   #[rule = "Expr -> Expr Question Expr Colon Expr"]
   #[prec = "Question"]
   fn expr_condition(cond: Expr<'p>, _q: Token, t: Expr<'p>, _c: Token, f: Expr<'p>) -> Expr<'p> { Expr::Condition(Box::new(cond), Box::new(t), Box::new(f)) }
+  #[rule = "Expr -> Id LPar ArgList RPar"]
+  fn expr_call(name: Token, _l: Token, args: Vec<Expr<'p>>, _r: Token) -> Expr<'p> { Expr::Call(name.str(), args) }
+
+  #[rule = "ArgList ->"]
+  fn arg_list0() -> Vec<Expr<'p>> { Vec::new() }
+  #[rule = "ArgList -> ArgList1"]
+  fn arg_list1(x: Vec<Expr<'p>>) -> Vec<Expr<'p>> { x }
+  #[rule = "ArgList1 -> Expr"]
+  fn arg_list10(e: Expr<'p>) -> Vec<Expr<'p>> { vec![e] }
+  #[rule = "ArgList1 -> ArgList1 Comma Expr"]
+  fn arg_list11(mut l: Vec<Expr<'p>>, _c: Token, r: Expr<'p>) -> Vec<Expr<'p>> { (l.push(r), l).1 }
 }
