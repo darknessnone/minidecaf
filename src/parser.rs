@@ -9,6 +9,10 @@ impl<'p> Token<'p> {
 #[parser_macros::lalr1(Prog)]
 #[lex = r#"
 priority = [
+  { assoc = 'left', terms = ['Or'] },
+  { assoc = 'left', terms = ['And'] },
+  { assoc = 'left', terms = ['Eq', 'Ne'] },
+  { assoc = 'left', terms = ['Le', 'Ge', 'Lt', 'Gt'] },
   { assoc = 'left', terms = ['Add', 'Sub'] },
   { assoc = 'left', terms = ['Mul', 'Div'] },
   { assoc = 'left', terms = ['Neg', 'BNot', 'LNot'] },
@@ -21,6 +25,14 @@ priority = [
 '-' = 'Sub'
 '\*' = 'Mul'
 '/' = 'Div'
+'<' = 'Lt'
+'<=' = 'Le'
+'>=' = 'Ge'
+'>' = 'Gt'
+'==' = 'Eq'
+'!=' = 'Ne'
+'&&' = 'And'
+'\|\|' = 'Or'
 '~' = 'BNot'
 '!' = 'LNot'
 '=' = 'Assign'
@@ -67,4 +79,20 @@ impl<'p> Parser {
   fn expr_mul(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Mul, Box::new(l), Box::new(r)) }
   #[rule = "Expr -> Expr Div Expr"]
   fn expr_div(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Div, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr Lt Expr"]
+  fn expr_lt(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Lt, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr Le Expr"]
+  fn expr_le(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Le, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr Ge Expr"]
+  fn expr_ge(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Ge, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr Gt Expr"]
+  fn expr_gt(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Gt, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr Eq Expr"]
+  fn expr_eq(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Eq, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr Ne Expr"]
+  fn expr_ne(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Ne, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr And Expr"]
+  fn expr_and(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(And, Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> Expr Or Expr"]
+  fn expr_or(l: Expr, _: Token, r: Expr) -> Expr { Expr::Binary(Or, Box::new(l), Box::new(r)) }
 }

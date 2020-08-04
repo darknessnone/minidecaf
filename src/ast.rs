@@ -16,7 +16,7 @@ pub enum Stmt<'a> {
 pub enum UnaryOp { Neg, BNot, LNot }
 
 #[derive(Copy, Clone)]
-pub enum BinaryOp { Add, Sub, Mul, Div }
+pub enum BinaryOp { Add, Sub, Mul, Div, Lt, Le, Ge, Gt, Eq, Ne, And, Or }
 
 pub enum Expr {
   Int(i32),
