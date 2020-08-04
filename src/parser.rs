@@ -6,6 +6,8 @@ impl<'p> Token<'p> {
   fn str(&self) -> &'p str { std::str::from_utf8(self.piece).unwrap() }
 }
 
+fn mk_block(s: Stmt) -> Block { match s { Stmt::Block(x) => x, _ => Block(vec![s]) } }
+
 #[parser_macros::lalr1(Prog)]
 #[lex = r#"
 priority = [
@@ -76,13 +78,15 @@ impl<'p> Parser {
   #[rule = "Stmt -> Expr Semi"]
   fn stmt_expr(e: Expr<'p>, _s: Token) -> Stmt<'p> { Stmt::Expr(e) }
   #[rule = "Stmt -> If LPar Expr RPar Stmt MaybeElse"]
-  fn stmt_if(_i: Token, _l: Token, cond: Expr<'p>, _r: Token, t: Stmt<'p>, f: Option<Box<Stmt<'p>>>) -> Stmt<'p> { Stmt::If(cond, Box::new(t), f) }
+  fn stmt_if(_i: Token, _l: Token, cond: Expr<'p>, _r: Token, t: Stmt<'p>, f: Option<Block<'p>>) -> Stmt<'p> { Stmt::If(cond, mk_block(t), f) }
+  #[rule = "Stmt -> LBrc StmtList RBrc"]
+  fn stmt_block(_l: Token, stmts: Vec<Stmt<'p>>, _r: Token) -> Stmt<'p> { Stmt::Block(Block(stmts)) }
 
   #[rule = "MaybeElse ->"]
   #[prec = "BNot"]
-  fn maybe_else0() -> Option<Box<Stmt<'p>>> { None }
+  fn maybe_else0() -> Option<Block<'p>> { None }
   #[rule = "MaybeElse -> Else Stmt"]
-  fn maybe_else1(_e: Token, s: Stmt<'p>) -> Option<Box<Stmt<'p>>> { Some(Box::new(s)) }
+  fn maybe_else1(_e: Token, s: Stmt<'p>) -> Option<Block<'p>> { Some(mk_block(s)) }
 
   #[rule = "Expr -> LPar Expr RPar"]
   fn expr_par(_l: Token, e: Expr<'p>, _r: Token) -> Expr<'p> { e }

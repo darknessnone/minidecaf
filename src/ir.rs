@@ -24,8 +24,8 @@ pub enum IrStmt {
   Ret,
 }
 
-pub fn ast2ir<'a>(p: &mut Prog<'a>) -> IrProg<'a> {
-  IrProg { func: func(&mut p.func) }
+pub fn ast2ir<'a>(p: &Prog<'a>) -> IrProg<'a> {
+  IrProg { func: func(&p.func) }
 }
 
 #[derive(Default)]
@@ -47,7 +47,7 @@ impl FuncCtx<'_> {
   }
 }
 
-fn func<'a>(f: &mut Func<'a>) -> IrFunc<'a> {
+fn func<'a>(f: &Func<'a>) -> IrFunc<'a> {
   let mut ctx = FuncCtx::default();
   ctx.names.push(HashMap::new());
   for s in &f.stmts { stmt(&mut ctx, s); }
@@ -59,6 +59,12 @@ fn func<'a>(f: &mut Func<'a>) -> IrFunc<'a> {
     }
   }
   IrFunc { name: f.name, var_cnt: ctx.var_cnt, stmts: ctx.stmts }
+}
+
+fn block<'a>(ctx: &mut FuncCtx<'a>, b: &Block<'a>) {
+  ctx.names.push(HashMap::new());
+  for s in &b.0 { stmt(ctx, s); }
+  ctx.names.pop();
 }
 
 fn stmt<'a>(ctx: &mut FuncCtx<'a>, s: &Stmt<'a>) {
@@ -85,12 +91,13 @@ fn stmt<'a>(ctx: &mut FuncCtx<'a>, s: &Stmt<'a>) {
       expr(ctx, cond);
       let (before_f, after_f) = (ctx.new_label(), ctx.new_label());
       ctx.stmts.push(IrStmt::Bz(before_f));
-      stmt(ctx, t);
+      block(ctx, t);
       ctx.stmts.push(IrStmt::Jump(after_f));
       ctx.stmts.push(IrStmt::Label(before_f));
-      if let Some(f) = f { stmt(ctx, f); }
+      if let Some(f) = f { block(ctx, f); }
       ctx.stmts.push(IrStmt::Label(after_f));
     }
+    Stmt::Block(b) => block(ctx, b),
   }
 }
 

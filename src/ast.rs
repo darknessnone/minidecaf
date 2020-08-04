@@ -11,8 +11,11 @@ pub enum Stmt<'a> {
   Ret(Expr<'a>),
   Def(&'a str, Option<Expr<'a>>),
   Expr(Expr<'a>),
-  If(Expr<'a>, Box<Stmt<'a>>, Option<Box<Stmt<'a>>>),
+  If(Expr<'a>, Block<'a>, Option<Block<'a>>),
+  Block(Block<'a>)
 }
+
+pub struct Block<'a>(pub Vec<Stmt<'a>>);
 
 #[derive(Copy, Clone)]
 pub enum UnaryOp { Neg, BNot, LNot }
