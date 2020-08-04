@@ -12,6 +12,10 @@ pub enum Stmt<'a> {
   Def(&'a str, Expr),
 }
 
+#[derive(Copy, Clone)]
+pub enum UnaryOp { Neg, BNot, LNot }
+
 pub enum Expr {
   Int(i32),
+  Unary(UnaryOp, Box<Expr>),
 }

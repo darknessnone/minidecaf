@@ -1,4 +1,4 @@
-use crate::ast::*;
+use crate::ast::{*, UnaryOp::*};
 
 pub struct Parser {}
 
@@ -13,6 +13,9 @@ priority = []
 [lexical]
 'int' = 'Int'
 'return' = 'Return'
+'-' = 'Sub'
+'~' = 'BNot'
+'!' = 'LNot'
 '=' = 'Assign'
 ';' = 'Semi' # short for semicolon
 '\(' = 'LPar' # short for parenthesis
@@ -40,4 +43,10 @@ impl<'p> Parser {
 
   #[rule = "Expr -> IntConst"]
   fn expr_int(i: Token) -> Expr { Expr::Int(i.str().parse().expect("failed to parse int const")) }
+  #[rule = "Expr -> Sub Expr"]
+  fn expr_neg(_: Token, e: Expr) -> Expr { Expr::Unary(Neg, Box::new(e)) }
+  #[rule = "Expr -> BNot Expr"]
+  fn expr_bnot(_: Token, e: Expr) -> Expr { Expr::Unary(BNot, Box::new(e)) }
+  #[rule = "Expr -> LNot Expr"]
+  fn expr_lnot(_: Token, e: Expr) -> Expr { Expr::Unary(LNot, Box::new(e)) }
 }
