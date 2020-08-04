@@ -64,9 +64,15 @@ priority = [
 "#]
 impl<'p> Parser {
   #[rule = "Prog ->"]
-  fn prog0() -> Prog<'p> { Prog { funcs: Vec::new() } }
+  fn prog0() -> Prog<'p> { Prog { funcs: Vec::new(), globs: Vec::new() } }
   #[rule = "Prog -> Prog Func"]
-  fn prog_func(mut l: Prog<'p>, r: Func<'p>) -> Prog<'p> { (l.funcs.push(r), l).1 }
+  fn prog_func(mut l: Prog<'p>, f: Func<'p>) -> Prog<'p> { (l.funcs.push(f), l).1 }
+  #[rule = "Prog -> Prog Int Id Semi"]
+  fn prog_glob0(mut l: Prog<'p>, _i: Token, name: Token, _s: Token) -> Prog<'p> { (l.globs.push((name.str(), None)), l).1 }
+  #[rule = "Prog -> Prog Int Id Assign IntConst Semi"]
+  fn prog_glob1(mut l: Prog<'p>, _i: Token, name: Token, _a: Token, init: Token, _s: Token) -> Prog<'p> {
+    (l.globs.push((name.str(), Some(init.str().parse().expect("failed to parse int const")))), l).1
+  }
 
   #[rule = "Func -> Int Id LPar ParamList RPar Semi"]
   fn func0(_i: Token, name: Token, _lp: Token, params: Vec<&'p str>, _rp: Token, _s: Token) -> Func<'p> { Func { name: name.str(), params, stmts: None } }

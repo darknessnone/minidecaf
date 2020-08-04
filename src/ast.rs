@@ -1,5 +1,6 @@
 pub struct Prog<'a> {
   pub funcs: Vec<Func<'a>>,
+  pub globs: Vec<(&'a str, Option<i32>)>,
 }
 
 pub struct Func<'a> {

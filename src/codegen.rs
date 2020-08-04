@@ -3,8 +3,15 @@ use crate::{ast::{UnaryOp::*, BinaryOp::*}, ir::*};
 
 pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
   const SLOT: usize = 8;
+  for g in &p.globs {
+    writeln!(w, ".data")?;
+    writeln!(w, "{}:", g.0)?;
+    writeln!(w, "  .word {}", g.1.unwrap_or(0))?;
+    writeln!(w)?;
+  }
   for f in &p.funcs {
     if f.is_decl { continue; }
+    writeln!(w, ".text")?;
     writeln!(w, ".global {}", f.name)?;
     writeln!(w, "{}:", f.name)?;
     writeln!(w, "  sd s0, -{}(sp)", (f.var_cnt + 1) * SLOT)?;
@@ -64,15 +71,29 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
           };
           writeln!(w, "  sd t0, 0(sp)")?;
         }
-        IrStmt::Load(id) => {
-          writeln!(w, "  ld t0, -{}(s0)", (id + 1) * SLOT)?;
+        IrStmt::Load(x) => {
+          writeln!(w, "  ld t0, -{}(s0)", (x + 1) * SLOT)?;
           writeln!(w, "  sd t0, -8(sp)")?;
           writeln!(w, "  add sp, sp, -8")?;
         }
-        IrStmt::Store(id) => {
+        IrStmt::Store(x) => {
           writeln!(w, "  ld t0, 0(sp)")?;
           writeln!(w, "  add sp, sp, 8")?;
-          writeln!(w, "  sd t0, -{}(s0)", (id + 1) * SLOT)?;
+          writeln!(w, "  sd t0, -{}(s0)", (x + 1) * SLOT)?;
+        }
+        IrStmt::LoadGlobal(x) => {
+          let name = p.globs[*x].0;
+          writeln!(w, "  lui t0, %hi({})", name)?;
+          writeln!(w, "  ld t0, %lo({})(t0)", name)?;
+          writeln!(w, "  sd t0, -8(sp)")?;
+          writeln!(w, "  add sp, sp, -8")?;
+        }
+        IrStmt::StoreGlobal(x) => {
+          let name = p.globs[*x].0;
+          writeln!(w, "  ld t0, 0(sp)")?;
+          writeln!(w, "  add sp, sp, 8")?;
+          writeln!(w, "  lui t1, %hi({})", name)?;
+          writeln!(w, "  sd t0, %lo({})(t1)", name)?;
         }
         IrStmt::Label(x) => writeln!(w, ".L.{}.{}:", f.name, x)?,
         IrStmt::Bz(x) => {
@@ -101,6 +122,7 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
         }
       }
     }
+    writeln!(w)?;
   }
   Ok(())
 }
