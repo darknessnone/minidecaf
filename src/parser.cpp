@@ -26,15 +26,6 @@ Token* expect_int_literal() {
     return token;
 }
 
-bool parse_int_literal(int* val) {
-    Token* tok;
-    if(!(tok = expect_int_literal()))
-        return false;
-    token = token->next;
-    *val = tok->val;
-    return true;
-}
-
 bool parse_reserved(char* s) {
     if(!expect_reserved(s))
         return false;
@@ -61,24 +52,80 @@ char* parse_ident() {
     return ident;
 }
 
-Node* parse_node_stmt() {
+Token* parse_num() {
+    Token* tok;
+    if(!(tok = expect_int_literal()))
+        return NULL;
+    token = token->next;
+    return tok;
+}
+
+Node* new_unary(NodeKind kind, Node *expr) {
+    Node *node = new_node(kind);
+    node->expr = expr;
+    return node;
+}
+
+Node* new_num(Token* tok) {
+    Node* node = new_node(ND_NUM);
+    node->ty = tok->ty;
+    node->val = tok->val;
+    return node;
+}
+
+Node* new_stmt(NodeKind kind, Node* expr) {
+    Node *node = new_node(kind);
+    node->expr = expr;
+    return node;
+}
+
+Node* expr();
+
+Node* num() {
+    Token* tok = parse_num();
+    assert(tok);
+    Node* node = new_num(tok);
+    return node;
+}
+
+Node *unary() {
+    if (parse_reserved("-"))
+        return new_unary(ND_NEG, expr());
+    if (parse_reserved("!"))
+        return new_unary(ND_NOT, expr());
+    if (parse_reserved("~"))
+        return new_unary(ND_BITNOT, expr());
+    return num();
+}
+
+Node* stmt() {
     Node* node = NULL;
     if (parse_reserved("return")) {
-        int val;
-        assert(parse_int_literal(&val));
-        node = new_node(ND_RETURN);
-        node->val = val;
+        Node* exp = expr();
+        node = new_stmt(ND_RETURN, exp);
         assert(parse_reserved(";"));
         return node;
     }
     return node;
 }
 
+Node* expr() {
+    return unary();
+}
+
+
+// step1
+
 // <program> ::= <function>
 // <function> ::= <type> <id> "(" ")" "{" <statement> "}"
 // <type> ::= "int"
 // <statement> ::= "return" <exp> ";"
 // <exp> ::= <int>
+
+// step2
+
+// <exp> ::= <unary_op> <exp> | <int>
+// <unary_op> ::= "!" | "~" | "-"
 
 Function *parse_function() {
     Type *ty = parse_basetype();
@@ -98,7 +145,7 @@ Function *parse_function() {
     Node head = {};
     Node *cur = &head;
     while (!parse_reserved("}")) {
-        cur->next = parse_node_stmt();
+        cur->next = stmt();
         cur = cur->next;
     }
 

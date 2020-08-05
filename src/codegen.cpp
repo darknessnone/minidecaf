@@ -3,7 +3,33 @@
 void gen_node(Node *node) {
   switch (node->kind) {
     case ND_RETURN:
+        gen_node(node->expr);
+        printf("  pop rax\n");
+        break;
+    case ND_NUM:
         printf("  mov rax, %ld\n", node->val);
+        printf("  push rax\n");
+        break;
+    case ND_NOT:
+        gen_node(node->expr);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  sete al\n");
+        printf("  movzb rax, al\n");
+        printf("  push rax\n");
+        break;
+    case ND_BITNOT:
+        gen_node(node->expr);
+        printf("  pop rax\n");
+        printf("  not rax\n");
+        printf("  push rax\n");
+        break;
+    case ND_NEG:
+        gen_node(node->expr);
+        printf("  pop rdi\n");
+        printf("  xor rax, rax\n");
+        printf("  sub rax, rdi\n");
+        printf("  push rax\n");
         break;
     default:
         assert(false);

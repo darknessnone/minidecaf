@@ -11,7 +11,7 @@ static void read_input(char *path) {
     printf("cannot open %s\n", path);
 
   int filemax = 10 * 1024 * 1024;
-  int size = fread(user_input, 1, 10*1024*1024-2, fp);
+  int size = fread(user_input, 1, filemax-2, fp);
   if (!feof(fp))
     printf("file too large.\n");
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     for (Function *fn = func; fn; fn = fn->next) {
         fn->stack_size = 256;
     }
-    
+
     codegen();
     return 0;
 }

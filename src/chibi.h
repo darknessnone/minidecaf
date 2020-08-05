@@ -43,12 +43,17 @@ Token* lexing();
 
 enum NodeKind{
     ND_RETURN,     // "return"
+    ND_NOT,        // unary !
+    ND_BITNOT,     // unary ~
+    ND_NEG,        // unary -
+    ND_NUM,        // int literal
 };
 
 struct Node {
     NodeKind kind; // Node kind
     Node *next;    // Next node
     Type *ty;      // Type, e.g. int or pointer to int
+    Node* expr;
     long val;      // Value of type
 };
 
