@@ -6,9 +6,10 @@ prog : stmts EOF
 stmts : expr ';'              # printExpr
      ;
 
-expr : expr op=(MUL|DIV) expr # MulDiv
+expr : ('+'|'-') expr         # Unary 
+     | expr op=(MUL|DIV) expr # MulDiv
      | expr op=(ADD|SUB) expr # AddSub
-     | INT                    # literal
+     | INT                    # Literal
      | '(' expr ')'           # Paren
      ;
 

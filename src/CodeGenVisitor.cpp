@@ -51,6 +51,16 @@ antlrcpp::Any CodeGenVisitor::visitMulDiv(MiniDecafParser::MulDivContext *ctx) {
 
 }
 
+antlrcpp::Any CodeGenVisitor::visitUnary(MiniDecafParser::UnaryContext *ctx) {
+    visitChildren(ctx);
+    if (ctx->SUB()) {
+        code_ << this->pop1
+              << "\tsub a0, x0, t0\n"
+              << this->push;
+    }
+    return NULL;
+}
+
 antlrcpp::Any CodeGenVisitor::visitParen(MiniDecafParser::ParenContext *ctx) {
     visitChildren(ctx);
     return NULL;

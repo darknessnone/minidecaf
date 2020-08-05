@@ -11,6 +11,7 @@ public:
     antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *ctx);
     antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *ctx);
     antlrcpp::Any visitParen(MiniDecafParser::ParenContext *ctx);
+    antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
 private:
     std::ostringstream code_;
 
@@ -20,5 +21,7 @@ private:
     const char* pop = "\tld t0, 8(sp)\n"
                       "\tld t1, (sp)\n"
                       "\taddi sp, sp, 16\n";
+    const char* pop1 = "\tld t0, (sp)\n"
+                       "\taddi sp, sp, 8\n";
 };
 

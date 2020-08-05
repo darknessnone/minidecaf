@@ -29,6 +29,8 @@ public:
 
     virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *context) = 0;
 
+    virtual antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *context) = 0;
+
     virtual antlrcpp::Any visitParen(MiniDecafParser::ParenContext *context) = 0;
 
 
