@@ -138,8 +138,51 @@ Node* add_sub() {
     }
 }
 
+Node* relational() {
+    Node* node = add_sub();
+    if (parse_reserved(">"))
+        return new_binary(ND_LT, add_sub(), node);
+    if (parse_reserved(">="))
+        return new_binary(ND_LTE, add_sub(), node);
+    if (parse_reserved("<"))
+        return new_binary(ND_LT, node, add_sub());
+    if (parse_reserved("<="))
+        return new_binary(ND_LTE, node, add_sub());
+    return node;
+}
+
+Node* equality() {
+    Node* node = relational();
+    if (parse_reserved("=="))
+        return new_binary(ND_EQ, node, relational());
+    if (parse_reserved("!="))
+        return new_binary(ND_NEQ, node, relational());
+    return node;
+}
+
+Node* logand() {
+    Node* node = equality();
+    while(1) {
+        if (parse_reserved("&&"))
+            node = new_binary(ND_LOGAND, node, equality());
+        else 
+            return node;
+    }
+}
+
+Node* logor() {
+    Node* node = logand();
+    while(1) {
+        if (parse_reserved("||"))
+            node = new_binary(ND_LOGOR, node, logand());
+        else 
+            return node;
+    }
+}
+
+
 Node* expr() {
-    return add_sub();
+    return logor();
 }
 
 Node* stmt() {
@@ -150,7 +193,9 @@ Node* stmt() {
         assert(parse_reserved(";"));
         return node;
     }
-    return node;
+    Node* exp = expr();
+    assert(parse_reserved(";"));
+    return exp;
 }
 
 // step1
@@ -172,6 +217,13 @@ Node* stmt() {
 // <term> ::= <term> ("*" | "/") <term> | <factor>
 // <factor> ::= "(" <exp> ")" | <unary_op> <factor> | <int>
 
+// step4
+
+// <exp> ::= <logical-and-exp> { "||" <logical-and-exp> }
+// <logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
+// <equality-exp> ::= <relational-exp> { ("!=" | "==") <relational-exp> }
+// <relational-exp> ::= <additive-exp> { ("<" | ">" | "<=" | ">=") <additive-exp> }
+// <additive-exp> ::= <term> { ("+" | "-") <term> }
 
 Function *parse_function() {
     Type *ty = parse_basetype();
