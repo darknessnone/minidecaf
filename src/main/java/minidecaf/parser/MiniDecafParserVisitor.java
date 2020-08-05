@@ -18,9 +18,35 @@ public interface MiniDecafParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProgram(MiniDecafParser.ProgramContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link MiniDecafParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpr(MiniDecafParser.ExprContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link MiniDecafParser#mul}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitMul(MiniDecafParser.MulContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MiniDecafParser#unary}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUnary(MiniDecafParser.UnaryContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code numPrimary}
+	 * labeled alternative in {@link MiniDecafParser#primary}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNumPrimary(MiniDecafParser.NumPrimaryContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code parenthesizePrimary}
+	 * labeled alternative in {@link MiniDecafParser#primary}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParenthesizePrimary(MiniDecafParser.ParenthesizePrimaryContext ctx);
 }

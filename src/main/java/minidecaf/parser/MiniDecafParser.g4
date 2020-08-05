@@ -2,7 +2,7 @@ parser grammar MiniDecafParser;
 
 options { tokenVocab = MiniDecafLexer; }
 
-program       : mul (ADD mul | SUB mul)*;
+program: expr;
 
 // toplv      : typ IDENT (LPAREN (typ IDENT (COMMA typ IDENT)*)? RPAREN LBRACK stmt* RBRACK | (LBRACE NUM RBRACE)* SEMI);
 
@@ -15,7 +15,7 @@ program       : mul (ADD mul | SUB mul)*;
 //            | typ IDENT (LBRACK NUM RBRACK)* SEMI                    #declStmt
 //            ;
 
-// expr       : assign;
+expr: mul (ADD mul | SUB mul)*;
 
 // assign     : equality (ASSIGN assign)?;
 
@@ -25,17 +25,17 @@ program       : mul (ADD mul | SUB mul)*;
 
 // add        : mul (ADD mul | SUB mul)*;
 
-mul        : NUM (MUL NUM | DIV NUM)*;
+mul: unary (MUL unary | DIV unary)*;
 
-// unary      : ADD? primary
-//            | SUB? primary
-//            | AND unary
-//            | MUL unary
-//            | SIZEOF unary
-//            | primary LBRACK expr RBRACK;
+unary: ADD? primary
+     | SUB? primary;
+        //    | AND unary
+        //    | MUL unary
+        //    | SIZEOF unary
+        //    | primary LBRACK expr RBRACK;
 
-// primary    : NUM
+primary: NUM # numPrimary
+	| LPAREN expr RPAREN # parenthesizePrimary;
         //    | IDENT (LPAREN (expr (COMMA expr)*)? RPAREN)?
-        //    | LPAREN expr RPAREN;
 
 // typ        : (INT | CHAR) MUL*;
