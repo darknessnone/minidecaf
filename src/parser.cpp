@@ -30,6 +30,7 @@ bool parse_int_literal(int* val) {
     Token* tok;
     if(!(tok = expect_int_literal()))
         return false;
+    token = token->next;
     *val = tok->val;
     return true;
 }
@@ -42,6 +43,7 @@ bool parse_reserved(char* s) {
 }
 
 Type* parse_basetype() {
+    // cout << "parse_basetype()" << endl;
     if(!expect_reserved("int"))
         return NULL;
     token = token->next;
@@ -52,9 +54,12 @@ Type* parse_basetype() {
 char* parse_ident() {
     if(!expect_ident())
         return NULL;
-    char* s = token->str;
+    char* ident = new char[256];
+    assert(token->len < 256);
+    strncpy(ident, token->str, token->len);
+    ident[token->len] = 0;
     token = token->next;
-    return s;
+    return ident;
 }
 
 Node* parse_node_stmt() {
@@ -106,13 +111,15 @@ Function* parsing() {
     Function head = {};
     Function *cur = &head;
 
-    while (!token->kind == TK_EOF) {
+    while (token->kind != TK_EOF) {
         Function *fn = parse_function();
         if (!fn)
             continue;
+        // cout << "function: " << fn->name << endl;
         cur->next = fn;
         cur = cur->next;
         continue;
     }
+
     return head.next;
 }

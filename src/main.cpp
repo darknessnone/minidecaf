@@ -21,13 +21,24 @@ static void read_input(char *path) {
   user_input[size] = '\0';
 }
 
+
 int main(int argc, char **argv) {
     if (argc != 2)
        cout << argv[0] << "invalid number of arguments" << endl;
 
     // Tokenize and parse.
     read_input(argv[1]);
+
+    // cout << "show input:" << endl;
+    // cout << user_input << endl;
+
     token = lexing();
+
+    // cout << "show tokens:" << endl;
+    // for(Token* tok = token; tok; tok = tok->next) {
+    //     show_token(tok);
+    // }
+
     func = parsing();
     for (Function *fn = func; fn; fn = fn->next) {
         fn->stack_size = 256;

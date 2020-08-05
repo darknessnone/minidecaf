@@ -23,6 +23,8 @@ struct Type {
     TypeKind kind;
 };
 
+extern Type INT_TYPE;
+
 // Token type
 struct Token {
     TokenKind kind; // Token kind
@@ -33,8 +35,7 @@ struct Token {
     int len;        // Token length
 };
 
-Type INT_TYPE = {TY_INT};
-
+void show_token(Token* tok);
 Token* lexing();
 
 

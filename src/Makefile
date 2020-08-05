@@ -3,3 +3,6 @@ OBJS=$(SRCS:.c=.o)
 
 chibicc: $(OBJS)
 	g++ -o $@ $(OBJS)
+
+test: chibicc
+	./chibicc test/return_0.c

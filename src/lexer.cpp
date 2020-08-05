@@ -1,13 +1,42 @@
 #include "chibi.h"
 
-static Token *gen_token(TokenKind kind, Token *cur, char *str, int len) {
+void show_token(Token* tok) {
+    switch (tok->kind)
+        {
+        case TK_RESERVED:
+            cout << "TK_RESERVED ";
+            for(int i = 0; i < tok->len; i++)
+                cout << tok->str[i];
+            cout << endl;
+            break;
+        case TK_IDENT:
+            cout << "TK_IDENT ";
+            for(int i = 0; i < tok->len; i++)
+                cout << tok->str[i];
+            cout << endl;
+            break;
+        case TK_NUM:
+            cout << "TK_NUM ";
+            for(int i = 0; i < tok->len; i++)
+                cout << tok->str[i];
+            cout << endl;
+            break;
+        default:
+            cout << "TK_EOF " << endl;
+            break;
+        }
+}
+
+Token *gen_token(TokenKind kind, Token *cur, char *str, int len) {
     Token *tok = new Token();
     tok->kind = kind;
     tok->str = str;
     tok->len = len;
     tok->ty = NULL;
     tok->next = NULL;
+
     cur->next = tok;
+
     return tok;
 }
 
@@ -23,9 +52,9 @@ bool is_alnum(char c) {
     return is_alpha(c) || ('0' <= c && c <= '9');
 }
 
-char* comsume_reserved(char *p) {
+char* read_reserved(char *p) {
     // Keyword
-    static char *kw[] = {"return"};
+    static char *kw[] = {"return", "int"};
 
     for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++) {
         int len = strlen(kw[i]);
@@ -45,14 +74,14 @@ static Token *read_int_literal(Token *cur, char *start) {
     long val = strtol(p, &p, base);
     Type *ty = &INT_TYPE;
 
-    Token *tok = gen_token(TK_NUM, cur, start, p - start);
+    Token* tok = gen_token(TK_NUM, cur, start, p - start);
     tok->ty = ty;
     tok->val = val;
     return tok;
 }
 
 // Tokenize `user_input` and returns new tokens.
-Token *lexing() {
+Token* lexing() {
     char* p = user_input;
     Token head = {};
     Token *cur = &head;
@@ -65,7 +94,7 @@ Token *lexing() {
         }
 
         // Keywords or multi-letter punctuators
-        char *kw = comsume_reserved(p);
+        char *kw = read_reserved(p);
         if (kw) {
             int len = strlen(kw);
             cur = gen_token(TK_RESERVED, cur, p, len);
@@ -75,13 +104,14 @@ Token *lexing() {
 
         // Single-letter punctuators
         if (ispunct(*p)) {
-            cur = gen_token(TK_RESERVED, cur, p++, 1);
+            cur = gen_token(TK_RESERVED, cur, p, 1);
+            p++;
             continue;
         }
     
         // Identifier
         if (is_alpha(*p)) {
-            char *start = p++;
+            char *start = p;
             while (is_alnum(*p))
                 p++;
             cur = gen_token(TK_IDENT, cur, start, p - start);
@@ -95,9 +125,10 @@ Token *lexing() {
             continue;
         }
 
-        cout << p << "invalid token" << endl;
+        cout << "[error]" << p << "invalid token" << endl;
     }
 
-    gen_token(TK_EOF, cur, p, 0);
+    cur = gen_token(TK_EOF, cur, p, 0);
+
     return head.next;
 }
