@@ -19,10 +19,9 @@ public class MiniDecafLexer extends Lexer {
 		new PredictionContextCache();
 	public static final int
 		IF=1, ELSE=2, WHILE=3, FOR=4, RETURN=5, SIZEOF=6, INT=7, CHAR=8, ADD=9, 
-		SUB=10, MUL=11, DIV=12, AND=13, ASSIGN=14, GT=15, LT=16, EQUAL=17, LE=18, 
-		GE=19, NOTEQUAL=20, LPAREN=21, RPAREN=22, LBRACE=23, RBRACE=24, LBRACK=25, 
-		RBRACK=26, SEMI=27, COMMA=28, WS=29, COMMENT=30, LINE_COMMENT=31, IDENT=32, 
-		NUM=33;
+		SUB=10, MUL=11, DIV=12, AND=13, ASSIGN=14, GT=15, LT=16, LE=17, GE=18, 
+		EQ=19, NE=20, LPAREN=21, RPAREN=22, LBRACE=23, RBRACE=24, LBRACK=25, RBRACK=26, 
+		SEMI=27, COMMA=28, WS=29, COMMENT=30, LINE_COMMENT=31, IDENT=32, NUM=33;
 	public static String[] channelNames = {
 		"DEFAULT_TOKEN_CHANNEL", "HIDDEN"
 	};
@@ -33,22 +32,22 @@ public class MiniDecafLexer extends Lexer {
 
 	public static final String[] ruleNames = {
 		"IF", "ELSE", "WHILE", "FOR", "RETURN", "SIZEOF", "INT", "CHAR", "ADD", 
-		"SUB", "MUL", "DIV", "AND", "ASSIGN", "GT", "LT", "EQUAL", "LE", "GE", 
-		"NOTEQUAL", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "LBRACK", "RBRACK", 
-		"SEMI", "COMMA", "WS", "COMMENT", "LINE_COMMENT", "IDENT", "NUM"
+		"SUB", "MUL", "DIV", "AND", "ASSIGN", "GT", "LT", "LE", "GE", "EQ", "NE", 
+		"LPAREN", "RPAREN", "LBRACE", "RBRACE", "LBRACK", "RBRACK", "SEMI", "COMMA", 
+		"WS", "COMMENT", "LINE_COMMENT", "IDENT", "NUM"
 	};
 
 	private static final String[] _LITERAL_NAMES = {
 		null, "'if'", "'else'", "'while'", "'for'", "'return'", "'sizeof'", "'int'", 
-		"'char'", "'+'", "'-'", "'*'", "'/'", "'&'", "'='", "'>'", "'<'", "'=='", 
-		"'<='", "'>='", "'!='", "'('", "')'", "'{'", "'}'", "'['", "']'", "';'", 
+		"'char'", "'+'", "'-'", "'*'", "'/'", "'&'", "'='", "'>'", "'<'", "'<='", 
+		"'>='", "'=='", "'!='", "'('", "')'", "'{'", "'}'", "'['", "']'", "';'", 
 		"','"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, "IF", "ELSE", "WHILE", "FOR", "RETURN", "SIZEOF", "INT", "CHAR", 
-		"ADD", "SUB", "MUL", "DIV", "AND", "ASSIGN", "GT", "LT", "EQUAL", "LE", 
-		"GE", "NOTEQUAL", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "LBRACK", "RBRACK", 
-		"SEMI", "COMMA", "WS", "COMMENT", "LINE_COMMENT", "IDENT", "NUM"
+		"ADD", "SUB", "MUL", "DIV", "AND", "ASSIGN", "GT", "LT", "LE", "GE", "EQ", 
+		"NE", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "LBRACK", "RBRACK", "SEMI", 
+		"COMMA", "WS", "COMMENT", "LINE_COMMENT", "IDENT", "NUM"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -145,8 +144,8 @@ public class MiniDecafLexer extends Lexer {
 		"\3\2\2\2ij\7e\2\2jk\7j\2\2kl\7c\2\2lm\7t\2\2m\22\3\2\2\2no\7-\2\2o\24"+
 		"\3\2\2\2pq\7/\2\2q\26\3\2\2\2rs\7,\2\2s\30\3\2\2\2tu\7\61\2\2u\32\3\2"+
 		"\2\2vw\7(\2\2w\34\3\2\2\2xy\7?\2\2y\36\3\2\2\2z{\7@\2\2{ \3\2\2\2|}\7"+
-		">\2\2}\"\3\2\2\2~\177\7?\2\2\177\u0080\7?\2\2\u0080$\3\2\2\2\u0081\u0082"+
-		"\7>\2\2\u0082\u0083\7?\2\2\u0083&\3\2\2\2\u0084\u0085\7@\2\2\u0085\u0086"+
+		">\2\2}\"\3\2\2\2~\177\7>\2\2\177\u0080\7?\2\2\u0080$\3\2\2\2\u0081\u0082"+
+		"\7@\2\2\u0082\u0083\7?\2\2\u0083&\3\2\2\2\u0084\u0085\7?\2\2\u0085\u0086"+
 		"\7?\2\2\u0086(\3\2\2\2\u0087\u0088\7#\2\2\u0088\u0089\7?\2\2\u0089*\3"+
 		"\2\2\2\u008a\u008b\7*\2\2\u008b,\3\2\2\2\u008c\u008d\7+\2\2\u008d.\3\2"+
 		"\2\2\u008e\u008f\7}\2\2\u008f\60\3\2\2\2\u0090\u0091\7\177\2\2\u0091\62"+

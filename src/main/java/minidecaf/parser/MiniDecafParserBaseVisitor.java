@@ -32,6 +32,13 @@ public class MiniDecafParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> i
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitAdd(MiniDecafParser.AddContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitMul(MiniDecafParser.MulContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

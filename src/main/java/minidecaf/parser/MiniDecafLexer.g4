@@ -19,10 +19,10 @@ AND: '&';
 ASSIGN: '=';
 GT: '>';
 LT: '<';
-EQUAL: '==';
 LE: '<=';
 GE: '>=';
-NOTEQUAL: '!=';
+EQ: '==';
+NE: '!=';
 
 // Separators
 LPAREN: '(';

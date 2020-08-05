@@ -15,15 +15,15 @@ program: expr;
 //            | typ IDENT (LBRACK NUM RBRACK)* SEMI                    #declStmt
 //            ;
 
-expr: mul (ADD mul | SUB mul)*;
+expr: add (EQ add | NE add | LT add | LE add | GT add | GE add)?;
 
 // assign     : equality (ASSIGN assign)?;
 
-// equality   : relational (EQUAL relational | NOTEQUAL relational)*;
+// equality   : relational (EQUAL relational | NOTEQUAL relational);
 
-// relational : add (LT add | LE add | GT add | GE add)*;
+// relational : add (EQUAL add | NOTEQUAL add | LT add | LE add | GT add | GE add)?;
 
-// add        : mul (ADD mul | SUB mul)*;
+add: mul (ADD mul | SUB mul)*;
 
 mul: unary (MUL unary | DIV unary)*;
 
