@@ -79,6 +79,8 @@ digit  =  [0-9]
 
 ## 步骤9：支持比较操作
 
+有点没看明白这个比较操作的语义，有很多个比较符号连起来是什么意思呢？
+
 ```
 expr       = equality
 equality   = relational ("==" relational | "!=" relational)*

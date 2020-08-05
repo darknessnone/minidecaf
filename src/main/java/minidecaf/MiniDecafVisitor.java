@@ -64,7 +64,7 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
         if (sub != null) {
             sb.append("\tld t1, 0(sp)\n");
             sb.append("\tneg t1, t1\n");
-            sb.append("\tld t1, 0(sp)\n");
+            sb.append("\tsd t1, 0(sp)\n");
         }
         return sb;
     }
