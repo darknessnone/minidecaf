@@ -17,4 +17,10 @@ public interface MiniDecafParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitProgram(MiniDecafParser.ProgramContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MiniDecafParser#mul}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMul(MiniDecafParser.MulContext ctx);
 }

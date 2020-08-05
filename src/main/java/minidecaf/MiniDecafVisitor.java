@@ -1,7 +1,7 @@
 package minidecaf;
 
 import minidecaf.parser.*;
-import minidecaf.parser.MiniDecafParser.ProgramContext;
+import minidecaf.parser.MiniDecafParser.*;
 
 import org.antlr.v4.runtime.tree.*;
 
@@ -12,26 +12,51 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
         sb.append(".global main\n");
         sb.append("main:\n");
 
-        // TODO: what if some number is too large?
-        Integer result = Integer.valueOf(ctx.NUM(0).getText());
-
+        sb.append(visit(ctx.mul(0)));
         for (int i = 2; i < ctx.children.size(); i += 2) {
-            Integer x = Integer.valueOf(ctx.children.get(i).getText());
-            if (ctx.children.get(i - 1).getText().equals("+")) result += x;
-            else result -= x;
+            sb.append(visit(ctx.children.get(i)));
+
+            sb.append("\tld t2, 0(sp)\n");
+            sb.append("\tld t1, 8(sp)\n");
+            sb.append("\t" +
+                    (ctx.children.get(i - 1).getText().equals("+") ? "add" : "sub")
+                + " t1, t1, t2\n");
+            sb.append("\taddi sp, sp, 8\n");
+            sb.append("\tsd t1, 0(sp)\n");
         }
 
-        sb.append(String.format("\tli a0, %d\n", result));
+        sb.append("\tld a0, 0(sp)\n");
+        sb.append("\taddi sp, sp, 8\n");
         sb.append("\tret\n");
         return sb;
     }
 
-    public StringBuilder push(Integer x) {
+    @Override
+    public StringBuilder visitMul(MulContext ctx) {
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(push(Integer.valueOf(ctx.NUM(0).getText())));
+        for (int i = 2; i < ctx.children.size(); i += 2) {
+            sb.append(push(Integer.valueOf(ctx.children.get(i).getText())));
+
+            sb.append("\tld t2, 0(sp)\n");
+            sb.append("\tld t1, 8(sp)\n");
+            sb.append("\t" +
+                    (ctx.children.get(i - 1).getText().equals("*") ? "mul" : "div")
+                + " t1, t1, t2\n");
+            sb.append("\taddi sp, sp, 8\n");
+            sb.append("\tsd t1, 0(sp)\n");
+        }
+
+        return sb;
+    }
+
+    private StringBuilder push(Integer x) {
         StringBuilder sb = new StringBuilder();
         sb.append("# push " + x + "\n");
-        sb.append("\t\tli t1, " + x + "\n");
-        sb.append("\taddi sp, sp, -8");
-        sb.append("\tsd t1, 0(sp)");
+        sb.append("\tli t1, " + x + "\n");
+        sb.append("\taddi sp, sp, -8\n");
+        sb.append("\tsd t1, 0(sp)\n");
         return sb;
     }
 }

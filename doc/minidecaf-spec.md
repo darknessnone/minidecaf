@@ -13,6 +13,9 @@ num = digit+
 digit = [0-9]
 ```
 ## 步骤2：可执行加减
+
+返回值只有一个字节，这感觉是不是有点不太合理呢？
+
 ```
 expr = num ("+" num | "-" num)*
 num = digit+
@@ -31,26 +34,29 @@ digit  =  [0-9]
 
 似乎这里需要保证不同的语法解析器的错误提示是一样的？
 
+我没有看到这一步的测例，这一步是什么意思？
+
+当然，现在我从 cy 那里抄过来的测试的脚本也还不太能测“错误提示”的样子……
+
+如果数太大了，是不是要检查一下？我们这里的数字我想默认应该是64位无符号整数？
+
 ```
-expr= num ("+" num | "-" num)*
+expr = num ("+" num | "-" num)*
 num = digit+
-digit  =  [0-9]
+digit = [0-9]
 ```
 ## 步骤5：stack computer on RV64
-
-感觉其实完全可以在 step 2 就先用着 stack computer？既然是 Incremental implemented compiler，为何还要让同学们重写/放弃之前写过的代码呢？
-
 ```
-expr= num ("+" num | "-" num)*
+expr = num ("+" num | "-" num)*
 num = digit+
-digit  =  [0-9]
+digit = [0-9]
 ```
 ## 步骤6：可执行乘除
 ```
 expr = mul ("+" mul | "-" mul)*
-mul  = num ("*" num | "/" num)*
+mul = num ("*" num | "/" num)*
 num = digit+
-digit  =  [0-9]
+digit = [0-9]
 ```
 ## 步骤7：支持括号操作
 ```
