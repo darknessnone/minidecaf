@@ -19,18 +19,27 @@ num = digit+
 digit = [0-9]
 ```
 ## 步骤3：递归下降语法解析
+
+用 Antlr 的话，似乎就不需要这一步了？
+
 ```
 expr= num ("+" num | "-" num)*
 num = digit+
 digit  =  [0-9]
 ```
 ## 步骤4：有一定的错误提示
+
+似乎这里需要保证不同的语法解析器的错误提示是一样的？
+
 ```
 expr= num ("+" num | "-" num)*
 num = digit+
 digit  =  [0-9]
 ```
 ## 步骤5：stack computer on RV64
+
+感觉其实完全可以在 step 2 就先用着 stack computer？既然是 Incremental implemented compiler，为何还要让同学们重写/放弃之前写过的代码呢？
+
 ```
 expr= num ("+" num | "-" num)*
 num = digit+
