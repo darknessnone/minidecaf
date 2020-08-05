@@ -12,7 +12,7 @@
 class  MiniDecafParser : public antlr4::Parser {
 public:
   enum {
-    WS = 1, INT = 2, SEMICOLON = 3
+    WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5
   };
 
   enum {
@@ -85,6 +85,19 @@ public:
    
   };
 
+  class  AddSubContext : public ExprContext {
+  public:
+    AddSubContext(ExprContext *ctx);
+
+    antlr4::Token *op = nullptr;
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+    antlr4::tree::TerminalNode *ADD();
+    antlr4::tree::TerminalNode *SUB();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  LiteralContext : public ExprContext {
   public:
     LiteralContext(ExprContext *ctx);
@@ -95,7 +108,10 @@ public:
   };
 
   ExprContext* expr();
+  ExprContext* expr(int precedence);
 
+  virtual bool sempred(antlr4::RuleContext *_localctx, size_t ruleIndex, size_t predicateIndex) override;
+  bool exprSempred(ExprContext *_localctx, size_t predicateIndex);
 
 private:
   static std::vector<antlr4::dfa::DFA> _decisionToDFA;

@@ -1,4 +1,8 @@
 WS=1
 INT=2
 SEMICOLON=3
+ADD=4
+SUB=5
 ';'=3
+'+'=4
+'-'=5

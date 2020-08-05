@@ -23,6 +23,8 @@ public:
 
     virtual antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *context) = 0;
 
+    virtual antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *context) = 0;
+
     virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *context) = 0;
 
 

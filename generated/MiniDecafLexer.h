@@ -12,7 +12,7 @@
 class  MiniDecafLexer : public antlr4::Lexer {
 public:
   enum {
-    WS = 1, INT = 2, SEMICOLON = 3
+    WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5
   };
 
   MiniDecafLexer(antlr4::CharStream *input);

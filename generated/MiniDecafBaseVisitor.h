@@ -23,6 +23,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx) override {
     return visitChildren(ctx);
   }
