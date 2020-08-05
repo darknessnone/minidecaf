@@ -60,12 +60,6 @@ Token* parse_num() {
     return tok;
 }
 
-Node* new_unary(NodeKind kind, Node *expr) {
-    Node *node = new_node(kind);
-    node->expr = expr;
-    return node;
-}
-
 Node* new_num(Token* tok) {
     Node* node = new_node(ND_NUM);
     node->ty = tok->ty;
@@ -73,9 +67,22 @@ Node* new_num(Token* tok) {
     return node;
 }
 
+Node* new_unary(NodeKind kind, Node *expr) {
+    Node *node = new_node(kind);
+    node->lexpr = expr;
+    return node;
+}
+
+Node* new_binary(NodeKind kind, Node* lexpr, Node* rexpr) {
+    Node *node = new_node(kind);
+    node->lexpr = lexpr;
+    node->rexpr = rexpr;
+    return node;
+}
+
 Node* new_stmt(NodeKind kind, Node* expr) {
     Node *node = new_node(kind);
-    node->expr = expr;
+    node->lexpr = expr;
     return node;
 }
 
@@ -88,14 +95,51 @@ Node* num() {
     return node;
 }
 
-Node *unary() {
-    if (parse_reserved("-"))
-        return new_unary(ND_NEG, expr());
-    if (parse_reserved("!"))
-        return new_unary(ND_NOT, expr());
-    if (parse_reserved("~"))
-        return new_unary(ND_BITNOT, expr());
+Node* factor() {
+    if (parse_reserved("(")) {
+        Node* fac = expr();
+        parse_reserved(")");
+        return fac;
+    }
     return num();
+}
+
+Node* unary() {
+    if (parse_reserved("-"))
+        return new_unary(ND_NEG, unary());
+    if (parse_reserved("!"))
+        return new_unary(ND_NOT, unary());
+    if (parse_reserved("~"))
+        return new_unary(ND_BITNOT, unary());
+    return factor();
+}
+
+Node* mul_div() {
+    Node* node = unary();
+    while(1) {
+        if (parse_reserved("*"))
+            node = new_binary(ND_MUL, node, unary());
+        else if (parse_reserved("/"))
+            node = new_binary(ND_DIV, node, unary());
+        else 
+            return node;
+    }
+}
+
+Node* add_sub() {
+    Node* node = mul_div();
+    while(1) {
+        if (parse_reserved("+"))
+            node = new_binary(ND_ADD, node, mul_div());
+        else if (parse_reserved("-"))
+            node = new_binary(ND_SUB, node, mul_div());
+        else 
+            return node;
+    }
+}
+
+Node* expr() {
+    return add_sub();
 }
 
 Node* stmt() {
@@ -109,11 +153,6 @@ Node* stmt() {
     return node;
 }
 
-Node* expr() {
-    return unary();
-}
-
-
 // step1
 
 // <program> ::= <function>
@@ -126,6 +165,13 @@ Node* expr() {
 
 // <exp> ::= <unary_op> <exp> | <int>
 // <unary_op> ::= "!" | "~" | "-"
+
+// step3
+
+// <exp> ::= <exp> ("+" | "-") <exp> | <term>
+// <term> ::= <term> ("*" | "/") <term> | <factor>
+// <factor> ::= "(" <exp> ")" | <unary_op> <factor> | <int>
+
 
 Function *parse_function() {
     Type *ty = parse_basetype();

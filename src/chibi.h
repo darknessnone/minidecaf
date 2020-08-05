@@ -47,13 +47,18 @@ enum NodeKind{
     ND_BITNOT,     // unary ~
     ND_NEG,        // unary -
     ND_NUM,        // int literal
+    ND_ADD,        // binary +
+    ND_SUB,        // binary -
+    ND_MUL,        // binary *
+    ND_DIV,        // binary /
 };
 
 struct Node {
     NodeKind kind; // Node kind
     Node *next;    // Next node
     Type *ty;      // Type, e.g. int or pointer to int
-    Node* expr;
+    Node* lexpr;
+    Node* rexpr;
     long val;      // Value of type
 };
 

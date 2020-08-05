@@ -1,9 +1,34 @@
 #include "chibi.h"
 
+void gen_node(Node *node);
+
+void gen_binary(Node* node) {
+    gen_node(node->lexpr);
+    gen_node(node->rexpr);
+    printf("  pop rdi\n");
+    printf("  pop rax\n");
+    switch (node->kind) {
+    case ND_ADD:
+        printf("  add rax, rdi\n");
+        break;
+    case ND_SUB:
+        printf("  sub rax, rdi\n");
+        break;
+    case ND_MUL:
+        printf("  imul rax, rdi\n");
+        break;
+    case ND_DIV:
+        printf("  cqo\n");
+        printf("  idiv rdi\n");
+        break;
+    }
+    printf("  push rax\n");
+}
+
 void gen_node(Node *node) {
-  switch (node->kind) {
+    switch (node->kind) {
     case ND_RETURN:
-        gen_node(node->expr);
+        gen_node(node->lexpr);
         printf("  pop rax\n");
         break;
     case ND_NUM:
@@ -11,7 +36,7 @@ void gen_node(Node *node) {
         printf("  push rax\n");
         break;
     case ND_NOT:
-        gen_node(node->expr);
+        gen_node(node->lexpr);
         printf("  pop rax\n");
         printf("  cmp rax, 0\n");
         printf("  sete al\n");
@@ -19,20 +44,21 @@ void gen_node(Node *node) {
         printf("  push rax\n");
         break;
     case ND_BITNOT:
-        gen_node(node->expr);
+        gen_node(node->lexpr);
         printf("  pop rax\n");
         printf("  not rax\n");
         printf("  push rax\n");
         break;
     case ND_NEG:
-        gen_node(node->expr);
+        gen_node(node->lexpr);
         printf("  pop rdi\n");
         printf("  xor rax, rax\n");
         printf("  sub rax, rdi\n");
         printf("  push rax\n");
         break;
     default:
-        assert(false);
+        gen_binary(node);
+        break;
     }
 }
 
