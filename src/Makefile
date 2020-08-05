@@ -5,5 +5,5 @@ chibicc: $(OBJS)
 	g++ -o $@ $(OBJS)
 
 test: chibicc
-	./chibicc test/nested_ops_2.c
+	./chibicc test/test2/nested_ops_2.c
 
