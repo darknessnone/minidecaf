@@ -25,12 +25,20 @@ antlrcpp::Any CodeGenVisitor::visitAddSub(MiniDecafParser::AddSubContext* ctx) {
         code_ << this->pop 
               << "\tsub a0, t0, t1\n"
               << this->push;
+    } else {
+        std::cerr << "[error] Illegal operation given to the calculator.\n";
+        exit(1);
     }
     return NULL;
 }
 
 antlrcpp::Any CodeGenVisitor::visitLiteral(MiniDecafParser::LiteralContext *ctx) {
-    code_ << "\tli a0, " << ctx->getText() << "\n"
+    std::string literal = ctx->getText();
+    if (!std::all_of(literal.begin(), literal.end(), ::isdigit)) {
+        std::cerr << "[error] Non-number value given when computing.\n";
+        exit(1);
+    }
+    code_ << "\tli a0, " << literal << "\n"
           << this->push;
     return NULL;
 }
