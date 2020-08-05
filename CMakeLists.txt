@@ -17,6 +17,7 @@ set(src_dir
     ${PROJECT_SOURCE_DIR}/generated/MiniDecafVisitor.cpp
     ${PROJECT_SOURCE_DIR}/generated/MiniDecafBaseVisitor.cpp
     ${PROJECT_SOURCE_DIR}/src/CodeGenVisitor.cpp
+    ${PROJECT_SOURCE_DIR}/src/VarAllocVisitor.cpp
 )
 
 file(GLOB antlr4-cpp-src

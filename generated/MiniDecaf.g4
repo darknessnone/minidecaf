@@ -1,9 +1,10 @@
 grammar MiniDecaf;
 
-prog : stmts EOF
+prog : (stmts)* EOF
      ;
 
 stmts : expr ';'                             # printExpr
+     | ID '=' expr ';'                       # Assign
      ;
 
 expr : ('+'|'-') expr                        # Unary 
@@ -11,6 +12,7 @@ expr : ('+'|'-') expr                        # Unary
      | expr op=(ADD|SUB) expr                # AddSub
      | expr op=(LT|LE|GT|GE) expr            # LessGreat 
      | expr op=(EQ|NEQ) expr                 # Equal
+     | ID                                    # Identifier
      | INT                                   # Literal
      | '(' expr ')'                          # Paren
      ;
@@ -30,3 +32,5 @@ LT : '<';
 LE : '<=';
 GT : '>';
 GE : '>=';
+ASSIGN : '=';
+ID : [a-zA-Z_][a-zA-Z_0-9]*;

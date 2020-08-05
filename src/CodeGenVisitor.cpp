@@ -1,11 +1,16 @@
 #include "CodeGenVisitor.h"
 #include <typeinfo>
 
-antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
+antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx, std::unordered_map<std::string, int>& symbol_) {
     code_ << ".global main\n"
-          << "main:\n";
+          << "main:\n"
+          << "\tsd fp, -8(sp)\n"
+          << "\tmv fp, sp\n";
+    this->symbol = symbol_;
     visitChildren(ctx);
-    code_ << "\tret\n";
+    code_ << "\tmv fp, sp\n"
+          << "\tld fp, -8(sp)\n"
+          << "\tret\n";
     return code_.str();
 }
 
@@ -113,6 +118,24 @@ antlrcpp::Any CodeGenVisitor::visitLessGreat(MiniDecafParser::LessGreatContext *
     } else {
         std::cerr << "[error] Illegal operation given to the calculator.\n";
         exit(1);
+    }
+    return NULL;
+}
+
+antlrcpp::Any CodeGenVisitor::visitAssign(MiniDecafParser::AssignContext *ctx) {
+    this->code_ << "\taddi sp, fp, " << -8 - 8 * (int)symbol.size() << "\n";
+    visit(ctx->expr());
+    this->code_ << "\tsd a0, " << -16 - 8 * symbol[ctx->ID()->getText()] << "(fp)\n";
+    return NULL;
+}
+
+antlrcpp::Any CodeGenVisitor::visitIdentifier(MiniDecafParser::IdentifierContext *ctx) {
+    if (symbol[ctx->ID()->getText()] == -1) {
+        std::cerr << "[error] Var " << ctx->ID()->getText() << " is used before define\n";
+        exit(1);
+    } else {
+        code_ << "\tld a0, " << -16 - 8 * symbol[ctx->ID()->getText()] << "(fp)\n"
+              << this->push;
     }
     return NULL;
 }

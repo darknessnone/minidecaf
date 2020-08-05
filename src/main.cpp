@@ -3,6 +3,7 @@
 #include "MiniDecafLexer.h"
 #include "MiniDecafParser.h"
 #include "CodeGenVisitor.h"
+#include "VarAllocVisitor.h"
 
 using namespace antlr4;
 using namespace std;
@@ -22,8 +23,11 @@ int main(int argc, const char* argv[]) {
 
     MiniDecafParser::ProgContext* treeNode = parser.prog();
 
-    CodeGenVisitor visitor;
-    string asmCode = visitor.visitProg(treeNode);
+    VarAllocVisitor varAllocVisitor;
+    unordered_map<string, int> symbol_ = varAllocVisitor.visitProg(treeNode);
+    
+    CodeGenVisitor codeGenVisitor;
+    string asmCode = codeGenVisitor.visitProg(treeNode, symbol_);
     cout << asmCode << endl;
     return 0;
 }

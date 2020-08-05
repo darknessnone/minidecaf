@@ -5,7 +5,7 @@
 
 class CodeGenVisitor : public MiniDecafBaseVisitor {
 public:
-    antlrcpp::Any visitProg(MiniDecafParser::ProgContext* ctx); 
+    antlrcpp::Any visitProg(MiniDecafParser::ProgContext* ctx, std::unordered_map<std::string, int>& symbol_); 
     antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *ctx);
     antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx);
     antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *ctx);
@@ -14,9 +14,11 @@ public:
     antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
     antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *ctx);
     antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
+    antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *ctx);
+    antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
 private:
     std::ostringstream code_;
-
+    std::unordered_map<std::string, int> symbol;
     /* A simple stack machine model */
     const char* push = "\taddi sp, sp, -8\n"
                        "\tsd a0, (sp)\n";

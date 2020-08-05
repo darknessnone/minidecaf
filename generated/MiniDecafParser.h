@@ -14,7 +14,7 @@ public:
   enum {
     WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5, MUL = 6, DIV = 7, 
     LPAREN = 8, RPAREN = 9, EQ = 10, NEQ = 11, LT = 12, LE = 13, GT = 14, 
-    GE = 15
+    GE = 15, ASSIGN = 16, ID = 17
   };
 
   enum {
@@ -39,8 +39,9 @@ public:
   public:
     ProgContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    StmtsContext *stmts();
     antlr4::tree::TerminalNode *EOF();
+    std::vector<StmtsContext *> stmts();
+    StmtsContext* stmts(size_t i);
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -60,6 +61,18 @@ public:
     virtual size_t getRuleIndex() const override;
 
    
+  };
+
+  class  AssignContext : public StmtsContext {
+  public:
+    AssignContext(StmtsContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *ASSIGN();
+    ExprContext *expr();
+    antlr4::tree::TerminalNode *SEMICOLON();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   class  PrintExprContext : public StmtsContext {
@@ -85,6 +98,15 @@ public:
     virtual size_t getRuleIndex() const override;
 
    
+  };
+
+  class  IdentifierContext : public ExprContext {
+  public:
+    IdentifierContext(ExprContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   class  MulDivContext : public ExprContext {
