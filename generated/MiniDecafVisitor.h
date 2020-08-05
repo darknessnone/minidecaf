@@ -25,6 +25,8 @@ public:
 
     virtual antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *context) = 0;
 
+    virtual antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *context) = 0;
+
     virtual antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *context) = 0;
 
     virtual antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *context) = 0;

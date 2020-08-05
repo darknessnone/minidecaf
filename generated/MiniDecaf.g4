@@ -5,6 +5,7 @@ prog : (stmts)* EOF
 
 stmts : expr ';'                             # printExpr
      | ID '=' expr ';'                       # Assign
+     | 'return ' expr ';'                     # Return
      ;
 
 expr : ('+'|'-') expr                        # Unary 
@@ -34,3 +35,4 @@ GT : '>';
 GE : '>=';
 ASSIGN : '=';
 ID : [a-zA-Z_][a-zA-Z_0-9]*;
+RET : 'return ';

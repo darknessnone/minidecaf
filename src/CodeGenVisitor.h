@@ -16,6 +16,8 @@ public:
     antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
     antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *ctx);
     antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
+    antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *ctx);
+
 private:
     std::ostringstream code_;
     std::unordered_map<std::string, int> symbol;

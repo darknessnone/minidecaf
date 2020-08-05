@@ -8,9 +8,9 @@ antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx, std::
           << "\tmv fp, sp\n";
     this->symbol = symbol_;
     visitChildren(ctx);
-    code_ << "\tmv fp, sp\n"
-          << "\tld fp, -8(sp)\n"
-          << "\tret\n";
+    // code_ << "\tmv fp, sp\n"
+    //       << "\tld fp, -8(sp)\n"
+    //       << "\tret\n";
     return code_.str();
 }
 
@@ -134,9 +134,17 @@ antlrcpp::Any CodeGenVisitor::visitIdentifier(MiniDecafParser::IdentifierContext
         std::cerr << "[error] Var " << ctx->ID()->getText() << " is used before define\n";
         exit(1);
     } else {
-        code_ << "\tld a0, " << -16 - 8 * symbol[ctx->ID()->getText()] << "(fp)\n"
+        this->code_ << "\tld a0, " << -16 - 8 * symbol[ctx->ID()->getText()] << "(fp)\n"
               << this->push;
     }
+    return NULL;
+}
+
+antlrcpp::Any CodeGenVisitor::visitReturn(MiniDecafParser::ReturnContext *ctx) {
+    visit(ctx->expr());
+    this->code_ << "\tmv fp, sp\n"
+          << "\tld fp, -8(sp)\n"
+          << "\tret\n";
     return NULL;
 }
 
@@ -146,7 +154,7 @@ antlrcpp::Any CodeGenVisitor::visitLiteral(MiniDecafParser::LiteralContext *ctx)
         std::cerr << "[error] Non-number value given when computing.\n";
         exit(1);
     }
-    code_ << "\tli a0, " << literal << "\n"
+    this->code_ << "\tli a0, " << literal << "\n"
           << this->push;
     return NULL;
 }
