@@ -14,7 +14,7 @@ antlrcpp::Any CodeGenVisitor::visitPrintExpr(MiniDecafParser::PrintExprContext *
     return NULL;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAddSub(MiniDecafParser::AddSubContext* ctx) {
+antlrcpp::Any CodeGenVisitor::visitAddSub(MiniDecafParser::AddSubContext *ctx) {
     visit(ctx->expr(0));
     visit(ctx->expr(1));
     if (ctx->op->getType() == MiniDecafParser::ADD) {
@@ -30,6 +30,25 @@ antlrcpp::Any CodeGenVisitor::visitAddSub(MiniDecafParser::AddSubContext* ctx) {
         exit(1);
     }
     return NULL;
+}
+
+antlrcpp::Any CodeGenVisitor::visitMulDiv(MiniDecafParser::MulDivContext *ctx) {
+    visit(ctx->expr(0));
+    visit(ctx->expr(1));
+    if (ctx->op->getType() == MiniDecafParser::MUL) {
+        code_ << this->pop
+              << "\tmul a0, t0, t1\n"
+              << this->push;
+    } else if (ctx->op->getType() == MiniDecafParser::DIV) {
+        code_ << this->pop 
+              << "\tdiv a0, t0, t1\n"
+              << this->push;
+    } else {
+        std::cerr << "[error] Illegal operation given to the calculator.\n";
+        exit(1);
+    }
+    return NULL;
+
 }
 
 antlrcpp::Any CodeGenVisitor::visitLiteral(MiniDecafParser::LiteralContext *ctx) {

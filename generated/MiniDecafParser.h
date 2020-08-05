@@ -12,7 +12,7 @@
 class  MiniDecafParser : public antlr4::Parser {
 public:
   enum {
-    WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5
+    WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5, MUL = 6, DIV = 7
   };
 
   enum {
@@ -83,6 +83,19 @@ public:
     virtual size_t getRuleIndex() const override;
 
    
+  };
+
+  class  MulDivContext : public ExprContext {
+  public:
+    MulDivContext(ExprContext *ctx);
+
+    antlr4::Token *op = nullptr;
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+    antlr4::tree::TerminalNode *MUL();
+    antlr4::tree::TerminalNode *DIV();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
   class  AddSubContext : public ExprContext {
