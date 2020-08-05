@@ -66,6 +66,57 @@ antlrcpp::Any CodeGenVisitor::visitParen(MiniDecafParser::ParenContext *ctx) {
     return NULL;
 }
 
+antlrcpp::Any CodeGenVisitor::visitEqual(MiniDecafParser::EqualContext *ctx) {
+    visit(ctx->expr(0));
+    visit(ctx->expr(1));
+
+    if (ctx->op->getType() == MiniDecafParser::EQ) {
+        code_ << this->pop
+              << "\tsub t0, t0, t1\n"
+              << "\t seqz a0, t0\n"
+              << this->push;
+    } else if (ctx->op->getType() == MiniDecafParser::NEQ) {
+        code_ << this->pop
+              << "\tsub t0, t0, t1\n"
+              << "\t snez a0, t0\n"
+              << this->push;
+    } else {
+        std::cerr << "[error] Illegal operation given to the calculator.\n";
+        exit(1);
+    }
+    return NULL;
+
+}
+
+antlrcpp::Any CodeGenVisitor::visitLessGreat(MiniDecafParser::LessGreatContext *ctx) {
+    visit(ctx->expr(0));
+    visit(ctx->expr(1));
+
+    if (ctx->op->getType() == MiniDecafParser::LE) {
+        code_ << this->pop
+              << "\tsgt a0, t0, t1\n"
+              << "\txori a0, a0, 1\n"
+              << this->push;
+    } else if (ctx->op->getType() == MiniDecafParser::LT) {
+        code_ << this->pop
+              << "\tslt a0, t0, t1\n"
+              << this->push;
+    } else if (ctx->op->getType() == MiniDecafParser::GE) {
+        code_ << this->pop
+              << "\tslt a0, t0, t1\n"
+              << "\txori a0, a0, 1\n"
+              << this->push;
+    } else if (ctx->op->getType() == MiniDecafParser::GT) {
+        code_ << this->pop
+              << "\tsgt a0, t0, t1\n"
+              << this->push;
+    } else {
+        std::cerr << "[error] Illegal operation given to the calculator.\n";
+        exit(1);
+    }
+    return NULL;
+}
+
 antlrcpp::Any CodeGenVisitor::visitLiteral(MiniDecafParser::LiteralContext *ctx) {
     std::string literal = ctx->getText();
     if (!std::all_of(literal.begin(), literal.end(), ::isdigit)) {

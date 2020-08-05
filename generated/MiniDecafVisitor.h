@@ -27,7 +27,11 @@ public:
 
     virtual antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *context) = 0;
 
+    virtual antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *context) = 0;
+
     virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *context) = 0;
+
+    virtual antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *context) = 0;
 
     virtual antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *context) = 0;
 

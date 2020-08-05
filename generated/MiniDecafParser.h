@@ -13,7 +13,8 @@ class  MiniDecafParser : public antlr4::Parser {
 public:
   enum {
     WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5, MUL = 6, DIV = 7, 
-    LPAREN = 8, RPAREN = 9
+    LPAREN = 8, RPAREN = 9, EQ = 10, NEQ = 11, LT = 12, LE = 13, GT = 14, 
+    GE = 15
   };
 
   enum {
@@ -112,11 +113,39 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  EqualContext : public ExprContext {
+  public:
+    EqualContext(ExprContext *ctx);
+
+    antlr4::Token *op = nullptr;
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+    antlr4::tree::TerminalNode *EQ();
+    antlr4::tree::TerminalNode *NEQ();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  LiteralContext : public ExprContext {
   public:
     LiteralContext(ExprContext *ctx);
 
     antlr4::tree::TerminalNode *INT();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  LessGreatContext : public ExprContext {
+  public:
+    LessGreatContext(ExprContext *ctx);
+
+    antlr4::Token *op = nullptr;
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+    antlr4::tree::TerminalNode *LT();
+    antlr4::tree::TerminalNode *LE();
+    antlr4::tree::TerminalNode *GT();
+    antlr4::tree::TerminalNode *GE();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

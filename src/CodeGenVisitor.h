@@ -12,6 +12,8 @@ public:
     antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *ctx);
     antlrcpp::Any visitParen(MiniDecafParser::ParenContext *ctx);
     antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
+    antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *ctx);
+    antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
 private:
     std::ostringstream code_;
 

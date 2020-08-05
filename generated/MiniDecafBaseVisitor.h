@@ -31,7 +31,15 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx) override {
     return visitChildren(ctx);
   }
 
