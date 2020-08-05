@@ -43,7 +43,6 @@ bool parse_reserved(char* s) {
 }
 
 Type* parse_basetype() {
-    // cout << "parse_basetype()" << endl;
     if(!expect_reserved("int"))
         return NULL;
     token = token->next;
@@ -115,7 +114,6 @@ Function* parsing() {
         Function *fn = parse_function();
         if (!fn)
             continue;
-        // cout << "function: " << fn->name << endl;
         cur->next = fn;
         cur = cur->next;
         continue;

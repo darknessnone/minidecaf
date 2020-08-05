@@ -8,12 +8,12 @@ static void read_input(char *path) {
   // Open and read the file.
   FILE *fp = fopen(path, "r");
   if (!fp)
-    cout << "cannot open " << path << endl;
+    printf("cannot open %s\n", path);
 
   int filemax = 10 * 1024 * 1024;
   int size = fread(user_input, 1, 10*1024*1024-2, fp);
   if (!feof(fp))
-    cout << "file too large" << endl;
+    printf("file too large.\n");
 
   // Make sure that the string ends with "\n\0".
   if (size == 0 || user_input[size - 1] != '\n')
@@ -24,9 +24,8 @@ static void read_input(char *path) {
 
 int main(int argc, char **argv) {
     if (argc != 2)
-       cout << argv[0] << "invalid number of arguments" << endl;
+       printf("invalid number of arguments\n");
 
-    // Tokenize and parse.
     read_input(argv[1]);
 
     // cout << "show input:" << endl;
@@ -43,6 +42,7 @@ int main(int argc, char **argv) {
     for (Function *fn = func; fn; fn = fn->next) {
         fn->stack_size = 256;
     }
+    
     codegen();
     return 0;
 }
