@@ -10,6 +10,7 @@ public:
     antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx);
     antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *ctx);
     antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *ctx);
+    antlrcpp::Any visitParen(MiniDecafParser::ParenContext *ctx);
 private:
     std::ostringstream code_;
 

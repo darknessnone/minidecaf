@@ -51,6 +51,11 @@ antlrcpp::Any CodeGenVisitor::visitMulDiv(MiniDecafParser::MulDivContext *ctx) {
 
 }
 
+antlrcpp::Any CodeGenVisitor::visitParen(MiniDecafParser::ParenContext *ctx) {
+    visitChildren(ctx);
+    return NULL;
+}
+
 antlrcpp::Any CodeGenVisitor::visitLiteral(MiniDecafParser::LiteralContext *ctx) {
     std::string literal = ctx->getText();
     if (!std::all_of(literal.begin(), literal.end(), ::isdigit)) {

@@ -9,6 +9,7 @@ stmts : expr ';'              # printExpr
 expr : expr op=(MUL|DIV) expr # MulDiv
      | expr op=(ADD|SUB) expr # AddSub
      | INT                    # literal
+     | '(' expr ')'           # Paren
      ;
 
 WS : [ \t\r\n] -> skip; 
@@ -18,3 +19,5 @@ ADD : '+';
 SUB : '-';
 MUL : '*';
 DIV : '/';
+LPAREN : '(';
+RPAREN : ')';

@@ -12,7 +12,8 @@
 class  MiniDecafParser : public antlr4::Parser {
 public:
   enum {
-    WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5, MUL = 6, DIV = 7
+    WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5, MUL = 6, DIV = 7, 
+    LPAREN = 8, RPAREN = 9
   };
 
   enum {
@@ -116,6 +117,17 @@ public:
     LiteralContext(ExprContext *ctx);
 
     antlr4::tree::TerminalNode *INT();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ParenContext : public ExprContext {
+  public:
+    ParenContext(ExprContext *ctx);
+
+    antlr4::tree::TerminalNode *LPAREN();
+    ExprContext *expr();
+    antlr4::tree::TerminalNode *RPAREN();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
