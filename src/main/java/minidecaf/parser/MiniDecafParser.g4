@@ -2,7 +2,7 @@ parser grammar MiniDecafParser;
 
 options { tokenVocab = MiniDecafLexer; }
 
-program       : NUM;
+program       : NUM (ADD NUM | SUB NUM)*;
 
 // toplv      : typ IDENT (LPAREN (typ IDENT (COMMA typ IDENT)*)? RPAREN LBRACK stmt* RBRACK | (LBRACE NUM RBRACE)* SEMI);
 

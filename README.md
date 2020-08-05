@@ -4,6 +4,7 @@
 - Antlr4
 - Gradle 6.5.1
 - JDK 11.0.1
+- RISCV
 
 编译
 ```bash
@@ -12,5 +13,5 @@
 
 运行
 ```bash
-java -jar build/libs/minidecaf.jar <filename>
+java -jar build/libs/minidecaf.jar <input file> <output file>
 ```

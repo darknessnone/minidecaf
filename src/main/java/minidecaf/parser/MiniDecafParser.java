@@ -1,5 +1,3 @@
-package minidecaf.parser;
-
 // Generated from MiniDecafParser.g4 by ANTLR 4.7.1
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -91,7 +89,18 @@ public class MiniDecafParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 	public static class ProgramContext extends ParserRuleContext {
-		public TerminalNode NUM() { return getToken(MiniDecafParser.NUM, 0); }
+		public List<TerminalNode> NUM() { return getTokens(MiniDecafParser.NUM); }
+		public TerminalNode NUM(int i) {
+			return getToken(MiniDecafParser.NUM, i);
+		}
+		public List<TerminalNode> ADD() { return getTokens(MiniDecafParser.ADD); }
+		public TerminalNode ADD(int i) {
+			return getToken(MiniDecafParser.ADD, i);
+		}
+		public List<TerminalNode> SUB() { return getTokens(MiniDecafParser.SUB); }
+		public TerminalNode SUB(int i) {
+			return getToken(MiniDecafParser.SUB, i);
+		}
 		public ProgramContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -106,11 +115,44 @@ public class MiniDecafParser extends Parser {
 	public final ProgramContext program() throws RecognitionException {
 		ProgramContext _localctx = new ProgramContext(_ctx, getState());
 		enterRule(_localctx, 0, RULE_program);
+		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(2);
 			match(NUM);
+			setState(9);
+			_errHandler.sync(this);
+			_la = _input.LA(1);
+			while (_la==ADD || _la==SUB) {
+				{
+				setState(7);
+				_errHandler.sync(this);
+				switch (_input.LA(1)) {
+				case ADD:
+					{
+					setState(3);
+					match(ADD);
+					setState(4);
+					match(NUM);
+					}
+					break;
+				case SUB:
+					{
+					setState(5);
+					match(SUB);
+					setState(6);
+					match(NUM);
+					}
+					break;
+				default:
+					throw new NoViableAltException(this);
+				}
+				}
+				setState(11);
+				_errHandler.sync(this);
+				_la = _input.LA(1);
+			}
 			}
 		}
 		catch (RecognitionException re) {
@@ -125,8 +167,11 @@ public class MiniDecafParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3#\7\4\2\t\2\3\2\3"+
-		"\2\3\2\2\2\3\2\2\2\2\5\2\4\3\2\2\2\4\5\7#\2\2\5\3\3\2\2\2\2";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3#\17\4\2\t\2\3\2\3"+
+		"\2\3\2\3\2\3\2\7\2\n\n\2\f\2\16\2\r\13\2\3\2\2\2\3\2\2\2\2\17\2\4\3\2"+
+		"\2\2\4\13\7#\2\2\5\6\7\13\2\2\6\n\7#\2\2\7\b\7\f\2\2\b\n\7#\2\2\t\5\3"+
+		"\2\2\2\t\7\3\2\2\2\n\r\3\2\2\2\13\t\3\2\2\2\13\f\3\2\2\2\f\3\3\2\2\2\r"+
+		"\13\3\2\2\2\4\t\13";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
