@@ -152,15 +152,15 @@ antlrcpp::Any CodeGenVisitor::visitIfStmt(MiniDecafParser::IfStmtContext *ctx) {
         int elseBranch = this->labelOrder++;
         int endBranch = this->labelOrder++;
         this->code_ << "\tbeqz a0, label_" << elseBranch << "\n";
-        visit(ctx->stmts()[0]);
+        visit(ctx->stmts(0));
         this->code_ << "\tj label_" << endBranch << "\n";
         this->code_ << "label_" << elseBranch << ":\n";
-        visit(ctx->stmts()[1]);
+        visit(ctx->stmts(1));
         this->code_ << "label_" << endBranch << ":\n";
     } else {
         int endBranch = this->labelOrder++;
         this->code_ << "\tbeqz a0, label_" << endBranch << "\n";
-        visit(ctx->stmts()[0]);
+        visit(ctx->stmts(0));
         this->code_ << "label_" << endBranch << ":\n";
     }
     return nullptr;
@@ -173,6 +173,25 @@ antlrcpp::Any CodeGenVisitor::visitWhileLoop(MiniDecafParser::WhileLoopContext *
     visit(ctx->expr());
     this->code_ << "\tbeqz a0, label_" << endBranch << "\n";
     visit(ctx->stmts());
+    this->code_ << "\tj label_" << startBranch << "\n"
+                << "label_" << endBranch << ":\n";
+    return nullptr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitForLoop(MiniDecafParser::ForLoopContext *ctx) {
+    int startBranch = this->labelOrder++;
+    int endBranch = this->labelOrder++;
+    visit(ctx->expr(0));
+    this->code_ << "label_" << startBranch << ":\n";
+    if (ctx->expr(1)) {
+        visit(ctx->expr(1));
+        this->code_ << "\tbeqz a0, label_" << endBranch << "\n";
+    } else {
+        std::cerr << "[error] Missing forloop control expr\n";
+        exit(1);
+    }
+    visit(ctx->stmts());
+    visit(ctx->expr(2));
     this->code_ << "\tj label_" << startBranch << "\n"
                 << "label_" << endBranch << ":\n";
     return nullptr;

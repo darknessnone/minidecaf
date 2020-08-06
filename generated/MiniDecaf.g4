@@ -4,7 +4,6 @@ prog : (stmts)* EOF
      ;
 
 stmts : 'return' expr ';'                                        # Return
-     | ID '=' expr ';'                                           # Assign
      | IF '(' expr ')' stmts (ELSE stmts)?                       # IfStmt
      | WHILE '(' expr ')' stmts                                  # WhileLoop
      | FOR '(' (expr)? ';' (expr)? ';' (expr)? ')' stmts         # ForLoop
@@ -16,6 +15,7 @@ expr : ('+'|'-') expr                                            # Unary
      | expr op=(ADD|SUB) expr                                    # AddSub
      | expr op=(LT|LE|GT|GE) expr                                # LessGreat 
      | expr op=(EQ|NEQ) expr                                     # Equal
+     | ID '=' expr                                               # Assign
      | ID                                                        # Identifier
      | INT                                                       # Literal
      | '(' expr ')'                                              # Paren

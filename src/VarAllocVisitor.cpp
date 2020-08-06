@@ -8,7 +8,10 @@ antlrcpp::Any VarAllocVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
 
 
 antlrcpp::Any VarAllocVisitor::visitAssign(MiniDecafParser::AssignContext *ctx) {
-    this->symbol[ctx->ID()->getText()] = this->offset++;
+    if (this->symbol.count(ctx->ID()->getText()) == 0 ||
+        this->symbol[ctx->ID()->getText()] == -1) {
+        this->symbol[ctx->ID()->getText()] = this->offset++;
+    }
     return NULL;
 }
 

@@ -106,18 +106,6 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class  AssignContext : public StmtsContext {
-  public:
-    AssignContext(StmtsContext *ctx);
-
-    antlr4::tree::TerminalNode *ID();
-    antlr4::tree::TerminalNode *ASSIGN();
-    ExprContext *expr();
-    antlr4::tree::TerminalNode *SEMICOLON();
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
   class  WhileLoopContext : public StmtsContext {
   public:
     WhileLoopContext(StmtsContext *ctx);
@@ -209,6 +197,17 @@ public:
     LiteralContext(ExprContext *ctx);
 
     antlr4::tree::TerminalNode *INT();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  AssignContext : public ExprContext {
+  public:
+    AssignContext(ExprContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *ASSIGN();
+    ExprContext *expr();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

@@ -23,10 +23,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitIfStmt(MiniDecafParser::IfStmtContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -60,6 +56,10 @@ public:
   }
 
   virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx) override {
     return visitChildren(ctx);
   }
 
