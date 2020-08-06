@@ -6,6 +6,8 @@ prog : (stmts)* EOF
 stmts : 'return' expr ';'                                        # Return
      | ID '=' expr ';'                                           # Assign
      | IF '(' expr ')' stmts (ELSE stmts)?                       # IfStmt
+     | WHILE '(' expr ')' stmts                                  # WhileLoop
+     | FOR '(' (expr)? ';' (expr)? ';' (expr)? ')' stmts         # ForLoop
      | expr ';'                                                  # PrintExpr
      ;
 

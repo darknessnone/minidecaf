@@ -31,6 +31,14 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitWhileLoop(MiniDecafParser::WhileLoopContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitForLoop(MiniDecafParser::ForLoopContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *ctx) override {
     return visitChildren(ctx);
   }
