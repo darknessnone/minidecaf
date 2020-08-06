@@ -17,10 +17,12 @@ public:
     antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *ctx);
     antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
     antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *ctx);
+    antlrcpp::Any visitIfStmt(MiniDecafParser::IfStmtContext *ctx);
 
 private:
     std::ostringstream code_;
     std::unordered_map<std::string, int> symbol;
+    int labelOrder;
     /* A simple stack machine model */
     const char* push = "\taddi sp, sp, -8\n"
                        "\tsd a0, (sp)\n";

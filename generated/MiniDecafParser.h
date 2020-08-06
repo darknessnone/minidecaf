@@ -14,7 +14,8 @@ public:
   enum {
     WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5, MUL = 6, DIV = 7, 
     LPAREN = 8, RPAREN = 9, EQ = 10, NEQ = 11, LT = 12, LE = 13, GT = 14, 
-    GE = 15, ASSIGN = 16, RET = 17, ID = 18
+    GE = 15, ASSIGN = 16, RET = 17, IF = 18, ELSE = 19, WHILE = 20, FOR = 21, 
+    ID = 22
   };
 
   enum {
@@ -70,6 +71,21 @@ public:
     antlr4::tree::TerminalNode *RET();
     ExprContext *expr();
     antlr4::tree::TerminalNode *SEMICOLON();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  IfStmtContext : public StmtsContext {
+  public:
+    IfStmtContext(StmtsContext *ctx);
+
+    antlr4::tree::TerminalNode *IF();
+    antlr4::tree::TerminalNode *LPAREN();
+    ExprContext *expr();
+    antlr4::tree::TerminalNode *RPAREN();
+    std::vector<StmtsContext *> stmts();
+    StmtsContext* stmts(size_t i);
+    antlr4::tree::TerminalNode *ELSE();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

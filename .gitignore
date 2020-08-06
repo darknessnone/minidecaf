@@ -63,5 +63,6 @@ build/**
 
 ## ANTLR IGNORE
 **/.antlr/**
-
+*.tokens
+*.interp
 

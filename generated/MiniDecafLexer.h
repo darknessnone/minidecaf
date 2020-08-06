@@ -14,7 +14,8 @@ public:
   enum {
     WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5, MUL = 6, DIV = 7, 
     LPAREN = 8, RPAREN = 9, EQ = 10, NEQ = 11, LT = 12, LE = 13, GT = 14, 
-    GE = 15, ASSIGN = 16, RET = 17, ID = 18
+    GE = 15, ASSIGN = 16, RET = 17, IF = 18, ELSE = 19, WHILE = 20, FOR = 21, 
+    ID = 22
   };
 
   MiniDecafLexer(antlr4::CharStream *input);

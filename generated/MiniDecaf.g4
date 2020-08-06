@@ -3,19 +3,20 @@ grammar MiniDecaf;
 prog : (stmts)* EOF
      ;
 
-stmts : 'return' expr ';'                    # Return
-     | ID '=' expr ';'                       # Assign
-     | expr ';'                              # PrintExpr
+stmts : 'return' expr ';'                                        # Return
+     | ID '=' expr ';'                                           # Assign
+     | IF '(' expr ')' stmts (ELSE stmts)?                       # IfStmt
+     | expr ';'                                                  # PrintExpr
      ;
 
-expr : ('+'|'-') expr                        # Unary 
-     | expr op=(MUL|DIV) expr                # MulDiv
-     | expr op=(ADD|SUB) expr                # AddSub
-     | expr op=(LT|LE|GT|GE) expr            # LessGreat 
-     | expr op=(EQ|NEQ) expr                 # Equal
-     | ID                                    # Identifier
-     | INT                                   # Literal
-     | '(' expr ')'                          # Paren
+expr : ('+'|'-') expr                                            # Unary 
+     | expr op=(MUL|DIV) expr                                    # MulDiv
+     | expr op=(ADD|SUB) expr                                    # AddSub
+     | expr op=(LT|LE|GT|GE) expr                                # LessGreat 
+     | expr op=(EQ|NEQ) expr                                     # Equal
+     | ID                                                        # Identifier
+     | INT                                                       # Literal
+     | '(' expr ')'                                              # Paren
      ;
 
 WS : [ \t\r\n] -> skip; 
@@ -35,4 +36,8 @@ GT : '>';
 GE : '>=';
 ASSIGN : '=';
 RET : 'return';
+IF : 'if';
+ELSE : 'else';
+WHILE : 'while';
+FOR : 'for';
 ID : [a-zA-Z_][a-zA-Z_0-9]*;
