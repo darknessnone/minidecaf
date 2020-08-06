@@ -3,9 +3,9 @@ grammar MiniDecaf;
 prog : (stmts)* EOF
      ;
 
-stmts : expr ';'                             # printExpr
+stmts : 'return' expr ';'                    # Return
      | ID '=' expr ';'                       # Assign
-     | 'return ' expr ';'                     # Return
+     | expr ';'                              # PrintExpr
      ;
 
 expr : ('+'|'-') expr                        # Unary 
@@ -34,5 +34,5 @@ LE : '<=';
 GT : '>';
 GE : '>=';
 ASSIGN : '=';
+RET : 'return';
 ID : [a-zA-Z_][a-zA-Z_0-9]*;
-RET : 'return ';

@@ -21,11 +21,11 @@ public:
    */
     virtual antlrcpp::Any visitProg(MiniDecafParser::ProgContext *context) = 0;
 
-    virtual antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *context) = 0;
+    virtual antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *context) = 0;
 
     virtual antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *context) = 0;
 
-    virtual antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *context) = 0;
+    virtual antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *context) = 0;
 
     virtual antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *context) = 0;
 
