@@ -12,10 +12,10 @@
 class  MiniDecafParser : public antlr4::Parser {
 public:
   enum {
-    WS = 1, INT = 2, SEMICOLON = 3, ADD = 4, SUB = 5, MUL = 6, DIV = 7, 
-    LPAREN = 8, RPAREN = 9, EQ = 10, NEQ = 11, LT = 12, LE = 13, GT = 14, 
-    GE = 15, ASSIGN = 16, RET = 17, IF = 18, ELSE = 19, WHILE = 20, FOR = 21, 
-    ID = 22
+    WS = 1, INT = 2, SEMICOLON = 3, COMMA = 4, ADD = 5, SUB = 6, MUL = 7, 
+    DIV = 8, LPAREN = 9, RPAREN = 10, LBRACE = 11, RBRACE = 12, EQ = 13, 
+    NEQ = 14, LT = 15, LE = 16, GT = 17, GE = 18, ASSIGN = 19, RET = 20, 
+    IF = 21, ELSE = 22, WHILE = 23, FOR = 24, ID = 25
   };
 
   enum {
@@ -90,6 +90,18 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  StmtBlockContext : public StmtsContext {
+  public:
+    StmtBlockContext(StmtsContext *ctx);
+
+    antlr4::tree::TerminalNode *LBRACE();
+    antlr4::tree::TerminalNode *RBRACE();
+    std::vector<StmtsContext *> stmts();
+    StmtsContext* stmts(size_t i);
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  ForLoopContext : public StmtsContext {
   public:
     ForLoopContext(StmtsContext *ctx);
@@ -102,6 +114,21 @@ public:
     StmtsContext *stmts();
     std::vector<ExprContext *> expr();
     ExprContext* expr(size_t i);
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  FuncDefContext : public StmtsContext {
+  public:
+    FuncDefContext(StmtsContext *ctx);
+
+    std::vector<antlr4::tree::TerminalNode *> ID();
+    antlr4::tree::TerminalNode* ID(size_t i);
+    antlr4::tree::TerminalNode *LPAREN();
+    antlr4::tree::TerminalNode *RPAREN();
+    StmtsContext *stmts();
+    std::vector<antlr4::tree::TerminalNode *> COMMA();
+    antlr4::tree::TerminalNode* COMMA(size_t i);
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -197,6 +224,21 @@ public:
     LiteralContext(ExprContext *ctx);
 
     antlr4::tree::TerminalNode *INT();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  CallFuncContext : public ExprContext {
+  public:
+    CallFuncContext(ExprContext *ctx);
+
+    antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *LPAREN();
+    antlr4::tree::TerminalNode *RPAREN();
+    std::vector<ExprContext *> expr();
+    ExprContext* expr(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> COMMA();
+    antlr4::tree::TerminalNode* COMMA(size_t i);
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

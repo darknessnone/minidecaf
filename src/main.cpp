@@ -24,7 +24,7 @@ int main(int argc, const char* argv[]) {
     MiniDecafParser::ProgContext* treeNode = parser.prog();
 
     VarAllocVisitor varAllocVisitor;
-    unordered_map<string, int> symbol_ = varAllocVisitor.visitProg(treeNode);
+    unordered_map<string, unordered_map<string, int> > symbol_ = varAllocVisitor.visitProg(treeNode);
     
     CodeGenVisitor codeGenVisitor;
     string asmCode = codeGenVisitor.visitProg(treeNode, symbol_);

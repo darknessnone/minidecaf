@@ -5,7 +5,7 @@
 
 class CodeGenVisitor : public MiniDecafBaseVisitor {
 public:
-    antlrcpp::Any visitProg(MiniDecafParser::ProgContext* ctx, std::unordered_map<std::string, int>& symbol_); 
+    antlrcpp::Any visitProg(MiniDecafParser::ProgContext* ctx, std::unordered_map<std::string, std::unordered_map<std::string, int> >& symbol_); 
     antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *ctx);
     antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx);
     antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *ctx);
@@ -20,10 +20,14 @@ public:
     antlrcpp::Any visitIfStmt(MiniDecafParser::IfStmtContext *ctx);
     antlrcpp::Any visitWhileLoop(MiniDecafParser::WhileLoopContext *ctx);
     antlrcpp::Any visitForLoop(MiniDecafParser::ForLoopContext *ctx);
-    
+    antlrcpp::Any visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx);
+    antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *ctx);
+    antlrcpp::Any visitFuncDef(MiniDecafParser::FuncDefContext *ctx);
+
 private:
     std::ostringstream code_;
-    std::unordered_map<std::string, int> symbol;
+    std::unordered_map<std::string, std::unordered_map<std::string, int> > symbol;
+    std::string curFunc;
     int labelOrder;
     /* A simple stack machine model */
     const char* push = "\taddi sp, sp, -8\n"

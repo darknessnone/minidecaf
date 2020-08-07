@@ -29,7 +29,11 @@ public:
 
     virtual antlrcpp::Any visitForLoop(MiniDecafParser::ForLoopContext *context) = 0;
 
+    virtual antlrcpp::Any visitFuncDef(MiniDecafParser::FuncDefContext *context) = 0;
+
     virtual antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *context) = 0;
+
+    virtual antlrcpp::Any visitStmtBlock(MiniDecafParser::StmtBlockContext *context) = 0;
 
     virtual antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *context) = 0;
 
@@ -40,6 +44,8 @@ public:
     virtual antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *context) = 0;
 
     virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *context) = 0;
+
+    virtual antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *context) = 0;
 
     virtual antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *context) = 0;
 

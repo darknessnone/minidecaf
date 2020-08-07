@@ -1,13 +1,14 @@
 #include "CodeGenVisitor.h"
 #include <typeinfo>
 
-antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx, std::unordered_map<std::string, int>& symbol_) {
-    code_ << ".global main\n"
-          << "main:\n"
-          << "\tsd fp, -8(sp)\n"
-          << "\tmv fp, sp\n";
-    this->symbol = symbol_;
-    this->labelOrder = 0;
+antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx, 
+    std::unordered_map<std::string, std::unordered_map<std::string, int> >& symbol_) {
+    code_ << ".global main\n";
+        //   << "main:\n"
+        //   << "\tsd fp, -8(sp)\n"
+        //   << "\tmv fp, sp\n";
+    symbol = symbol_;
+    labelOrder = 0;
     visitChildren(ctx);
     return code_.str();
 }
@@ -17,17 +18,68 @@ antlrcpp::Any CodeGenVisitor::visitPrintExpr(MiniDecafParser::PrintExprContext *
     return nullptr;
 }
 
+antlrcpp::Any CodeGenVisitor::visitFuncDef(MiniDecafParser::FuncDefContext *ctx) {
+    curFunc = ctx->ID(0)->getText();
+    code_ << ctx->ID(0)->getText() << ":\n"
+          << "\tsd ra, -8(sp)\n"
+          << "\taddi sp, sp, -8\n"
+          << "\tsd fp, -8(sp)\n"
+          << "\taddi fp, sp, -8\n"
+          << "\taddi sp, fp, " << -8 * (int)symbol[curFunc].size() << "\n";
+    for (auto i = 1; i < ctx->ID().size(); ++i) {
+        code_ << "\tld t0, " << 16 + 8 * symbol[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+        code_ << "\tsd t0, " << -8 - 8 * symbol[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+    }
+    visit(ctx->stmts());
+    return nullptr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitCallFunc(MiniDecafParser::CallFuncContext *ctx) {
+    for (int i = ctx->expr().size()-1; i >= 0; --i) {
+        visit(ctx->expr(i));
+    }
+    code_ << "\tcall " << ctx->ID()->getText() << "\n";
+    return nullptr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitReturn(MiniDecafParser::ReturnContext *ctx) {
+    visit(ctx->expr());
+    code_ << "\tld ra, 8(fp)\n" 
+          << "\taddi sp, fp, 8\n"
+          << "\tld fp, -8(sp)\n"
+          << "\tret\n";
+    return nullptr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitAssign(MiniDecafParser::AssignContext *ctx) {
+    // code_ << "\taddi sp, fp, " << -8 - 8 * (int)symbol[curFunc].size() << "\n";
+    visit(ctx->expr());
+    code_ << "\tsd a0, " << -8 - 8 * symbol[curFunc][ctx->ID()->getText()] << "(fp)\n";
+    return nullptr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitIdentifier(MiniDecafParser::IdentifierContext *ctx) {
+    if (symbol[curFunc][ctx->ID()->getText()] == -1) {
+        std::cerr << "[error] Var " << ctx->ID()->getText() << " is used before define\n";
+        exit(1);
+    } else {
+        code_ << "\tld a0, " << -8 - 8 * symbol[curFunc][ctx->ID()->getText()] << "(fp)\n"
+              << push;
+    }
+    return nullptr;
+}
+
 antlrcpp::Any CodeGenVisitor::visitAddSub(MiniDecafParser::AddSubContext *ctx) {
     visit(ctx->expr(0));
     visit(ctx->expr(1));
     if (ctx->op->getType() == MiniDecafParser::ADD) {
-        code_ << this->pop 
+        code_ << pop 
               << "\tadd a0, t0, t1\n"
-              << this->push;
+              << push;
     } else if (ctx->op->getType() == MiniDecafParser::SUB) {
-        code_ << this->pop 
+        code_ << pop 
               << "\tsub a0, t0, t1\n"
-              << this->push;
+              << push;
     } else {
         std::cerr << "[error] Illegal operation given to the calculator.\n";
         exit(1);
@@ -39,13 +91,13 @@ antlrcpp::Any CodeGenVisitor::visitMulDiv(MiniDecafParser::MulDivContext *ctx) {
     visit(ctx->expr(0));
     visit(ctx->expr(1));
     if (ctx->op->getType() == MiniDecafParser::MUL) {
-        code_ << this->pop
+        code_ << pop
               << "\tmul a0, t0, t1\n"
-              << this->push;
+              << push;
     } else if (ctx->op->getType() == MiniDecafParser::DIV) {
-        code_ << this->pop 
+        code_ << pop 
               << "\tdiv a0, t0, t1\n"
-              << this->push;
+              << push;
     } else {
         std::cerr << "[error] Illegal operation given to the calculator.\n";
         exit(1);
@@ -57,9 +109,9 @@ antlrcpp::Any CodeGenVisitor::visitMulDiv(MiniDecafParser::MulDivContext *ctx) {
 antlrcpp::Any CodeGenVisitor::visitUnary(MiniDecafParser::UnaryContext *ctx) {
     visitChildren(ctx);
     if (ctx->SUB()) {
-        code_ << this->pop1
+        code_ << pop1
               << "\tsub a0, x0, t0\n"
-              << this->push;
+              << push;
     }
     return nullptr;
 }
@@ -74,15 +126,15 @@ antlrcpp::Any CodeGenVisitor::visitEqual(MiniDecafParser::EqualContext *ctx) {
     visit(ctx->expr(1));
 
     if (ctx->op->getType() == MiniDecafParser::EQ) {
-        code_ << this->pop
+        code_ << pop
               << "\tsub t0, t0, t1\n"
               << "\t seqz a0, t0\n"
-              << this->push;
+              << push;
     } else if (ctx->op->getType() == MiniDecafParser::NEQ) {
-        code_ << this->pop
+        code_ << pop
               << "\tsub t0, t0, t1\n"
-              << "\t snez a0, t0\n"
-              << this->push;
+              << "\tsnez a0, t0\n"
+              << push;
     } else {
         std::cerr << "[error] Illegal operation given to the calculator.\n";
         exit(1);
@@ -96,23 +148,23 @@ antlrcpp::Any CodeGenVisitor::visitLessGreat(MiniDecafParser::LessGreatContext *
     visit(ctx->expr(1));
 
     if (ctx->op->getType() == MiniDecafParser::LE) {
-        code_ << this->pop
+        code_ << pop
               << "\tsgt a0, t0, t1\n"
               << "\txori a0, a0, 1\n"
-              << this->push;
+              << push;
     } else if (ctx->op->getType() == MiniDecafParser::LT) {
-        code_ << this->pop
+        code_ << pop
               << "\tslt a0, t0, t1\n"
-              << this->push;
+              << push;
     } else if (ctx->op->getType() == MiniDecafParser::GE) {
-        code_ << this->pop
+        code_ << pop
               << "\tslt a0, t0, t1\n"
               << "\txori a0, a0, 1\n"
-              << this->push;
+              << push;
     } else if (ctx->op->getType() == MiniDecafParser::GT) {
-        code_ << this->pop
+        code_ << pop
               << "\tsgt a0, t0, t1\n"
-              << this->push;
+              << push;
     } else {
         std::cerr << "[error] Illegal operation given to the calculator.\n";
         exit(1);
@@ -120,80 +172,59 @@ antlrcpp::Any CodeGenVisitor::visitLessGreat(MiniDecafParser::LessGreatContext *
     return nullptr;
 }
 
-antlrcpp::Any CodeGenVisitor::visitAssign(MiniDecafParser::AssignContext *ctx) {
-    this->code_ << "\taddi sp, fp, " << -8 - 8 * (int)symbol.size() << "\n";
-    visit(ctx->expr());
-    this->code_ << "\tsd a0, " << -8 - 8 * symbol[ctx->ID()->getText()] << "(fp)\n";
-    return nullptr;
-}
-
-antlrcpp::Any CodeGenVisitor::visitIdentifier(MiniDecafParser::IdentifierContext *ctx) {
-    if (symbol[ctx->ID()->getText()] == -1) {
-        std::cerr << "[error] Var " << ctx->ID()->getText() << " is used before define\n";
-        exit(1);
-    } else {
-        this->code_ << "\tld a0, " << -8 - 8 * symbol[ctx->ID()->getText()] << "(fp)\n"
-              << this->push;
-    }
-    return nullptr;
-}
-
-antlrcpp::Any CodeGenVisitor::visitReturn(MiniDecafParser::ReturnContext *ctx) {
-    visit(ctx->expr());
-    this->code_ << "\tmv sp, fp\n"
-          << "\tld fp, (sp)\n"
-          << "\tret\n";
-    return nullptr;
-}
-
 antlrcpp::Any CodeGenVisitor::visitIfStmt(MiniDecafParser::IfStmtContext *ctx) {
     visit(ctx->expr());
     if (ctx->ELSE()) {
-        int elseBranch = this->labelOrder++;
-        int endBranch = this->labelOrder++;
-        this->code_ << "\tbeqz a0, label_" << elseBranch << "\n";
+        int elseBranch = labelOrder++;
+        int endBranch = labelOrder++;
+        code_ << "\tbeqz a0, label_" << elseBranch << "\n";
         visit(ctx->stmts(0));
-        this->code_ << "\tj label_" << endBranch << "\n";
-        this->code_ << "label_" << elseBranch << ":\n";
+        code_ << "\tj label_" << endBranch << "\n";
+        code_ << "label_" << elseBranch << ":\n";
         visit(ctx->stmts(1));
-        this->code_ << "label_" << endBranch << ":\n";
+        code_ << "label_" << endBranch << ":\n";
     } else {
-        int endBranch = this->labelOrder++;
-        this->code_ << "\tbeqz a0, label_" << endBranch << "\n";
+        int endBranch = labelOrder++;
+        code_ << "\tbeqz a0, label_" << endBranch << "\n";
         visit(ctx->stmts(0));
-        this->code_ << "label_" << endBranch << ":\n";
+        code_ << "label_" << endBranch << ":\n";
     }
     return nullptr;
 }
 
 antlrcpp::Any CodeGenVisitor::visitWhileLoop(MiniDecafParser::WhileLoopContext *ctx) {
-    int startBranch = this->labelOrder++;
-    int endBranch = this->labelOrder++;
-    this->code_ << "label_" << startBranch << ":\n";
+    int startBranch = labelOrder++;
+    int endBranch = labelOrder++;
+    code_ << "label_" << startBranch << ":\n";
     visit(ctx->expr());
-    this->code_ << "\tbeqz a0, label_" << endBranch << "\n";
+    code_ << "\tbeqz a0, label_" << endBranch << "\n";
     visit(ctx->stmts());
-    this->code_ << "\tj label_" << startBranch << "\n"
+    code_ << "\tj label_" << startBranch << "\n"
                 << "label_" << endBranch << ":\n";
     return nullptr;
 }
 
 antlrcpp::Any CodeGenVisitor::visitForLoop(MiniDecafParser::ForLoopContext *ctx) {
-    int startBranch = this->labelOrder++;
-    int endBranch = this->labelOrder++;
+    int startBranch = labelOrder++;
+    int endBranch = labelOrder++;
     visit(ctx->expr(0));
-    this->code_ << "label_" << startBranch << ":\n";
+    code_ << "label_" << startBranch << ":\n";
     if (ctx->expr(1)) {
         visit(ctx->expr(1));
-        this->code_ << "\tbeqz a0, label_" << endBranch << "\n";
+        code_ << "\tbeqz a0, label_" << endBranch << "\n";
     } else {
         std::cerr << "[error] Missing forloop control expr\n";
         exit(1);
     }
     visit(ctx->stmts());
     visit(ctx->expr(2));
-    this->code_ << "\tj label_" << startBranch << "\n"
+    code_ << "\tj label_" << startBranch << "\n"
                 << "label_" << endBranch << ":\n";
+    return nullptr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx) {
+    visitChildren(ctx);
     return nullptr;
 }
 
@@ -203,7 +234,7 @@ antlrcpp::Any CodeGenVisitor::visitLiteral(MiniDecafParser::LiteralContext *ctx)
         std::cerr << "[error] Non-number value given when computing.\n";
         exit(1);
     }
-    this->code_ << "\tli a0, " << literal << "\n"
-          << this->push;
+    code_ << "\tli a0, " << literal << "\n"
+          << push;
     return nullptr;
 }
