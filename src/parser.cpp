@@ -1,5 +1,7 @@
 #include "chibi.h"
 
+bool debug = false;
+
 struct VarStack {
   VarStack *next;
   int depth;
@@ -26,6 +28,14 @@ Node* new_node(NodeKind kind) {
     node->kind = kind;
     node->ty = NULL;
     node->next = NULL;
+    node->cond = NULL;
+    node->els = NULL;
+    node->inc = NULL;
+    node->init = NULL;
+    node->lexpr = NULL;
+    node->rexpr = NULL;
+    node->then = NULL;
+    node->var = NULL;
     return node;
 }
 
@@ -55,6 +65,8 @@ bool parse_reserved(char* s) {
     if(!expect_reserved(s))
         return false;
     token = token->next;
+    if(debug)
+        printf("-- reserved %s\n", s);
     return true;
 }
 
@@ -76,6 +88,8 @@ char* parse_ident() {
     strncpy(ident, token->str, token->len);
     ident[token->len] = 0;
     token = token->next;
+    if(debug)
+        printf("-- ident %s\n", ident);
     return ident;
 }
 
@@ -84,6 +98,8 @@ Token* parse_num() {
     if(!(tok = expect_int_literal()))
         return NULL;
     token = token->next;
+    if(debug)
+        printf("-- num %ld\n", tok->val);
     return tok;
 }
 
@@ -119,11 +135,19 @@ Node* new_var_node(Var* var) {
     return node;
 }
 
+Node* new_unused(Node* expr) {
+    Node *node = new_node(ND_UNUSED_EXPR);
+    node->lexpr = expr;
+    return node;
+}
+
 Node* expr();
 
 Node* num() {
-    Token* tok = parse_num();
-    assert(tok);
+    Token* tok;
+    if(!(tok = parse_num())) {
+        return NULL;
+    }
     Node* node = new_num(tok);
     return node;
 }
@@ -313,6 +337,31 @@ Node* stmt() {
             node->els = stmt();
         return node;
     }
+    if (parse_reserved("for")) {
+        Node *node = new_node(ND_FOR);
+        parse_reserved("(");
+        push_stack();
+        node->init = stmt();
+        if (!parse_reserved(";")) {
+            node->cond = expr();
+            assert(parse_reserved(";"));
+        }
+        if (!parse_reserved(")")) {
+            node->inc = new_unused(expr());
+            assert(parse_reserved(")"));
+        }
+        node->then = stmt();
+        pop_stack();
+        return node;
+    }
+    if (parse_reserved("break")) {
+        assert(parse_reserved(";"));
+        return new_node(ND_BREAK);
+    }
+    if (parse_reserved("continue")) {
+        assert(parse_reserved(";"));
+        return new_node(ND_CONTINUE);
+    }
     // declaration
     Type* ty;
     if (ty = parse_basetype()) {
@@ -334,9 +383,8 @@ Node* stmt() {
         node->body = head.next;
         return node;
     }
-    // expr;
-    node = new_node(ND_UNUSED_EXPR);
-    node->lexpr = expr();
+    // expr ";"
+    node = new_unused(expr());
     assert(parse_reserved(";"));
     return node;
 }
@@ -377,17 +425,19 @@ Node* stmt() {
 
 // step 6
 
-// <statement> ::= "return" <exp> ";"
-//               | <exp> ";"
-//               | "int" <id> [ = <exp> ] ";"
-//               | "if" "(" <exp> ")" <statement> [ "else" <statement> ]
+// <statement> += "if" "(" <exp> ")" <statement> [ "else" <statement> ]
 
 // step 7
 
-// <statement> ::= "return" <exp> ";"
-//               | <exp> ";"
-//               | "if" "(" <exp> ")" <statement> [ "else" <statement> ]
-//               | "{" { <block-item> } "}
+// <statement> += "{" { <block-item> } "}
+
+
+// step 8 (only implement for loops)
+
+// <statement> += "for" "(" <exp-option> ";" <exp-option> ";" <exp-option> ")" <statement>
+//               | "for" "(" <declaration> <exp-option> ";" <exp-option> ")" <statement>
+//               | "break" ";"
+//               | "continue" ";"
 
 Function *parse_function() {
     Type *ty = parse_basetype();

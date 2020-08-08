@@ -2,6 +2,8 @@
 
 static int labelseq = 0;
 static char* func_name = NULL;
+static int brkseq = 0;
+static int contseq = 0;
 
 void gen_node(Node *node);
 
@@ -73,7 +75,7 @@ void load(Type* _ty) {
 }
 
 void gen_node(Node *node) {
-    int seq;
+    int seq, brk, cont;
     Var* var;
     switch (node->kind) {
     case ND_RETURN:
@@ -89,8 +91,10 @@ void gen_node(Node *node) {
         }
         break;
     case ND_UNUSED_EXPR:
-        gen_node(node->lexpr);
-        printf("  pop rax\n");
+        if(node->lexpr) {
+            gen_node(node->lexpr);
+            printf("  pop rax\n");
+        }
         break;
     case ND_BLOCK:
         for (Node *n = node->body; n; n = n->next)
@@ -116,6 +120,34 @@ void gen_node(Node *node) {
             gen_node(node->then);
             printf(".L.end.%d:\n", seq);
         }
+        break;
+    case ND_FOR:
+        seq = labelseq++;
+        brk = brkseq;
+        cont = contseq;
+        brkseq = contseq = seq;
+        gen_node(node->init);
+        printf(".L.begin.%d:\n", seq);
+        if (node->cond) {
+            gen_node(node->cond);
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+            printf("  je  .L.break.%d\n", seq);
+        }
+        gen_node(node->then);
+        printf(".L.continue.%d:\n", seq);
+        if (node->inc)
+            gen_node(node->inc);
+        printf("  jmp .L.begin.%d\n", seq);
+        printf(".L.break.%d:\n", seq);
+        brkseq = brk;
+        contseq = cont;
+        break;
+    case ND_BREAK:
+        printf("  jmp .L.break.%d\n", brkseq);
+        break;
+    case ND_CONTINUE:
+        printf("  jmp .L.continue.%d\n", contseq);
         break;
     case ND_TERNARY:
         seq = labelseq++;

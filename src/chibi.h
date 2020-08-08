@@ -66,6 +66,9 @@ enum NodeKind{
     ND_UNUSED_EXPR,
     ND_TERNARY,    // a ? b : c
     ND_BLOCK,
+    ND_FOR,
+    ND_BREAK,
+    ND_CONTINUE,
 };
 
 struct Node;
@@ -86,11 +89,15 @@ struct Node {
     Node* lexpr;
     Node* rexpr;
     Var* var;      // ND_VAR
+    // 'if' statement
     Node* cond;
     Node* then;
     Node* els;
-
+    // block statement
     Node* body;
+    // 'for' statement 
+    Node* init;
+    Node* inc;
 };
 
 struct Function {
