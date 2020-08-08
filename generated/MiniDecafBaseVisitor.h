@@ -87,6 +87,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitType(MiniDecafParser::TypeContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
 
 };
 

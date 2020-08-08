@@ -7,30 +7,34 @@ stmts : 'return' expr ';'                                        # Return
      | IF '(' expr ')' stmts (ELSE stmts)?                       # IfStmt
      | WHILE '(' expr ')' stmts                                  # WhileLoop
      | FOR '(' (expr)? ';' (expr)? ';' (expr)? ')' stmts         # ForLoop
-     | ID '(' (ID ',')* (ID)? ')' stmts                          # FuncDef
+     | type ID '(' (type ID ',')* (type ID)? ')' stmts           # FuncDef
      | expr ';'                                                  # PrintExpr
      | '{' (stmts)* '}'                                          # StmtBlock
      ;
 
-expr : ('+'|'-') expr                                            # Unary 
+expr : ('+'|'-'|'*'|'&') expr                                    # Unary
      | expr op=(MUL|DIV) expr                                    # MulDiv
      | expr op=(ADD|SUB) expr                                    # AddSub
      | expr op=(LT|LE|GT|GE) expr                                # LessGreat 
      | expr op=(EQ|NEQ) expr                                     # Equal
-     | ID '=' expr                                               # Assign
-     | ID '(' (expr ',')* (expr)? ')'                             # CallFunc
+     | type ID '=' expr                                          # Assign
+     | ID '(' (expr ',')* (expr)? ')'                            # CallFunc
      | ID                                                        # Identifier
-     | INT                                                       # Literal
+     | INTEGER                                                   # Literal
      | '(' expr ')'                                              # Paren
      ;
 
+type : INT
+     ;
+
 WS : [ \t\r\n] -> skip; 
-INT : [0-9]+;
+INTEGER : [0-9]+;
 SEMICOLON : ';';
 COMMA : ',';
 ADD : '+';
 SUB : '-';
 MUL : '*';
+AND : '&';
 DIV : '/';
 LPAREN : '(';
 RPAREN : ')';
@@ -43,6 +47,7 @@ LE : '<=';
 GT : '>';
 GE : '>=';
 ASSIGN : '=';
+INT : 'int';
 RET : 'return';
 IF : 'if';
 ELSE : 'else';

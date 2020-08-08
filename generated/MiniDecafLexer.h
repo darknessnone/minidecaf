@@ -12,10 +12,10 @@
 class  MiniDecafLexer : public antlr4::Lexer {
 public:
   enum {
-    WS = 1, INT = 2, SEMICOLON = 3, COMMA = 4, ADD = 5, SUB = 6, MUL = 7, 
-    DIV = 8, LPAREN = 9, RPAREN = 10, LBRACE = 11, RBRACE = 12, EQ = 13, 
-    NEQ = 14, LT = 15, LE = 16, GT = 17, GE = 18, ASSIGN = 19, RET = 20, 
-    IF = 21, ELSE = 22, WHILE = 23, FOR = 24, ID = 25
+    WS = 1, INTEGER = 2, SEMICOLON = 3, COMMA = 4, ADD = 5, SUB = 6, MUL = 7, 
+    AND = 8, DIV = 9, LPAREN = 10, RPAREN = 11, LBRACE = 12, RBRACE = 13, 
+    EQ = 14, NEQ = 15, LT = 16, LE = 17, GT = 18, GE = 19, ASSIGN = 20, 
+    INT = 21, RET = 22, IF = 23, ELSE = 24, WHILE = 25, FOR = 26, ID = 27
   };
 
   MiniDecafLexer(antlr4::CharStream *input);

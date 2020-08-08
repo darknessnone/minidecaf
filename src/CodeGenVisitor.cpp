@@ -112,6 +112,14 @@ antlrcpp::Any CodeGenVisitor::visitUnary(MiniDecafParser::UnaryContext *ctx) {
         code_ << pop1
               << "\tsub a0, x0, t0\n"
               << push;
+    } else if (ctx->MUL()) {
+        code_ << pop1
+              << "\tld a0, (t0)\n"
+              << push;
+    } else if (ctx->AND()) {
+        code_ << pop1
+              << "\taddi a0, fp, " << -8 - 8 * symbol[curFunc][ctx->expr()->getText()] << "\n"
+              << push;
     }
     return nullptr;
 }

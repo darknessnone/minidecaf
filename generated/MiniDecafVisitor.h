@@ -55,6 +55,8 @@ public:
 
     virtual antlrcpp::Any visitParen(MiniDecafParser::ParenContext *context) = 0;
 
+    virtual antlrcpp::Any visitType(MiniDecafParser::TypeContext *context) = 0;
+
 
 };
 
