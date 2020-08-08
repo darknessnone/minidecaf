@@ -9,13 +9,10 @@ java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr
 mv MiniDecafLexer.java.new MiniDecafLexer.java
 
 java -Xmx500M -cp "/usr/local/lib/antlr-4.7.1-complete.jar:$CLASSPATH" org.antlr.v4.Tool -no-listener -visitor MiniDecafParser.g4
-{ echo -e 'package minidecaf.parser;\n'; cat MiniDecafParser.java; } > MiniDecafParser.java.new
-mv MiniDecafParser.java.new MiniDecafParser.java
-
-{ echo -e 'package minidecaf.parser;\n'; cat MiniDecafParserBaseVisitor.java; } > MiniDecafParserBaseVisitor.java.new
-mv MiniDecafParserBaseVisitor.java.new MiniDecafParserBaseVisitor.java
-
-{ echo -e 'package minidecaf.parser;\n'; cat MiniDecafParserVisitor.java; } > MiniDecafParserVisitor.java.new
-mv MiniDecafParserVisitor.java.new MiniDecafParserVisitor.java
+for filename in MiniDecafParser.java MiniDecafParserBaseVisitor.java MiniDecafParserVisitor.java
+do
+{ echo -e 'package minidecaf.parser;\n'; cat $filename; } > $filename.new
+mv $filename.new $filename
+done
 
 cd - > /dev/null

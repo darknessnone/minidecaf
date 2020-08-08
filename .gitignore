@@ -9,3 +9,5 @@ build
 
 # Ignore antlr plugin cache directory
 *.antlr/
+
+exp*

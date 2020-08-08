@@ -40,6 +40,6 @@ COMMENT: '/*' .*? '*/' -> skip;
 LINE_COMMENT: '//' ~[\r\n]* -> skip;
 
 // TBA: what characters will constitute an identifier?
-IDENT: [a-zA-Z_] [a-zA-Z_0-9]*;
+IDENT: [a-z] [a-z_0-9]*;
 
 NUM: [0-9]+;

@@ -93,6 +93,7 @@ num = digit+
 digit  =  [0-9]
 ```
 ## 步骤10：支持变量与赋值语句
+
 ```
 program    = stmt*
 stmt       = expr ";"
@@ -108,8 +109,6 @@ num = digit+
 digit  =  [0-9]
 ident = [a-z]+[a-z0-9_]*
 ```
-
-赋值的先后顺序有影响嘛？
 
 ## 步骤11：支持返回语句
 ```

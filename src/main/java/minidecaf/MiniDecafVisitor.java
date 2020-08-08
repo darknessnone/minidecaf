@@ -3,6 +3,9 @@ package minidecaf;
 import minidecaf.parser.*;
 import minidecaf.parser.MiniDecafParser.*;
 
+import java.util.*;
+
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
 public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> {
@@ -11,15 +14,63 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
         StringBuilder sb = new StringBuilder();
         sb.append(".global main\n")
           .append("main:\n")
-          .append(visit(ctx.expr()))
+          .append("# prologue\n");
+
+        // To avoid possible awkward situation,
+        // we save all control registers that we'll use.
+        sb.append("\taddi sp, sp, -8\n")
+          .append("\tsd fp, 0(sp)\n");
+        
+        sb.append("\tmv fp, sp\n");
+        
+        for (var stmt: ctx.stmt())
+          sb.append(visit(stmt));
+
+        sb.append("# epilogue\n")
           .append("\tld a0, 0(sp)\n")
-          .append("\taddi sp, sp, 8\n")
-          .append("\tret\n");
+          .append("\taddi sp, sp, 8\n");
+        
+        // To avoid possible awkward situation,
+        // we restore all control registers that we'll use.
+        sb.append("\tld fp, 0(sp)\n")
+          .append("\taddi sp, sp, 8\n");
+        
+        sb.append("\tret\n");
         return sb;
     }
 
     @Override
+    public StringBuilder visitStmt(StmtContext ctx) {
+        return visit(ctx.expr());
+    }
+
+    @Override
     public StringBuilder visitExpr(ExprContext ctx) {
+        if (ctx.ASSIGN() == null) return visit(ctx.relational());
+        else {
+            // Check if the left hand side of the equation symbol
+            // is a complete variable name.
+            // TODO: in the future maybe it's allowed that
+            // the left hand side is no need to be a variable name.
+            String v = ctx.relational().getText();
+            boolean isVar = true;
+            if (isAlpha(v.charAt(0))) { 
+                for (char c: v.toCharArray())
+                    if (!Character.isDigit(c) && !isAlpha(c))
+                        isVar = false;
+            }
+            else isVar = false;
+            if (!isVar) reportError("only a single variable could be assigned", ctx.relational());
+
+            StringBuilder sb = new StringBuilder(visit(ctx.expr()));
+            symbolTable.put(v, offset);
+            offset -= 8;
+            return sb;
+        }
+    }
+
+    @Override
+    public StringBuilder visitRelational(RelationalContext ctx) {
         StringBuilder sb = new StringBuilder(visit(ctx.add(0)));
         AddContext add1 = ctx.add(1);
         if (add1 != null) {
@@ -115,12 +166,20 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
     public StringBuilder visitNumPrimary(NumPrimaryContext ctx) {
         StringBuilder sb = new StringBuilder();
         TerminalNode node = ctx.NUM();
-        if (compare(Integer.toString(Integer.MAX_VALUE), node.getText()) == -1) {
-            System.err.println("Error(" + node.getSymbol().getLine() + "," + node.getSymbol().getCharPositionInLine() + "): too large number.");
-            System.exit(1);
-        }
+        if (compare(Integer.toString(Integer.MAX_VALUE), node.getText()) == -1)
+            reportError("too large number", ctx);
         sb.append("# number " + ctx.NUM().getText() + "\n")
           .append("\tli t1, " + ctx.NUM().getText() + "\n")
+          .append("\taddi sp, sp, -8\n")
+          .append("\tsd t1, 0(sp)\n");
+        return sb;
+    }
+
+    @Override
+    public StringBuilder visitIdentPrimary(IdentPrimaryContext ctx) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# read variable\n")
+          .append("\tld t1, " + symbolTable.get(ctx.IDENT().getText()) + "(fp)\n")
           .append("\taddi sp, sp, -8\n")
           .append("\tsd t1, 0(sp)\n");
         return sb;
@@ -131,6 +190,13 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
         return visit(ctx.expr());
     }
 
+    // Symbol table
+    // So far, we only have global variables.
+    // Therefore, here we only record an offset to the global fp.
+    Map<String, Integer> symbolTable = new HashMap<>();
+    Integer offset = -8;
+
+    // Utils
     private int compare(String s, String t) {
         if (s.length() != t.length())
             return s.length() < t.length() ? -1 : 1;
@@ -141,6 +207,15 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
             return 0;
         }
     }
+
+    private boolean isAlpha(char c) {
+        return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z';
+    }
+
+    private void reportError(String s, ParserRuleContext ctx) {
+        System.err.printf("Error(%d, %d): %s.", ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(), s);
+        System.exit(1);
+    }
 }
 
-// TODO: string across multiple lines for convenience?
+// TODO: only one StringBuilder?

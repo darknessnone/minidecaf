@@ -2,26 +2,23 @@ parser grammar MiniDecafParser;
 
 options { tokenVocab = MiniDecafLexer; }
 
-program: expr;
+program: stmt*;
 
 // toplv      : typ IDENT (LPAREN (typ IDENT (COMMA typ IDENT)*)? RPAREN LBRACK stmt* RBRACK | (LBRACE NUM RBRACE)* SEMI);
 
-// stmt       : expr SEMI                                              #exprStmt
+stmt: expr SEMI;
 //            | LBRACE stmt* RBRACE                                    #block
 //            | IF LBRACE expr RBRACE stmt (ELSE stmt)?                #ifStmt
 //            | WHILE LBRACE expr RPAREN stmt                          #whileStmt
 //            | FOR LBRACE expr? SEMI expr? SEMI expr? RPAREN stmt     #forStmt
 //            | RETURN expr SEMI                                       #returnStmt
 //            | typ IDENT (LBRACK NUM RBRACK)* SEMI                    #declStmt
-//            ;
 
-expr: add (EQ add | NE add | LT add | LE add | GT add | GE add)?;
-
-// assign     : equality (ASSIGN assign)?;
+expr: relational (ASSIGN expr)?;
 
 // equality   : relational (EQUAL relational | NOTEQUAL relational);
 
-// relational : add (EQUAL add | NOTEQUAL add | LT add | LE add | GT add | GE add)?;
+relational: add (EQ add | NE add | LT add | LE add | GT add | GE add)?;
 
 add: mul (ADD mul | SUB mul)*;
 
@@ -35,6 +32,7 @@ unary: ADD? primary
         //    | primary LBRACK expr RBRACK;
 
 primary: NUM # numPrimary
+	| IDENT # identPrimary
 	| LPAREN expr RPAREN # parenthesizePrimary;
         //    | IDENT (LPAREN (expr (COMMA expr)*)? RPAREN)?
 
