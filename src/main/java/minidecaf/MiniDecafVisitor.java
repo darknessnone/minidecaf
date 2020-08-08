@@ -23,8 +23,11 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
         
         sb.append("\tmv fp, sp\n");
         
-        for (var stmt: ctx.stmt())
-          sb.append(visit(stmt));
+        for (var stmt: ctx.stmt()) {
+            sb.append(visit(stmt));
+            if (stmt instanceof ReturnStmtContext)
+                break;
+        }
 
         sb.append("# epilogue\n")
           .append("\tld a0, 0(sp)\n")
@@ -40,7 +43,14 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
     }
 
     @Override
-    public StringBuilder visitStmt(StmtContext ctx) {
+    public StringBuilder visitExprStmt(ExprStmtContext ctx) {
+        // Although there's a possible useless value in the stack,
+        // we'll remain it for convenience in the current implementation temporarily.
+        return visit(ctx.expr());
+    }
+
+    @Override
+    public StringBuilder visitReturnStmt(ReturnStmtContext ctx) {
         return visit(ctx.expr());
     }
 

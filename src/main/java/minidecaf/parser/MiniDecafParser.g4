@@ -6,12 +6,13 @@ program: stmt*;
 
 // toplv      : typ IDENT (LPAREN (typ IDENT (COMMA typ IDENT)*)? RPAREN LBRACK stmt* RBRACK | (LBRACE NUM RBRACE)* SEMI);
 
-stmt: expr SEMI;
+stmt: expr SEMI # exprStmt
+    | RETURN expr SEMI # returnStmt;
 //            | LBRACE stmt* RBRACE                                    #block
 //            | IF LBRACE expr RBRACE stmt (ELSE stmt)?                #ifStmt
 //            | WHILE LBRACE expr RPAREN stmt                          #whileStmt
 //            | FOR LBRACE expr? SEMI expr? SEMI expr? RPAREN stmt     #forStmt
-//            | RETURN expr SEMI                                       #returnStmt
+        //    | RETURN expr SEMI                                       #returnStmt
 //            | typ IDENT (LBRACK NUM RBRACK)* SEMI                    #declStmt
 
 expr: relational (ASSIGN expr)?;

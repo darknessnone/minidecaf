@@ -118,7 +118,7 @@ public class MiniDecafParser extends Parser {
 			setState(19);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ADD) | (1L << SUB) | (1L << LPAREN) | (1L << IDENT) | (1L << NUM))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << RETURN) | (1L << ADD) | (1L << SUB) | (1L << LPAREN) | (1L << IDENT) | (1L << NUM))) != 0)) {
 				{
 				{
 				setState(16);
@@ -143,17 +143,38 @@ public class MiniDecafParser extends Parser {
 	}
 
 	public static class StmtContext extends ParserRuleContext {
-		public ExprContext expr() {
-			return getRuleContext(ExprContext.class,0);
-		}
-		public TerminalNode SEMI() { return getToken(MiniDecafParser.SEMI, 0); }
 		public StmtContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_stmt; }
+	 
+		public StmtContext() { }
+		public void copyFrom(StmtContext ctx) {
+			super.copyFrom(ctx);
+		}
+	}
+	public static class ExprStmtContext extends StmtContext {
+		public ExprContext expr() {
+			return getRuleContext(ExprContext.class,0);
+		}
+		public TerminalNode SEMI() { return getToken(MiniDecafParser.SEMI, 0); }
+		public ExprStmtContext(StmtContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof MiniDecafParserVisitor ) return ((MiniDecafParserVisitor<? extends T>)visitor).visitStmt(this);
+			if ( visitor instanceof MiniDecafParserVisitor ) return ((MiniDecafParserVisitor<? extends T>)visitor).visitExprStmt(this);
+			else return visitor.visitChildren(this);
+		}
+	}
+	public static class ReturnStmtContext extends StmtContext {
+		public TerminalNode RETURN() { return getToken(MiniDecafParser.RETURN, 0); }
+		public ExprContext expr() {
+			return getRuleContext(ExprContext.class,0);
+		}
+		public TerminalNode SEMI() { return getToken(MiniDecafParser.SEMI, 0); }
+		public ReturnStmtContext(StmtContext ctx) { copyFrom(ctx); }
+		@Override
+		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
+			if ( visitor instanceof MiniDecafParserVisitor ) return ((MiniDecafParserVisitor<? extends T>)visitor).visitReturnStmt(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -162,12 +183,37 @@ public class MiniDecafParser extends Parser {
 		StmtContext _localctx = new StmtContext(_ctx, getState());
 		enterRule(_localctx, 2, RULE_stmt);
 		try {
-			enterOuterAlt(_localctx, 1);
-			{
-			setState(22);
-			expr();
-			setState(23);
-			match(SEMI);
+			setState(29);
+			_errHandler.sync(this);
+			switch (_input.LA(1)) {
+			case ADD:
+			case SUB:
+			case LPAREN:
+			case IDENT:
+			case NUM:
+				_localctx = new ExprStmtContext(_localctx);
+				enterOuterAlt(_localctx, 1);
+				{
+				setState(22);
+				expr();
+				setState(23);
+				match(SEMI);
+				}
+				break;
+			case RETURN:
+				_localctx = new ReturnStmtContext(_localctx);
+				enterOuterAlt(_localctx, 2);
+				{
+				setState(25);
+				match(RETURN);
+				setState(26);
+				expr();
+				setState(27);
+				match(SEMI);
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 		}
 		catch (RecognitionException re) {
@@ -207,16 +253,16 @@ public class MiniDecafParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(25);
+			setState(31);
 			relational();
-			setState(28);
+			setState(34);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			if (_la==ASSIGN) {
 				{
-				setState(26);
+				setState(32);
 				match(ASSIGN);
-				setState(27);
+				setState(33);
 				expr();
 				}
 			}
@@ -264,56 +310,56 @@ public class MiniDecafParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(30);
+			setState(36);
 			add();
-			setState(43);
+			setState(49);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case EQ:
 				{
-				setState(31);
+				setState(37);
 				match(EQ);
-				setState(32);
+				setState(38);
 				add();
 				}
 				break;
 			case NE:
 				{
-				setState(33);
+				setState(39);
 				match(NE);
-				setState(34);
+				setState(40);
 				add();
 				}
 				break;
 			case LT:
 				{
-				setState(35);
+				setState(41);
 				match(LT);
-				setState(36);
+				setState(42);
 				add();
 				}
 				break;
 			case LE:
 				{
-				setState(37);
+				setState(43);
 				match(LE);
-				setState(38);
+				setState(44);
 				add();
 				}
 				break;
 			case GT:
 				{
-				setState(39);
+				setState(45);
 				match(GT);
-				setState(40);
+				setState(46);
 				add();
 				}
 				break;
 			case GE:
 				{
-				setState(41);
+				setState(47);
 				match(GE);
-				setState(42);
+				setState(48);
 				add();
 				}
 				break;
@@ -370,29 +416,29 @@ public class MiniDecafParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(45);
+			setState(51);
 			mul();
-			setState(52);
+			setState(58);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==ADD || _la==SUB) {
 				{
-				setState(50);
+				setState(56);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
 				case ADD:
 					{
-					setState(46);
+					setState(52);
 					match(ADD);
-					setState(47);
+					setState(53);
 					mul();
 					}
 					break;
 				case SUB:
 					{
-					setState(48);
+					setState(54);
 					match(SUB);
-					setState(49);
+					setState(55);
 					mul();
 					}
 					break;
@@ -400,7 +446,7 @@ public class MiniDecafParser extends Parser {
 					throw new NoViableAltException(this);
 				}
 				}
-				setState(54);
+				setState(60);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -450,29 +496,29 @@ public class MiniDecafParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(55);
+			setState(61);
 			unary();
-			setState(62);
+			setState(68);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==MUL || _la==DIV) {
 				{
-				setState(60);
+				setState(66);
 				_errHandler.sync(this);
 				switch (_input.LA(1)) {
 				case MUL:
 					{
-					setState(56);
+					setState(62);
 					match(MUL);
-					setState(57);
+					setState(63);
 					unary();
 					}
 					break;
 				case DIV:
 					{
-					setState(58);
+					setState(64);
 					match(DIV);
-					setState(59);
+					setState(65);
 					unary();
 					}
 					break;
@@ -480,7 +526,7 @@ public class MiniDecafParser extends Parser {
 					throw new NoViableAltException(this);
 				}
 				}
-				setState(64);
+				setState(70);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -519,40 +565,40 @@ public class MiniDecafParser extends Parser {
 		enterRule(_localctx, 12, RULE_unary);
 		int _la;
 		try {
-			setState(73);
+			setState(79);
 			_errHandler.sync(this);
-			switch ( getInterpreter().adaptivePredict(_input,9,_ctx) ) {
+			switch ( getInterpreter().adaptivePredict(_input,10,_ctx) ) {
 			case 1:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(66);
+				setState(72);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				if (_la==ADD) {
 					{
-					setState(65);
+					setState(71);
 					match(ADD);
 					}
 				}
 
-				setState(68);
+				setState(74);
 				primary();
 				}
 				break;
 			case 2:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(70);
+				setState(76);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 				if (_la==SUB) {
 					{
-					setState(69);
+					setState(75);
 					match(SUB);
 					}
 				}
 
-				setState(72);
+				setState(78);
 				primary();
 				}
 				break;
@@ -616,14 +662,14 @@ public class MiniDecafParser extends Parser {
 		PrimaryContext _localctx = new PrimaryContext(_ctx, getState());
 		enterRule(_localctx, 14, RULE_primary);
 		try {
-			setState(81);
+			setState(87);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case NUM:
 				_localctx = new NumPrimaryContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(75);
+				setState(81);
 				match(NUM);
 				}
 				break;
@@ -631,7 +677,7 @@ public class MiniDecafParser extends Parser {
 				_localctx = new IdentPrimaryContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(76);
+				setState(82);
 				match(IDENT);
 				}
 				break;
@@ -639,11 +685,11 @@ public class MiniDecafParser extends Parser {
 				_localctx = new ParenthesizePrimaryContext(_localctx);
 				enterOuterAlt(_localctx, 3);
 				{
-				setState(77);
+				setState(83);
 				match(LPAREN);
-				setState(78);
+				setState(84);
 				expr();
-				setState(79);
+				setState(85);
 				match(RPAREN);
 				}
 				break;
@@ -663,29 +709,30 @@ public class MiniDecafParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3#V\4\2\t\2\4\3\t\3"+
-		"\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\3\2\7\2\24\n\2\f\2\16"+
-		"\2\27\13\2\3\3\3\3\3\3\3\4\3\4\3\4\5\4\37\n\4\3\5\3\5\3\5\3\5\3\5\3\5"+
-		"\3\5\3\5\3\5\3\5\3\5\3\5\3\5\5\5.\n\5\3\6\3\6\3\6\3\6\3\6\7\6\65\n\6\f"+
-		"\6\16\68\13\6\3\7\3\7\3\7\3\7\3\7\7\7?\n\7\f\7\16\7B\13\7\3\b\5\bE\n\b"+
-		"\3\b\3\b\5\bI\n\b\3\b\5\bL\n\b\3\t\3\t\3\t\3\t\3\t\3\t\5\tT\n\t\3\t\2"+
-		"\2\n\2\4\6\b\n\f\16\20\2\2\2^\2\25\3\2\2\2\4\30\3\2\2\2\6\33\3\2\2\2\b"+
-		" \3\2\2\2\n/\3\2\2\2\f9\3\2\2\2\16K\3\2\2\2\20S\3\2\2\2\22\24\5\4\3\2"+
-		"\23\22\3\2\2\2\24\27\3\2\2\2\25\23\3\2\2\2\25\26\3\2\2\2\26\3\3\2\2\2"+
-		"\27\25\3\2\2\2\30\31\5\6\4\2\31\32\7\35\2\2\32\5\3\2\2\2\33\36\5\b\5\2"+
-		"\34\35\7\20\2\2\35\37\5\6\4\2\36\34\3\2\2\2\36\37\3\2\2\2\37\7\3\2\2\2"+
-		" -\5\n\6\2!\"\7\25\2\2\".\5\n\6\2#$\7\26\2\2$.\5\n\6\2%&\7\22\2\2&.\5"+
-		"\n\6\2\'(\7\23\2\2(.\5\n\6\2)*\7\21\2\2*.\5\n\6\2+,\7\24\2\2,.\5\n\6\2"+
-		"-!\3\2\2\2-#\3\2\2\2-%\3\2\2\2-\'\3\2\2\2-)\3\2\2\2-+\3\2\2\2-.\3\2\2"+
-		"\2.\t\3\2\2\2/\66\5\f\7\2\60\61\7\13\2\2\61\65\5\f\7\2\62\63\7\f\2\2\63"+
-		"\65\5\f\7\2\64\60\3\2\2\2\64\62\3\2\2\2\658\3\2\2\2\66\64\3\2\2\2\66\67"+
-		"\3\2\2\2\67\13\3\2\2\28\66\3\2\2\29@\5\16\b\2:;\7\r\2\2;?\5\16\b\2<=\7"+
-		"\16\2\2=?\5\16\b\2>:\3\2\2\2><\3\2\2\2?B\3\2\2\2@>\3\2\2\2@A\3\2\2\2A"+
-		"\r\3\2\2\2B@\3\2\2\2CE\7\13\2\2DC\3\2\2\2DE\3\2\2\2EF\3\2\2\2FL\5\20\t"+
-		"\2GI\7\f\2\2HG\3\2\2\2HI\3\2\2\2IJ\3\2\2\2JL\5\20\t\2KD\3\2\2\2KH\3\2"+
-		"\2\2L\17\3\2\2\2MT\7#\2\2NT\7\"\2\2OP\7\27\2\2PQ\5\6\4\2QR\7\30\2\2RT"+
-		"\3\2\2\2SM\3\2\2\2SN\3\2\2\2SO\3\2\2\2T\21\3\2\2\2\r\25\36-\64\66>@DH"+
-		"KS";
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3#\\\4\2\t\2\4\3\t"+
+		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\3\2\7\2\24\n\2\f\2"+
+		"\16\2\27\13\2\3\3\3\3\3\3\3\3\3\3\3\3\3\3\5\3 \n\3\3\4\3\4\3\4\5\4%\n"+
+		"\4\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\3\5\5\5\64\n\5\3\6"+
+		"\3\6\3\6\3\6\3\6\7\6;\n\6\f\6\16\6>\13\6\3\7\3\7\3\7\3\7\3\7\7\7E\n\7"+
+		"\f\7\16\7H\13\7\3\b\5\bK\n\b\3\b\3\b\5\bO\n\b\3\b\5\bR\n\b\3\t\3\t\3\t"+
+		"\3\t\3\t\3\t\5\tZ\n\t\3\t\2\2\n\2\4\6\b\n\f\16\20\2\2\2e\2\25\3\2\2\2"+
+		"\4\37\3\2\2\2\6!\3\2\2\2\b&\3\2\2\2\n\65\3\2\2\2\f?\3\2\2\2\16Q\3\2\2"+
+		"\2\20Y\3\2\2\2\22\24\5\4\3\2\23\22\3\2\2\2\24\27\3\2\2\2\25\23\3\2\2\2"+
+		"\25\26\3\2\2\2\26\3\3\2\2\2\27\25\3\2\2\2\30\31\5\6\4\2\31\32\7\35\2\2"+
+		"\32 \3\2\2\2\33\34\7\7\2\2\34\35\5\6\4\2\35\36\7\35\2\2\36 \3\2\2\2\37"+
+		"\30\3\2\2\2\37\33\3\2\2\2 \5\3\2\2\2!$\5\b\5\2\"#\7\20\2\2#%\5\6\4\2$"+
+		"\"\3\2\2\2$%\3\2\2\2%\7\3\2\2\2&\63\5\n\6\2\'(\7\25\2\2(\64\5\n\6\2)*"+
+		"\7\26\2\2*\64\5\n\6\2+,\7\22\2\2,\64\5\n\6\2-.\7\23\2\2.\64\5\n\6\2/\60"+
+		"\7\21\2\2\60\64\5\n\6\2\61\62\7\24\2\2\62\64\5\n\6\2\63\'\3\2\2\2\63)"+
+		"\3\2\2\2\63+\3\2\2\2\63-\3\2\2\2\63/\3\2\2\2\63\61\3\2\2\2\63\64\3\2\2"+
+		"\2\64\t\3\2\2\2\65<\5\f\7\2\66\67\7\13\2\2\67;\5\f\7\289\7\f\2\29;\5\f"+
+		"\7\2:\66\3\2\2\2:8\3\2\2\2;>\3\2\2\2<:\3\2\2\2<=\3\2\2\2=\13\3\2\2\2>"+
+		"<\3\2\2\2?F\5\16\b\2@A\7\r\2\2AE\5\16\b\2BC\7\16\2\2CE\5\16\b\2D@\3\2"+
+		"\2\2DB\3\2\2\2EH\3\2\2\2FD\3\2\2\2FG\3\2\2\2G\r\3\2\2\2HF\3\2\2\2IK\7"+
+		"\13\2\2JI\3\2\2\2JK\3\2\2\2KL\3\2\2\2LR\5\20\t\2MO\7\f\2\2NM\3\2\2\2N"+
+		"O\3\2\2\2OP\3\2\2\2PR\5\20\t\2QJ\3\2\2\2QN\3\2\2\2R\17\3\2\2\2SZ\7#\2"+
+		"\2TZ\7\"\2\2UV\7\27\2\2VW\5\6\4\2WX\7\30\2\2XZ\3\2\2\2YS\3\2\2\2YT\3\2"+
+		"\2\2YU\3\2\2\2Z\21\3\2\2\2\16\25\37$\63:<DFJNQY";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
