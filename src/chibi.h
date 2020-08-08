@@ -59,24 +59,41 @@ enum NodeKind{
     ND_NEQ,        // binary !=
     ND_LOGAND,     // binary &&
     ND_LOGOR,      // binary ||
+    ND_ASSIGN,     // binary =
+    ND_VAR,        // variable, identifiers
+    ND_DECL,
+};
+
+struct Node;
+
+struct Var {       // Local variable
+    char *name;    // Variable name
+    Type *ty;      // Type
+    int offset;    // Offset from %rbp
+    Node* init;    // initialization
+    Var* next;
 };
 
 struct Node {
-    NodeKind kind; // Node kind
-    Node *next;    // Next node
-    Type *ty;      // Type, e.g. int or pointer to int
+    NodeKind kind;
+    Node *next;
+    Type *ty;      
+    long val;      // Value of type
     Node* lexpr;
     Node* rexpr;
-    long val;      // Value of type
+    Var* var;      // ND_VAR
 };
 
 struct Function {
-  Function *next;
-  char *name;
-  Type *ret_type;
-  Node *node;
-  int stack_size;
+    Function *next;
+    char *name;
+    Type *ret_type;
+    Node *node;
+    int stack_size;
+    Var* local;
 };
+
+
 
 Function* parsing();
 
@@ -87,3 +104,6 @@ void codegen();
 extern char user_input[];
 extern Token* token;
 extern Function* func;
+
+
+

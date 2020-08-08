@@ -1,5 +1,7 @@
 #include "chibi.h"
 
+Var* hot_locals;
+
 Node* new_node(NodeKind kind) {
     Node* node = new Node();
     node->kind = kind;
@@ -26,6 +28,10 @@ Token* expect_int_literal() {
     return token;
 }
 
+Token* expect_basetype() {
+    return expect_reserved("int");
+}
+
 bool parse_reserved(char* s) {
     if(!expect_reserved(s))
         return false;
@@ -34,9 +40,11 @@ bool parse_reserved(char* s) {
 }
 
 Type* parse_basetype() {
-    if(!expect_reserved("int"))
+    Token* tok;
+    if(!(tok = expect_basetype()))
         return NULL;
     token = token->next;
+    // TODO: decide type through 'tok'
     Type *ty = &INT_TYPE;
     return ty;
 }
@@ -86,6 +94,12 @@ Node* new_stmt(NodeKind kind, Node* expr) {
     return node;
 }
 
+Node* new_var_node(Var* var) {
+    Node *node = new_node(ND_VAR);
+    node->var = var;
+    return node;
+}
+
 Node* expr();
 
 Node* num() {
@@ -95,11 +109,39 @@ Node* num() {
     return node;
 }
 
-Node* factor() {
+Node* find_local_var(char* name) {
+    int len = strnlen(name, 1000);
+    for(Var* var = hot_locals; var; var = var->next) {
+        if(strnlen(var->name, 1000) == len && !strncmp(var->name, name, len))
+            return new_var_node(var);
+    }
+    return NULL;
+}
+
+Var* add_local(Var* var) {
+    var->next = hot_locals;
+    hot_locals = var;
+    return hot_locals;
+} 
+
+Node* var() {
+    return find_local_var(parse_ident());
+}
+
+
+// primary = identifiers
+//         | "(" expr ")"
+//         | num
+
+Node* primary() {
     if (parse_reserved("(")) {
-        Node* fac = expr();
+        Node* pri = expr();
         parse_reserved(")");
-        return fac;
+        return pri;
+    }
+    char* name;
+    if (name = parse_ident()) {
+        return find_local_var(name);
     }
     return num();
 }
@@ -111,7 +153,7 @@ Node* unary() {
         return new_unary(ND_NOT, unary());
     if (parse_reserved("~"))
         return new_unary(ND_BITNOT, unary());
-    return factor();
+    return primary();
 }
 
 Node* mul_div() {
@@ -180,9 +222,36 @@ Node* logor() {
     }
 }
 
+Node* assign() {
+    Node* node = logor();
+    if(parse_reserved("=")) {
+        return new_binary(ND_ASSIGN, node, assign());
+    }
+    return node;
+}
+
+// declaration := basetype identifier ("=" lvar-initializer)? ";"
+// lvar-initializer := exp
+
+Node* declaration(Type* ty) {
+    assert(ty);
+    char* name = parse_ident();
+    Var* var = new Var();
+    var->name = name;
+    var->init = NULL;
+    var->ty = ty;
+    add_local(var);
+    if (parse_reserved("=")) {
+        var->init = new_binary(ND_ASSIGN, new_var_node(var), expr());
+    }
+    assert(parse_reserved(";"));
+    Node* node = new_stmt(ND_DECL, NULL);
+    node->var = var;
+    return node;
+}
 
 Node* expr() {
-    return logor();
+    return assign();
 }
 
 Node* stmt() {
@@ -192,6 +261,10 @@ Node* stmt() {
         node = new_stmt(ND_RETURN, exp);
         assert(parse_reserved(";"));
         return node;
+    }
+    Type* ty;
+    if (ty = parse_basetype()) {
+        return declaration(ty);
     }
     Node* exp = expr();
     assert(parse_reserved(";"));
@@ -225,6 +298,13 @@ Node* stmt() {
 // <relational-exp> ::= <additive-exp> { ("<" | ">" | "<=" | ">=") <additive-exp> }
 // <additive-exp> ::= <term> { ("+" | "-") <term> }
 
+
+// step 5
+
+// <statement> ::= "return" <exp> ";"
+//               | <exp> ";"
+//               | "int" <id> [ = <exp> ] ";"
+
 Function *parse_function() {
     Type *ty = parse_basetype();
     assert(ty);
@@ -239,6 +319,8 @@ Function *parse_function() {
     assert(parse_reserved(")"));
     assert(parse_reserved("{"));
 
+    hot_locals = NULL;
+
     // Read function body
     Node head = {};
     Node *cur = &head;
@@ -247,6 +329,7 @@ Function *parse_function() {
         cur = cur->next;
     }
 
+    fn->local = hot_locals;
     fn->node = head.next;
     return fn;
 }

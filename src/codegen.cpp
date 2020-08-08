@@ -47,12 +47,53 @@ void gen_binary(Node* node) {
     printf("  push rax\n");
 }
 
+void gen_addr(Node* node) {
+    switch (node->kind) {
+    case ND_VAR:
+        printf("  lea rax, [rbp-%d]\n", node->var->offset);
+        printf("  push rax\n");
+        break;
+    }
+}
+
+void store(Type* _ty) {
+    printf("  pop rdi\n");
+    printf("  pop rax\n");
+    // sizeof(int) = 4
+    printf("  mov [rax], edi\n");
+    printf("  push rdi\n");
+}
+
+void load(Type* _ty) {
+    printf("  pop rax\n");
+    // sizeof(int) = 4
+    printf("  movsxd rax, dword ptr [rax]\n");
+    printf("  push rax\n");
+}
+
 void gen_node(Node *node) {
     int seq;
+    Var* var;
     switch (node->kind) {
     case ND_RETURN:
         gen_node(node->lexpr);
         printf("  pop rax\n");
+        break;
+    case ND_DECL:
+        var = node->var;
+        if(var->init) {
+            gen_node(var->init);
+            printf("  pop rax\n");
+        }
+        break;
+    case ND_VAR:
+        gen_addr(node);
+        load(node->var->ty);
+        break;
+    case ND_ASSIGN:
+        gen_addr(node->lexpr);
+        gen_node(node->rexpr);
+        store(node->lexpr->var->ty);
         break;
     case ND_NUM:
         printf("  mov rax, %ld\n", node->val);
