@@ -1,6 +1,7 @@
 #include "chibi.h"
 
 static int labelseq = 0;
+static char* func_name = NULL;
 
 void gen_node(Node *node);
 
@@ -78,6 +79,7 @@ void gen_node(Node *node) {
     case ND_RETURN:
         gen_node(node->lexpr);
         printf("  pop rax\n");
+        printf("  jmp .L.return.%s\n", func_name);
         break;
     case ND_DECL:
         var = node->var;
@@ -89,6 +91,10 @@ void gen_node(Node *node) {
     case ND_UNUSED_EXPR:
         gen_node(node->lexpr);
         printf("  pop rax\n");
+        break;
+    case ND_BLOCK:
+        for (Node *n = node->body; n; n = n->next)
+            gen_node(n);
         break;
     case ND_IF: 
         seq = labelseq++;
@@ -202,7 +208,7 @@ void gen_text(Function* func) {
     for (Function *fn = func; fn; fn = fn->next) {
         printf(".global %s\n", fn->name);
         printf("%s:\n", fn->name);
-
+        func_name = fn->name;
         // Prologue
         printf("  push rbp\n");
         printf("  mov rbp, rsp\n");
@@ -213,6 +219,7 @@ void gen_text(Function* func) {
             gen_node(node);
 
         // Epilogue
+        printf(".L.return.%s:\n", func_name);
         printf("  mov rsp, rbp\n");
         printf("  pop rbp\n");
         printf("  ret\n");

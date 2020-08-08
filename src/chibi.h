@@ -64,7 +64,8 @@ enum NodeKind{
     ND_DECL,
     ND_IF,
     ND_UNUSED_EXPR,
-    ND_TERNARY     // a ? b : c
+    ND_TERNARY,    // a ? b : c
+    ND_BLOCK,
 };
 
 struct Node;
@@ -88,6 +89,8 @@ struct Node {
     Node* cond;
     Node* then;
     Node* els;
+
+    Node* body;
 };
 
 struct Function {

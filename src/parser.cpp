@@ -1,6 +1,25 @@
 #include "chibi.h"
 
-Var* hot_locals;
+struct VarStack {
+  VarStack *next;
+  int depth;
+  Var *var;
+};
+
+static int stack_depth = 0;
+static Var* func_locals;
+static VarStack *var_stack;
+
+void push_stack() {
+    stack_depth++;
+}
+
+void pop_stack() {
+    stack_depth--;
+    while(var_stack && var_stack->depth > stack_depth) {
+        var_stack = var_stack->next;
+    }
+}
 
 Node* new_node(NodeKind kind) {
     Node* node = new Node();
@@ -111,7 +130,8 @@ Node* num() {
 
 Node* find_local_var(char* name) {
     int len = strnlen(name, 1000);
-    for(Var* var = hot_locals; var; var = var->next) {
+    for(VarStack* vs = var_stack; vs; vs = vs->next) {
+        Var* var = vs->var;
         if(strnlen(var->name, 1000) == len && !strncmp(var->name, name, len))
             return new_var_node(var);
     }
@@ -119,9 +139,16 @@ Node* find_local_var(char* name) {
 }
 
 Var* add_local(Var* var) {
-    var->next = hot_locals;
-    hot_locals = var;
-    return hot_locals;
+    func_locals->next = var;
+    func_locals = var;
+
+    VarStack* vs = new VarStack();
+    vs->next = var_stack;
+    vs->depth = stack_depth;
+    vs->var = var;
+    var_stack = vs;
+
+    return var;
 } 
 
 Node* var() {
@@ -253,6 +280,7 @@ Node* declaration(Type* ty) {
     var->name = name;
     var->init = NULL;
     var->ty = ty;
+    var->next = NULL;
     add_local(var);
     if (parse_reserved("=")) {
         var->init = new_binary(ND_ASSIGN, new_var_node(var), expr());
@@ -285,11 +313,28 @@ Node* stmt() {
             node->els = stmt();
         return node;
     }
+    // declaration
     Type* ty;
     if (ty = parse_basetype()) {
         return declaration(ty);
     }
-    
+    // { stmt* }
+    if (parse_reserved("{")) {
+        Node head = {};
+        Node *cur = &head;
+
+        push_stack();
+        while (!parse_reserved("}")) {
+            cur->next = stmt();
+            cur = cur->next;
+        }
+        pop_stack();
+
+        Node *node = new_node(ND_BLOCK);
+        node->body = head.next;
+        return node;
+    }
+    // expr;
     node = new_node(ND_UNUSED_EXPR);
     node->lexpr = expr();
     assert(parse_reserved(";"));
@@ -337,21 +382,34 @@ Node* stmt() {
 //               | "int" <id> [ = <exp> ] ";"
 //               | "if" "(" <exp> ")" <statement> [ "else" <statement> ]
 
+// step 7
+
+// <statement> ::= "return" <exp> ";"
+//               | <exp> ";"
+//               | "if" "(" <exp> ")" <statement> [ "else" <statement> ]
+//               | "{" { <block-item> } "}
+
 Function *parse_function() {
     Type *ty = parse_basetype();
     assert(ty);
     char *name = parse_ident();
     assert(name);
-    // Construct a function object
+
     Function *fn = new Function();
     fn->name = name;
     fn->ret_type = ty;
 
+
+    var_stack = NULL;
+    Var var_head = {};
+    func_locals = &var_head;
+
+    assert(stack_depth == 0);
+    push_stack();
     assert(parse_reserved("("));
+    // TODO: args
     assert(parse_reserved(")"));
     assert(parse_reserved("{"));
-
-    hot_locals = NULL;
 
     // Read function body
     Node head = {};
@@ -360,8 +418,8 @@ Function *parse_function() {
         cur->next = stmt();
         cur = cur->next;
     }
-
-    fn->local = hot_locals;
+    pop_stack();
+    fn->local = var_head.next;
     fn->node = head.next;
     return fn;
 }
