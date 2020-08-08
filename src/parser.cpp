@@ -222,8 +222,21 @@ Node* logor() {
     }
 }
 
+Node* ternary() {
+    Node *node = logor();
+    if(!parse_reserved("?"))
+        return node;
+
+    Node *tern = new_node(ND_TERNARY);
+    tern->cond = node;
+    tern->then = expr();
+    assert(parse_reserved(":"));
+    tern->els = ternary();
+    return tern;
+}
+
 Node* assign() {
-    Node* node = logor();
+    Node* node = ternary();
     if(parse_reserved("=")) {
         return new_binary(ND_ASSIGN, node, assign());
     }
@@ -262,13 +275,25 @@ Node* stmt() {
         assert(parse_reserved(";"));
         return node;
     }
+    if (parse_reserved("if")) {
+        assert(parse_reserved("("));
+        node = new_node(ND_IF);
+        node->cond = expr();
+        assert(parse_reserved(")"));
+        node->then = stmt();
+        if(parse_reserved("else"))
+            node->els = stmt();
+        return node;
+    }
     Type* ty;
     if (ty = parse_basetype()) {
         return declaration(ty);
     }
-    Node* exp = expr();
+    
+    node = new_node(ND_UNUSED_EXPR);
+    node->lexpr = expr();
     assert(parse_reserved(";"));
-    return exp;
+    return node;
 }
 
 // step1
@@ -304,6 +329,13 @@ Node* stmt() {
 // <statement> ::= "return" <exp> ";"
 //               | <exp> ";"
 //               | "int" <id> [ = <exp> ] ";"
+
+// step 6
+
+// <statement> ::= "return" <exp> ";"
+//               | <exp> ";"
+//               | "int" <id> [ = <exp> ] ";"
+//               | "if" "(" <exp> ")" <statement> [ "else" <statement> ]
 
 Function *parse_function() {
     Type *ty = parse_basetype();

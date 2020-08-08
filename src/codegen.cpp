@@ -86,6 +86,43 @@ void gen_node(Node *node) {
             printf("  pop rax\n");
         }
         break;
+    case ND_UNUSED_EXPR:
+        gen_node(node->lexpr);
+        printf("  pop rax\n");
+        break;
+    case ND_IF: 
+        seq = labelseq++;
+        if (node->els) {
+            gen_node(node->cond);
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+            printf("  je  .L.else.%d\n", seq);
+            gen_node(node->then);
+            printf("  jmp .L.end.%d\n", seq);
+            printf(".L.else.%d:\n", seq);
+            gen_node(node->els);
+            printf(".L.end.%d:\n", seq);
+        } else {
+            gen_node(node->cond);
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+            printf("  je  .L.end.%d\n", seq);
+            gen_node(node->then);
+            printf(".L.end.%d:\n", seq);
+        }
+        break;
+    case ND_TERNARY:
+        seq = labelseq++;
+        gen_node(node->cond);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je  .L.else.%d\n", seq);
+        gen_node(node->then);
+        printf("  jmp .L.end.%d\n", seq);
+        printf(".L.else.%d:\n", seq);
+        gen_node(node->els);
+        printf(".L.end.%d:\n", seq);
+        return;
     case ND_VAR:
         gen_addr(node);
         load(node->var->ty);

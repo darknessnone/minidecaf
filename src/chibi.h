@@ -62,6 +62,9 @@ enum NodeKind{
     ND_ASSIGN,     // binary =
     ND_VAR,        // variable, identifiers
     ND_DECL,
+    ND_IF,
+    ND_UNUSED_EXPR,
+    ND_TERNARY     // a ? b : c
 };
 
 struct Node;
@@ -82,6 +85,9 @@ struct Node {
     Node* lexpr;
     Node* rexpr;
     Var* var;      // ND_VAR
+    Node* cond;
+    Node* then;
+    Node* els;
 };
 
 struct Function {
