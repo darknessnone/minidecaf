@@ -75,7 +75,7 @@ void load(Type* _ty) {
 }
 
 void gen_node(Node *node) {
-    int seq, brk, cont;
+    int seq, brk, cont, nargs;
     Var* var;
     switch (node->kind) {
     case ND_RETURN:
@@ -142,6 +142,32 @@ void gen_node(Node *node) {
         printf(".L.break.%d:\n", seq);
         brkseq = brk;
         contseq = cont;
+        break;
+    case ND_FUNC_CALL:
+        nargs = 0;
+        for (Node *arg = node->args; arg; arg = arg->next) {
+            gen_node(arg);
+            nargs++;
+        }
+        static char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+        assert(nargs <= 6);
+        for (int i = nargs - 1; i >= 0; i--)
+            printf("  pop %s\n", argreg[i]);
+
+        // We need to align %rsp to a 16 byte boundary before
+        // calling a function because it is an ABI requirement.
+        seq = labelseq++;
+        printf("  mov rax, rsp\n");
+        printf("  and rax, 15\n");
+        printf("  jnz .L.call.%d\n", seq);
+        printf("  call %s\n", node->func->name);
+        printf("  jmp .L.end.%d\n", seq);
+        printf(".L.call.%d:\n", seq);
+        printf("  sub rsp, 8\n");
+        printf("  call %s\n", node->func->name);
+        printf("  add rsp, 8\n");
+        printf(".L.end.%d:\n", seq);
+        printf("  push rax\n");
         break;
     case ND_BREAK:
         printf("  jmp .L.break.%d\n", brkseq);
@@ -233,6 +259,11 @@ void gen_node(Node *node) {
     }
 }
 
+void load_arg(Var *var, int idx) {
+    static char *argreg4[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+    printf("  mov [rbp-%d], %s\n", var->offset, argreg4[idx]);
+}
+
 void gen_text(Function* func) {
     printf(".intel_syntax noprefix\n");
     printf(".text\n");
@@ -245,6 +276,11 @@ void gen_text(Function* func) {
         printf("  push rbp\n");
         printf("  mov rbp, rsp\n");
         printf("  sub rsp, %d\n", fn->stack_size);
+
+        // Push arguments to the stack
+        int n = 0;
+        for (Var *v = fn->arg; v; v = v->next)
+            load_arg(v, n++);
 
         // Emit code
         for (Node *node = fn->node; node; node = node->next)

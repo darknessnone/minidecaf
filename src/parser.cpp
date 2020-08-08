@@ -1,7 +1,5 @@
 #include "chibi.h"
 
-bool debug = false;
-
 struct VarStack {
   VarStack *next;
   int depth;
@@ -22,6 +20,14 @@ void pop_stack() {
         var_stack = var_stack->next;
     }
 }
+
+struct FuncList {
+    FuncList* next;
+    Function* func;
+};
+
+static FuncList* func_list = NULL;
+static Function* hot_func = NULL;
 
 Node* new_node(NodeKind kind) {
     Node* node = new Node();
@@ -65,8 +71,6 @@ bool parse_reserved(char* s) {
     if(!expect_reserved(s))
         return false;
     token = token->next;
-    if(debug)
-        printf("-- reserved %s\n", s);
     return true;
 }
 
@@ -88,8 +92,6 @@ char* parse_ident() {
     strncpy(ident, token->str, token->len);
     ident[token->len] = 0;
     token = token->next;
-    if(debug)
-        printf("-- ident %s\n", ident);
     return ident;
 }
 
@@ -98,8 +100,6 @@ Token* parse_num() {
     if(!(tok = expect_int_literal()))
         return NULL;
     token = token->next;
-    if(debug)
-        printf("-- num %ld\n", tok->val);
     return tok;
 }
 
@@ -159,6 +159,10 @@ Node* find_local_var(char* name) {
         if(strnlen(var->name, 1000) == len && !strncmp(var->name, name, len))
             return new_var_node(var);
     }
+    for(Var* var = hot_func->arg; var; var = var->next) {
+        if(strnlen(var->name, 1000) == len && !strncmp(var->name, name, len))
+            return new_var_node(var);
+    }
     return NULL;
 }
 
@@ -175,10 +179,43 @@ Var* add_local(Var* var) {
     return var;
 } 
 
+Function* find_func(char* name) {
+    int len = strnlen(name, 1000);
+    for(FuncList* fl = func_list; fl; fl = fl->next) {
+        if(strnlen(fl->func->name, 1000) == len && !strncmp(fl->func->name, name, len))
+            return fl->func;
+    }
+    return NULL;
+}
+
+Function* add_func(Function* func) {
+    if(!find_func(func->name)) {
+        FuncList* fl = new FuncList();
+        fl->func = func;
+        fl->next = func_list;
+        func_list = fl;
+    }
+    return func;
+}
+
 Node* var() {
     return find_local_var(parse_ident());
 }
 
+Node* func_args(Function* fn) {
+    if(parse_reserved(")"))
+        return NULL;
+
+    Node *head = expr();
+    Node *cur = head;
+    while (parse_reserved(",")) {
+        cur->next = expr();
+        cur = cur->next;
+        cur->next = NULL;
+    }
+    assert(parse_reserved(")"));
+    return head;
+}
 
 // primary = identifiers
 //         | "(" expr ")"
@@ -192,6 +229,16 @@ Node* primary() {
     }
     char* name;
     if (name = parse_ident()) {
+        Node* node;
+        // function call
+        if(parse_reserved("(")) {
+            Node *node = new_node(ND_FUNC_CALL);
+            node->func = find_func(name);
+            assert(node->func);
+            node->args = func_args(node->func);
+            return node;
+        }
+        // local var
         return find_local_var(name);
     }
     return num();
@@ -389,6 +436,30 @@ Node* stmt() {
     return node;
 }
 
+Var* decl_func_arg() {
+    Type* ty = parse_basetype();
+    Var* var = new Var();
+    var->ty = ty;
+    var->name = parse_ident();
+    var->init = NULL;
+    return var;
+}
+
+Var* decl_func_args() {
+    if (parse_reserved(")")) {
+        return NULL;
+    }
+
+    Var* param = decl_func_arg();
+    Var* cur = param;
+    while (!parse_reserved(")")) {
+        assert(parse_reserved(","));
+        cur->next = decl_func_arg();
+        cur = cur->next;
+    }
+    return param;
+}
+
 // step1
 
 // <program> ::= <function>
@@ -439,6 +510,13 @@ Node* stmt() {
 //               | "break" ";"
 //               | "continue" ";"
 
+// step 9
+
+// <function> ::= "int" <id> "(" [ "int" <id> { "," "int" <id> } ] ")" ( "{" { <block-item> } "}" | ";" )
+// <primary> ::= <function-call> | "(" <exp> ")" | <unary_op> <factor> | <int> | <id>
+// <function-call> ::= id "(" [ <exp> { "," <exp> } ] ")"
+
+
 Function *parse_function() {
     Type *ty = parse_basetype();
     assert(ty);
@@ -448,17 +526,25 @@ Function *parse_function() {
     Function *fn = new Function();
     fn->name = name;
     fn->ret_type = ty;
-
+    fn->node = NULL;
+    fn->next = NULL;
 
     var_stack = NULL;
     Var var_head = {};
     func_locals = &var_head;
 
-    assert(stack_depth == 0);
     push_stack();
     assert(parse_reserved("("));
-    // TODO: args
-    assert(parse_reserved(")"));
+
+    fn->arg = decl_func_args();
+
+    add_func(fn);
+
+    if(parse_reserved(";"))
+        return NULL;
+
+    hot_func = fn;
+
     assert(parse_reserved("{"));
 
     // Read function body
@@ -476,15 +562,14 @@ Function *parse_function() {
 
 Function* parsing() {
     Function head = {};
-    Function *cur = &head;
+    Function* cur = &head;
 
     while (token->kind != TK_EOF) {
         Function *fn = parse_function();
         if (!fn)
             continue;
         cur->next = fn;
-        cur = cur->next;
-        continue;
+        cur = fn;
     }
 
     return head.next;

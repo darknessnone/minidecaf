@@ -69,6 +69,7 @@ enum NodeKind{
     ND_FOR,
     ND_BREAK,
     ND_CONTINUE,
+    ND_FUNC_CALL,
 };
 
 struct Node;
@@ -79,6 +80,17 @@ struct Var {       // Local variable
     int offset;    // Offset from %rbp
     Node* init;    // initialization
     Var* next;
+};
+
+struct Function {
+    Function *next;
+    char *name;
+    Type *ret_type;
+    Node *node;
+    int stack_size;
+    Var* local;
+    Var* arg;
+    int narg;
 };
 
 struct Node {
@@ -98,15 +110,9 @@ struct Node {
     // 'for' statement 
     Node* init;
     Node* inc;
-};
-
-struct Function {
-    Function *next;
-    char *name;
-    Type *ret_type;
-    Node *node;
-    int stack_size;
-    Var* local;
+    // function call
+    Function* func;
+    Node* args;
 };
 
 
@@ -120,6 +126,7 @@ void codegen();
 extern char user_input[];
 extern Token* token;
 extern Function* func;
+extern bool debug;
 
 
 
