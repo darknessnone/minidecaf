@@ -6,7 +6,7 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
   for g in &p.globs {
     writeln!(w, ".data")?;
     writeln!(w, "{}:", g.0)?;
-    writeln!(w, "  .word {}", g.1.unwrap_or(0))?;
+    for x in &g.1 { writeln!(w, "  .word {}", x)?; }
     writeln!(w)?;
   }
   for f in &p.funcs {
@@ -71,29 +71,28 @@ pub fn write_asm(p: &IrProg, w: &mut impl Write) -> Result<()> {
           };
           writeln!(w, "  sd t0, 0(sp)")?;
         }
-        IrStmt::Load(x) => {
-          writeln!(w, "  ld t0, -{}(s0)", (x + 1) * SLOT)?;
+        IrStmt::LocalAddr(x) => {
+          writeln!(w, "  add t0, s0, -{}", (x + 1) * SLOT)?;
           writeln!(w, "  sd t0, -8(sp)")?;
           writeln!(w, "  add sp, sp, -8")?;
         }
-        IrStmt::Store(x) => {
-          writeln!(w, "  ld t0, 0(sp)")?;
-          writeln!(w, "  add sp, sp, 8")?;
-          writeln!(w, "  sd t0, -{}(s0)", (x + 1) * SLOT)?;
-        }
-        IrStmt::LoadGlobal(x) => {
+        IrStmt::GlobalAddr(x) => {
           let name = p.globs[*x].0;
           writeln!(w, "  lui t0, %hi({})", name)?;
-          writeln!(w, "  ld t0, %lo({})(t0)", name)?;
+          writeln!(w, "  add t0, t0, %lo({})", name)?;
           writeln!(w, "  sd t0, -8(sp)")?;
           writeln!(w, "  add sp, sp, -8")?;
         }
-        IrStmt::StoreGlobal(x) => {
-          let name = p.globs[*x].0;
+        IrStmt::Load => {
           writeln!(w, "  ld t0, 0(sp)")?;
+          writeln!(w, "  ld t0, 0(t0)")?;
+          writeln!(w, "  sd t0, 0(sp)")?;
+        }
+        IrStmt::Store => {
+          writeln!(w, "  ld t0, 0(sp)")?; // rhs
+          writeln!(w, "  ld t1, 8(sp)")?; // addr of lhs
+          writeln!(w, "  sd t1, 0(t0)")?;
           writeln!(w, "  add sp, sp, 8")?;
-          writeln!(w, "  lui t1, %hi({})", name)?;
-          writeln!(w, "  sd t0, %lo({})(t1)", name)?;
         }
         IrStmt::Label(x) => writeln!(w, ".L.{}.{}:", f.name, x)?,
         IrStmt::Bz(x) => {

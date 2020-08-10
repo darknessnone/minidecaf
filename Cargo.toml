@@ -7,5 +7,5 @@ edition = "2018"
 [dependencies]
 parser-macros = { git = "https://github.com/MashPlant/lalr1" }
 
-[profile.dev]
+[profile.dev.package."*"]
 opt-level = 3

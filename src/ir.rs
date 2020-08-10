@@ -3,7 +3,7 @@ use crate::ast::*;
 
 pub struct IrProg<'a> {
   pub funcs: Vec<IrFunc<'a>>,
-  pub globs: Vec<(&'a str, Option<i32>)>,
+  pub globs: Vec<(&'a str, Vec<i32>)>,
 }
 
 pub struct IrFunc<'a> {
@@ -18,10 +18,10 @@ pub enum IrStmt {
   Ldc(i32),
   Unary(UnaryOp),
   Binary(BinaryOp),
-  Load(usize),
-  Store(usize),
-  LoadGlobal(usize),
-  StoreGlobal(usize),
+  LocalAddr(usize),
+  GlobalAddr(usize),
+  Load,
+  Store,
   Label(usize),
   Bz(usize),
   Bnz(usize),
@@ -31,22 +31,16 @@ pub enum IrStmt {
   Ret,
 }
 
-pub fn ast2ir<'a>(p: &Prog<'a>) -> IrProg<'a> {
+pub fn ast2ir<'a>(p: &'a Prog<'a>) -> IrProg<'a> {
   let mut glob2id = HashMap::new();
   let mut globs = Vec::new();
   for g in &p.globs {
-    match glob2id.entry(g.0) {
-      Entry::Vacant(v) => {
-        v.insert(globs.len());
-        globs.push(*g);
-      }
-      Entry::Occupied(o) => {
-        let old = &mut globs[*o.get()];
-        if old.1.is_none() { *old = *g; } else if g.1.is_some() {
-          panic!("global variable `{}` redefined in current context", g.0)
-        }
-      }
-    }
+    let id = globs.len();
+    if glob2id.insert(g.name, (id, g)).is_some() { panic!("global variable `{}` redefined in current context", g.name); }
+    let init = g.init.as_ref().map(|x| if let Expr::Int(i) = x { vec![*i] } else {
+      panic!("global variable `{}` must be initialized with int consy", g.name)
+    }).unwrap_or(vec![0; g.dims.iter().product::<u32>() as usize]);
+    globs.push((g.name, init));
   }
   let mut func2id = HashMap::new();
   let mut funcs = Vec::new();
@@ -67,20 +61,22 @@ pub fn ast2ir<'a>(p: &Prog<'a>) -> IrProg<'a> {
   IrProg { funcs, globs }
 }
 
+type SymbolMap<'a> = HashMap<&'a str, (usize, &'a VarDef<'a>)>;
+
 struct FuncCtx<'a, 'b> {
-  names: Vec<HashMap<&'a str, usize>>,
+  names: Vec<SymbolMap<'a>>,
   stmts: Vec<IrStmt>,
   loops: Vec<(usize, usize)>,
-  func2id: &'b HashMap<&'b str, usize>,
-  glob2id: &'b HashMap<&'b str, usize>,
+  func2id: &'b HashMap<&'a str, usize>,
+  glob2id: &'b SymbolMap<'a>,
   var_cnt: usize,
   label_cnt: usize,
 }
 
-impl FuncCtx<'_, '_> {
+impl<'a> FuncCtx<'a, '_> {
   fn new_label(&mut self) -> usize { (self.label_cnt, self.label_cnt += 1).0 }
 
-  fn lookup(&self, name: &str) -> (bool, usize) {
+  fn lookup(&self, name: &str) -> (bool, (usize, &'a VarDef<'a>)) {
     for map in self.names.iter().rev() {
       if let Some(x) = map.get(name) { return (false, *x); }
     }
@@ -89,9 +85,9 @@ impl FuncCtx<'_, '_> {
   }
 }
 
-fn func<'a>(func2id: &HashMap<&str, usize>, glob2id: &HashMap<&str, usize>, f: &Func<'a>) -> IrFunc<'a> {
+fn func<'a>(func2id: &HashMap<&str, usize>, glob2id: &SymbolMap<'a>, f: &Func<'a>) -> IrFunc<'a> {
   let mut ctx = FuncCtx { names: vec![HashMap::new()], stmts: Vec::new(), loops: Vec::new(), func2id, glob2id, var_cnt: 0, label_cnt: 0 };
-  for p in &f.params { stmt(&mut ctx, &Stmt::Def(p, None)) }
+  for d in &f.params { def(&mut ctx, d); }
   if let Some(stmts) = &f.stmts {
     for s in stmts { stmt(&mut ctx, s); }
     match ctx.stmts.last() {
@@ -105,35 +101,39 @@ fn func<'a>(func2id: &HashMap<&str, usize>, glob2id: &HashMap<&str, usize>, f: &
   IrFunc { name: f.name, param_cnt: f.params.len(), var_cnt: ctx.var_cnt - f.params.len(), is_decl: f.stmts.is_none(), stmts: ctx.stmts }
 }
 
-fn block<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, b: &Block<'a>) {
+fn block<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, b: &'a Block<'a>) {
   ctx.names.push(HashMap::new());
   for s in &b.0 { stmt(ctx, s); }
   ctx.names.pop();
 }
 
-fn stmt<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, s: &Stmt<'a>) {
+fn def<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, d: &'a VarDef<'a>) {
+  if ctx.names.last_mut().unwrap().insert(d.name, (ctx.var_cnt, d)).is_some() {
+    panic!("variable `{}` redefined in current context", d.name)
+  }
+  if let Some(x) = &d.init {
+    expr(ctx, x, true);
+    ctx.stmts.push(IrStmt::LocalAddr(ctx.var_cnt));
+    ctx.stmts.push(IrStmt::Store);
+    ctx.stmts.push(IrStmt::Pop);
+  }
+  ctx.var_cnt += d.dims.iter().product::<u32>() as usize;
+}
+
+fn stmt<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, s: &'a Stmt<'a>) {
   match s {
     Stmt::Empty => {}
     Stmt::Ret(e) => {
-      expr(ctx, e);
+      expr(ctx, e, true);
       ctx.stmts.push(IrStmt::Ret);
     }
-    Stmt::Def(name, init) => {
-      if ctx.names.last_mut().unwrap().insert(*name, ctx.var_cnt).is_some() {
-        panic!("variable `{}` redefined in current context", name)
-      }
-      if let Some(x) = init {
-        expr(ctx, x);
-        ctx.stmts.push(IrStmt::Store(ctx.var_cnt));
-      }
-      ctx.var_cnt += 1;
-    }
+    Stmt::Def(d) => def(ctx, d),
     Stmt::Expr(e) => {
-      expr(ctx, e);
+      expr(ctx, e, true);
       ctx.stmts.push(IrStmt::Pop);
     }
     Stmt::If(cond, t, f) => {
-      expr(ctx, cond);
+      expr(ctx, cond, true);
       let (before_f, after_f) = (ctx.new_label(), ctx.new_label());
       ctx.stmts.push(IrStmt::Bz(before_f));
       block(ctx, t);
@@ -147,7 +147,7 @@ fn stmt<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, s: &Stmt<'a>) {
       let (before_cond, after_body) = (ctx.new_label(), ctx.new_label());
       ctx.loops.push((after_body, before_cond));
       ctx.stmts.push(IrStmt::Label(before_cond));
-      expr(ctx, cond);
+      expr(ctx, cond, true);
       ctx.stmts.push(IrStmt::Bz(after_body));
       block(ctx, body);
       ctx.stmts.push(IrStmt::Jump(before_cond));
@@ -160,7 +160,7 @@ fn stmt<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, s: &Stmt<'a>) {
       ctx.stmts.push(IrStmt::Label(before_body));
       block(ctx, body);
       ctx.stmts.push(IrStmt::Label(before_cond));
-      expr(ctx, cond);
+      expr(ctx, cond, true);
       ctx.stmts.push(IrStmt::Bnz(before_body));
       ctx.stmts.push(IrStmt::Label(after_cond));
       ctx.loops.pop();
@@ -171,11 +171,11 @@ fn stmt<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, s: &Stmt<'a>) {
       let (before_cond, before_update, after_body) = (ctx.new_label(), ctx.new_label(), ctx.new_label());
       ctx.loops.push((after_body, before_update));
       ctx.stmts.push(IrStmt::Label(before_cond));
-      expr(ctx, cond.as_ref().unwrap_or(&Expr::Int(1)));
+      expr(ctx, cond.as_ref().unwrap_or(&Expr::Int(1)), true);
       ctx.stmts.push(IrStmt::Bz(after_body));
       block(ctx, body);
       ctx.stmts.push(IrStmt::Label(before_update));
-      if let Some(update) = update { expr(ctx, update); }
+      if let Some(update) = update { expr(ctx, update, true); }
       ctx.stmts.push(IrStmt::Jump(before_cond));
       ctx.stmts.push(IrStmt::Label(after_body));
       ctx.loops.pop();
@@ -186,41 +186,67 @@ fn stmt<'a, 'b>(ctx: &mut FuncCtx<'a, 'b>, s: &Stmt<'a>) {
   }
 }
 
-fn expr(ctx: &mut FuncCtx, e: &Expr) {
+fn ck_lvalue(e: &Expr) {
+  match e { Expr::Var(..) | Expr::Index(..) | Expr::Deref(..) => {} _ => panic!("lvalue expression required in current context") }
+}
+
+fn expr(ctx: &mut FuncCtx, e: &Expr, load: bool) {
   match e {
     Expr::Int(x) => ctx.stmts.push(IrStmt::Ldc(*x)),
+    Expr::Var(name) => {
+      let (is_glob, (id, sym)) = ctx.lookup(name);
+      ctx.stmts.push(if is_glob { IrStmt::GlobalAddr(id) } else { IrStmt::LocalAddr(id) });
+      if load && sym.dims.is_empty() { ctx.stmts.push(IrStmt::Load); }
+    }
+    Expr::Index(arr, indices) => {
+      expr(ctx, arr, true);
+      let dims = match arr.as_ref() { Expr::Var(name) => (ctx.lookup(name).1).1.dims.as_slice(), _ => &[] };
+      for (i, idx) in indices.iter().enumerate() {
+        expr(ctx, idx, true);
+        if i > dims.len() { ctx.stmts.push(IrStmt::Load); }
+        let remain = dims.iter().skip(i + 1).product::<u32>() as i32;
+        ctx.stmts.push(IrStmt::Ldc(remain * 8));
+        ctx.stmts.push(IrStmt::Binary(BinaryOp::Mul));
+        ctx.stmts.push(IrStmt::Binary(BinaryOp::Add));
+      }
+      if load && indices.len() >= dims.len() { ctx.stmts.push(IrStmt::Load); }
+    }
+    Expr::Deref(ptr) => {
+      expr(ctx, ptr, true);
+      if load { ctx.stmts.push(IrStmt::Load); }
+    }
     Expr::Unary(op, x) => {
-      expr(ctx, x);
+      expr(ctx, x, true);
       ctx.stmts.push(IrStmt::Unary(*op));
     }
     Expr::Binary(op, l, r) => {
-      expr(ctx, l);
-      expr(ctx, r);
+      expr(ctx, l, true);
+      expr(ctx, r, true);
       ctx.stmts.push(IrStmt::Binary(*op));
     }
-    Expr::Var(name) => {
-      let (is_glob, id) = ctx.lookup(name);
-      ctx.stmts.push(if is_glob { IrStmt::LoadGlobal(id) } else { IrStmt::Load(id) });
+    Expr::Assign(l, r) => {
+      ck_lvalue(l);
+      expr(ctx, r, true);
+      expr(ctx, l, false);
+      ctx.stmts.push(IrStmt::Store);
     }
-    Expr::Assign(name, r) => {
-      expr(ctx, r);
-      let (is_glob, id) = ctx.lookup(name);
-      ctx.stmts.push(if is_glob { IrStmt::StoreGlobal(id) } else { IrStmt::Store(id) });
-      ctx.stmts.push(if is_glob { IrStmt::LoadGlobal(id) } else { IrStmt::Load(id) });
+    Expr::AddrOf(l) => {
+      ck_lvalue(l);
+      expr(ctx, l, false);
     }
     Expr::Condition(cond, t, f) => {
-      expr(ctx, cond);
+      expr(ctx, cond, true);
       let (before_f, after_f) = (ctx.new_label(), ctx.new_label());
       ctx.stmts.push(IrStmt::Bz(before_f));
-      expr(ctx, t);
+      expr(ctx, t, true);
       ctx.stmts.push(IrStmt::Jump(after_f));
       ctx.stmts.push(IrStmt::Label(before_f));
-      expr(ctx, f);
+      expr(ctx, f, true);
       ctx.stmts.push(IrStmt::Label(after_f));
     }
     Expr::Call(func, args) => {
       let id = *ctx.func2id.get(func).expect("function not defined in current context");
-      for a in args { expr(ctx, a); }
+      for a in args { expr(ctx, a, true); }
       ctx.stmts.push(IrStmt::Call(id));
     }
   }

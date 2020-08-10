@@ -4,6 +4,9 @@ pub struct Parser {}
 
 impl<'p> Token<'p> {
   fn str(&self) -> &'p str { std::str::from_utf8(self.piece).unwrap() }
+  fn parse<T>(&self) -> T where T: std::str::FromStr, <T as std::str::FromStr>::Err: std::fmt::Debug {
+    self.str().parse().expect("failed to parse")
+  }
 }
 
 fn mk_block(s: Stmt) -> Block { match s { Stmt::Block(x) => x, _ => Block(vec![s]) } }
@@ -20,6 +23,8 @@ priority = [
   { assoc = 'left', terms = ['Add', 'Sub'] },
   { assoc = 'left', terms = ['Mul', 'Div', 'Mod'] },
   { assoc = 'left', terms = ['BNot', 'LNot'] },
+  { assoc = 'left', terms = ['AddrOf'] },
+  { assoc = 'left', terms = ['LBrk', 'RBrk'] },
   { assoc = 'left', terms = ['Else'] },
 ]
 
@@ -49,11 +54,14 @@ priority = [
 '~' = 'BNot'
 '!' = 'LNot'
 '=' = 'Assign'
+'&' = 'AddrOf'
 '\?' = 'Question'
 ':' = 'Colon'
 ';' = 'Semi' # short for semicolon
 '\(' = 'LPar' # short for parenthesis
 '\)' = 'RPar'
+'\[' = 'LBrk' # short for bracket
+'\]' = 'RBrk'
 '\{' = 'LBrc' # short for brace
 '\}' = 'RBrc'
 ',' = 'Comma'
@@ -67,28 +75,46 @@ impl<'p> Parser {
   fn prog0() -> Prog<'p> { Prog { funcs: Vec::new(), globs: Vec::new() } }
   #[rule = "Prog -> Prog Func"]
   fn prog_func(mut l: Prog<'p>, f: Func<'p>) -> Prog<'p> { (l.funcs.push(f), l).1 }
-  #[rule = "Prog -> Prog Int Id Semi"]
-  fn prog_glob0(mut l: Prog<'p>, _i: Token, name: Token, _s: Token) -> Prog<'p> { (l.globs.push((name.str(), None)), l).1 }
-  #[rule = "Prog -> Prog Int Id Assign IntConst Semi"]
-  fn prog_glob1(mut l: Prog<'p>, _i: Token, name: Token, _a: Token, init: Token, _s: Token) -> Prog<'p> {
-    (l.globs.push((name.str(), Some(init.str().parse().expect("failed to parse int const")))), l).1
-  }
+  #[rule = "Prog -> Prog VarDef"]
+  fn prog_glob0(mut l: Prog<'p>, d: VarDef<'p>) -> Prog<'p> { (l.globs.push(d), l).1 }
 
-  #[rule = "Func -> Int Id LPar ParamList RPar Semi"]
-  fn func0(_i: Token, name: Token, _lp: Token, params: Vec<&'p str>, _rp: Token, _s: Token) -> Func<'p> { Func { name: name.str(), params, stmts: None } }
-  #[rule = "Func -> Int Id LPar ParamList RPar LBrc StmtList RBrc"]
-  fn func1(_i: Token, name: Token, _lp: Token, params: Vec<&'p str>, _rp: Token, _lb: Token, stmts: Vec<Stmt<'p>>, _rb: Token) -> Func<'p> {
+  #[rule = "Ty -> Int"]
+  fn ty_int(_: Token) -> u32 { 0 }
+  #[rule = "Ty -> Ty Mul"]
+  fn ty_ptr(level: u32, _: Token) -> u32 { level + 1 }
+
+  #[rule = "VarDef -> Ty Id Semi"]
+  fn var_def0(_ty: u32, name: Token, _s: Token) -> VarDef<'p> { VarDef { name: name.str(), dims: Vec::new(), init: None } }
+  #[rule = "VarDef -> Ty Id Assign Expr Semi"]
+  fn var_def1(_ty: u32, name: Token, _a: Token, init: Expr<'p>, _s: Token) -> VarDef<'p> { VarDef { name: name.str(), dims: Vec::new(), init: Some(init) } }
+  #[rule = "VarDef -> Ty Id Dims Semi"]
+  fn var_def2(_ty: u32, name: Token, dims: Vec<u32>, _s: Token) -> VarDef<'p> { VarDef { name: name.str(), dims, init: None } }
+
+  #[rule = "Dims -> LBrk IntConst RBrk"]
+  fn dims0(_l: Token, n: Token, _r: Token) -> Vec<u32> { vec![n.parse()] }
+  #[rule = "Dims -> Dims LBrk IntConst RBrk"]
+  fn dims1(mut l: Vec<u32>, _l: Token, n: Token, _r: Token) -> Vec<u32> { (l.push(n.parse()), l).1 }
+
+  #[rule = "Func -> Ty Id LPar ParamList RPar Semi"]
+  fn func0(_ty: u32, name: Token, _lp: Token, params: Vec<VarDef<'p>>, _rp: Token, _s: Token) -> Func<'p> { Func { name: name.str(), params, stmts: None } }
+  #[rule = "Func -> Ty Id LPar ParamList RPar LBrc StmtList RBrc"]
+  fn func1(_ty: u32, name: Token, _lp: Token, params: Vec<VarDef<'p>>, _rp: Token, _lb: Token, stmts: Vec<Stmt<'p>>, _rb: Token) -> Func<'p> {
     Func { name: name.str(), params, stmts: Some(stmts) }
   }
 
+  #[rule = "Param -> Ty Id"]
+  fn param0(_ty: u32, name: Token) -> VarDef<'p> { VarDef { name: name.str(), dims: Vec::new(), init: None } }
+  #[rule = "Param -> Ty Id Dims"]
+  fn param2(_ty: u32, name: Token, dims: Vec<u32>) -> VarDef<'p> { VarDef { name: name.str(), dims, init: None } }
+
   #[rule = "ParamList ->"]
-  fn param_list0() -> Vec<&'p str> { Vec::new() }
+  fn param_list0() -> Vec<VarDef<'p>> { Vec::new() }
   #[rule = "ParamList -> ParamList1"]
-  fn param_list1(x: Vec<&'p str>) -> Vec<&'p str> { x }
-  #[rule = "ParamList1 -> Int Id"]
-  fn param_list10(_i: Token, name: Token) -> Vec<&'p str> { vec![name.str()] }
-  #[rule = "ParamList1 -> ParamList1 Comma Int Id"]
-  fn param_list11(mut l: Vec<&'p str>, _c: Token, _i: Token, r: Token) -> Vec<&'p str> { (l.push(r.str()), l).1 }
+  fn param_list1(x: Vec<VarDef<'p>>) -> Vec<VarDef<'p>> { x }
+  #[rule = "ParamList1 -> Param"]
+  fn param_list10(d: VarDef<'p>) -> Vec<VarDef<'p>> { vec![d] }
+  #[rule = "ParamList1 -> ParamList1 Comma Param"]
+  fn param_list11(mut l: Vec<VarDef<'p>>, _c: Token, d: VarDef<'p>) -> Vec<VarDef<'p>> { (l.push(d), l).1 }
 
   #[rule = "StmtList ->"]
   fn stmt_list0() -> Vec<Stmt<'p>> { Vec::new() }
@@ -99,8 +125,8 @@ impl<'p> Parser {
   fn stmt_empty(_s: Token) -> Stmt<'p> { Stmt::Empty }
   #[rule = "Stmt -> Return Expr Semi"]
   fn stmt_ret(_r: Token, e: Expr<'p>, _s: Token) -> Stmt<'p> { Stmt::Ret(e) }
-  #[rule = "Stmt -> Int Id MaybeInit Semi"]
-  fn stmt_def0(_i: Token, name: Token, init: Option<Expr<'p>>, _s: Token) -> Stmt<'p> { Stmt::Def(name.str(), init) }
+  #[rule = "Stmt -> VarDef"]
+  fn stmt_def0(d: VarDef<'p>) -> Stmt<'p> { Stmt::Def(d) }
   #[rule = "Stmt -> Expr Semi"]
   fn stmt_expr(e: Expr<'p>, _s: Token) -> Stmt<'p> { Stmt::Expr(e) }
   #[rule = "Stmt -> If LPar Expr RPar Stmt MaybeElse"]
@@ -115,19 +141,14 @@ impl<'p> Parser {
   fn stmt_for0(_f: Token, _l: Token, init: Option<Expr<'p>>, _s1: Token, cond: Option<Expr<'p>>, _s2: Token, update: Option<Expr<'p>>, _r: Token, body: Stmt<'p>) -> Stmt<'p> {
     Stmt::For { init: init.map(|x| Box::new(Stmt::Expr(x))), cond, update, body: mk_block(body) }
   }
-  #[rule = "Stmt -> For LPar Int Id MaybeInit Semi MaybeExpr Semi MaybeExpr RPar Stmt"]
-  fn stmt_for1(_f: Token, _l: Token, _i: Token, name: Token, init: Option<Expr<'p>>, _s1: Token, cond: Option<Expr<'p>>, _s2: Token, update: Option<Expr<'p>>, _r: Token, body: Stmt<'p>) -> Stmt<'p> {
-    Stmt::For { init: Some(Box::new(Stmt::Def(name.str(), init))), cond, update, body: mk_block(body) }
+  #[rule = "Stmt -> For LPar VarDef MaybeExpr Semi MaybeExpr RPar Stmt"]
+  fn stmt_for1(_f: Token, _l: Token, d: VarDef<'p>, cond: Option<Expr<'p>>, _s2: Token, update: Option<Expr<'p>>, _r: Token, body: Stmt<'p>) -> Stmt<'p> {
+    Stmt::For { init: Some(Box::new(Stmt::Def(d))), cond, update, body: mk_block(body) }
   }
   #[rule = "Stmt -> Break Semi"]
   fn stmt_break(_b: Token, _s: Token) -> Stmt<'p> { Stmt::Break }
   #[rule = "Stmt -> Continue Semi"]
   fn stmt_continue(_c: Token, _s: Token) -> Stmt<'p> { Stmt::Continue }
-
-  #[rule = "MaybeInit ->"]
-  fn maybe_init0() -> Option<Expr<'p>> { None }
-  #[rule = "MaybeInit -> Assign Expr"]
-  fn maybe_init1(_a: Token, e: Expr<'p>) -> Option<Expr<'p>> { Some(e) }
 
   #[rule = "MaybeElse ->"]
   #[prec = "BNot"]
@@ -140,10 +161,23 @@ impl<'p> Parser {
   #[rule = "MaybeExpr -> Expr"]
   fn maybe_expr1(e: Expr<'p>) -> Option<Expr<'p>> { Some(e) }
 
+  #[rule = "Indices -> LBrk Expr RBrk"]
+  fn indices0(_l: Token, e: Expr<'p>, _r: Token) -> Vec<Expr<'p>> { vec![e] }
+  #[rule = "Indices -> Indices LBrk Expr RBrk"]
+  fn indices1(mut l: Vec<Expr<'p>>, _l: Token, e: Expr<'p>, _r: Token) -> Vec<Expr<'p>> { (l.push(e), l).1 }
+
   #[rule = "Expr -> LPar Expr RPar"]
   fn expr_par(_l: Token, e: Expr<'p>, _r: Token) -> Expr<'p> { e }
   #[rule = "Expr -> IntConst"]
-  fn expr_int(i: Token) -> Expr<'p> { Expr::Int(i.str().parse().expect("failed to parse int const")) }
+  fn expr_int(i: Token) -> Expr<'p> { Expr::Int(i.parse()) }
+  #[rule = "Expr -> Id"]
+  fn expr_var(name: Token) -> Expr<'p> { Expr::Var(name.str()) }
+  #[rule = "Expr -> Expr Indices"]
+  #[prec = "RBrk"]
+  fn expr_index(e: Expr<'p>, indices: Vec<Expr<'p>>) -> Expr<'p> { Expr::Index(Box::new(e), indices) }
+  #[rule = "Expr -> Mul Expr"]
+  #[prec = "AddrOf"]
+  fn expr_deref(_: Token, e: Expr<'p>) -> Expr<'p> { Expr::Deref(Box::new(e)) }
   #[rule = "Expr -> Sub Expr"]
   #[prec = "BNot"]
   fn expr_neg(_: Token, e: Expr<'p>) -> Expr<'p> { Expr::Unary(Neg, Box::new(e)) }
@@ -177,10 +211,10 @@ impl<'p> Parser {
   fn expr_and(l: Expr<'p>, _: Token, r: Expr<'p>) -> Expr<'p> { Expr::Binary(And, Box::new(l), Box::new(r)) }
   #[rule = "Expr -> Expr Or Expr"]
   fn expr_or(l: Expr<'p>, _: Token, r: Expr<'p>) -> Expr<'p> { Expr::Binary(Or, Box::new(l), Box::new(r)) }
-  #[rule = "Expr -> Id"]
-  fn expr_var(name: Token) -> Expr<'p> { Expr::Var(name.str()) }
-  #[rule = "Expr -> Id Assign Expr"]
-  fn expr_assign(name: Token, _a: Token, r: Expr<'p>) -> Expr<'p> { Expr::Assign(name.str(), Box::new(r)) }
+  #[rule = "Expr -> Expr Assign Expr"]
+  fn expr_assign(l: Expr<'p>, _a: Token, r: Expr<'p>) -> Expr<'p> { Expr::Assign(Box::new(l), Box::new(r)) }
+  #[rule = "Expr -> AddrOf Expr"]
+  fn expr_addrof(_: Token, l: Expr<'p>) -> Expr<'p> { Expr::AddrOf(Box::new(l)) }
   #[rule = "Expr -> Expr Question Expr Colon Expr"]
   #[prec = "Question"]
   fn expr_condition(cond: Expr<'p>, _q: Token, t: Expr<'p>, _c: Token, f: Expr<'p>) -> Expr<'p> { Expr::Condition(Box::new(cond), Box::new(t), Box::new(f)) }
