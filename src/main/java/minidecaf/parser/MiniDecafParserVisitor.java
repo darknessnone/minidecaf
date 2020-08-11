@@ -32,6 +32,34 @@ public interface MiniDecafParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitReturnStmt(MiniDecafParser.ReturnStmtContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code blockStmt}
+	 * labeled alternative in {@link MiniDecafParser#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBlockStmt(MiniDecafParser.BlockStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ifStmt}
+	 * labeled alternative in {@link MiniDecafParser#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIfStmt(MiniDecafParser.IfStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code whileStmt}
+	 * labeled alternative in {@link MiniDecafParser#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhileStmt(MiniDecafParser.WhileStmtContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code forStmt}
+	 * labeled alternative in {@link MiniDecafParser#stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitForStmt(MiniDecafParser.ForStmtContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link MiniDecafParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

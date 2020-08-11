@@ -21,8 +21,9 @@ public class Main {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         MiniDecafParser parser = new MiniDecafParser(tokens);
         ParseTree tree = parser.program();
-        MiniDecafVisitor visitor = new MiniDecafVisitor();
-        StringBuilder asm = visitor.visit(tree);
+        StringBuilder asm = new StringBuilder();
+        MiniDecafVisitor visitor = new MiniDecafVisitor(asm);
+        visitor.visit(tree);
         FileWriter writer = new FileWriter(args[1]);
         writer.write(asm.toString());
         writer.close();

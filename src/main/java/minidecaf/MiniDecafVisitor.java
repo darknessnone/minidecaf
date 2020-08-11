@@ -8,55 +8,130 @@ import java.util.*;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
-public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> {
-    @Override
-    public StringBuilder visitProgram(ProgramContext ctx) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(".global main\n")
-          .append("main:\n")
-          .append("# prologue\n");
+public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
+    private StringBuilder sb;
+    MiniDecafVisitor(StringBuilder sb) {
+        this.sb = sb;
+    }
 
-        // To avoid possible awkward situation,
-        // we save all control registers that we'll use.
-        sb.append("\taddi sp, sp, -8\n")
-          .append("\tsd fp, 0(sp)\n");
+    @Override
+    public Void visitProgram(ProgramContext ctx) {
+        sb.append(".global main\n")
+          .append("main:\n");
         
-        sb.append("\tmv fp, sp\n");
+        sb.append("# prologue\n")
+          .append("\tmv fp, sp\n");
+
+        // symbol
+        symbolTable.add(new HashMap<>());
         
+        // visit statements
         for (var stmt: ctx.stmt()) {
-            sb.append(visit(stmt));
+            visit(stmt);
             if (stmt instanceof ReturnStmtContext)
                 break;
         }
 
         sb.append("# epilogue\n")
-          .append("\tld a0, 0(sp)\n")
-          .append("\taddi sp, sp, 8\n");
-        
-        // To avoid possible awkward situation,
-        // we restore all control registers that we'll use.
-        sb.append("\tld fp, 0(sp)\n")
-          .append("\taddi sp, sp, 8\n");
+          .append("\tld a0, 0(sp)\n");
         
         sb.append("\tret\n");
-        return sb;
+        return null;
     }
 
     @Override
-    public StringBuilder visitExprStmt(ExprStmtContext ctx) {
+    public Void visitExprStmt(ExprStmtContext ctx) {
         // Although there's a possible useless value in the stack,
         // we'll remain it for convenience in the current implementation temporarily.
-        return visit(ctx.expr());
+        visit(ctx.expr());
+        return null;
     }
 
     @Override
-    public StringBuilder visitReturnStmt(ReturnStmtContext ctx) {
-        return visit(ctx.expr());
+    public Void visitReturnStmt(ReturnStmtContext ctx) {
+        visit(ctx.expr());
+        return null;
     }
 
     @Override
-    public StringBuilder visitExpr(ExprContext ctx) {
-        if (ctx.ASSIGN() == null) return visit(ctx.relational());
+    public Void visitBlockStmt(BlockStmtContext ctx) {
+        symbolTable.add(new HashMap<>());
+        for (var stmt: ctx.stmt())
+            visit(stmt);
+        symbolTable.pop();
+        return null;
+    }
+
+    @Override
+    public Void visitIfStmt(IfStmtContext ctx) {
+        int elseLabel = labelNo++;
+        int afterLabel = labelNo++;
+        sb.append("# # if\n");
+        visit(ctx.expr());
+        sb.append("\tld t1, 0(sp)\n")
+          .append("\tbeqz t1, _L" + elseLabel + "\n");
+        visit(ctx.stmt().get(0));
+        sb.append("\tj _L" + afterLabel + "\n")
+          .append("_L" + elseLabel + ":\n");
+        if (ctx.ELSE() != null)
+            visit(ctx.stmt().get(1));
+        sb.append("_L" + afterLabel + ":\n");
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(WhileStmtContext ctx) {
+        int beforeLabel = labelNo++;
+        int afterLabel = labelNo++;
+        sb.append("# while\n");
+        sb.append("_L" + beforeLabel + ":\n");
+        visit(ctx.expr());
+        sb.append("\tld t1, 0(sp)\n")
+          .append("\tbeqz t1, _L" + afterLabel + "\n");
+        visit(ctx.stmt());
+        sb.append("\tj _L" + beforeLabel + "\n")
+          .append("_L" + afterLabel + ":\n");
+        return null;
+    }
+
+    @Override
+    public Void visitForStmt(ForStmtContext ctx) {
+        int beforeLabel = labelNo++;
+        int afterLabel = labelNo++;
+        sb.append("# for\n");
+        
+        ExprContext initExpr = null;
+        ExprContext condExpr = null;
+        ExprContext afterExpr = null;
+        for (int i = 0; i < ctx.children.size(); ++i)
+            if (ctx.children.get(i) instanceof ExprContext) {
+                ExprContext expr = (ExprContext)(ctx.children.get(i));
+                if (ctx.children.get(i - 1).getText().equals("("))
+                    initExpr = expr;
+                else
+                    if (ctx.children.get(i + 1).getText().equals(";"))
+                        condExpr = expr;
+                    else
+                        afterExpr = expr;
+            }
+        
+        if (initExpr != null) visit(initExpr);
+        sb.append("_L" + beforeLabel + ":\n");
+        if (condExpr != null) {
+            visit(condExpr);
+            sb.append("\tld t1, 0(sp)\n")
+              .append("\tbeqz t1, _L" + afterLabel + "\n");
+        }
+        visit(ctx.stmt());
+        if (afterExpr != null) visit(afterExpr);
+        sb.append("\tj _L" + beforeLabel + "\n")
+          .append("_L" + afterLabel + ":\n");
+        return null;
+    }
+
+    @Override
+    public Void visitExpr(ExprContext ctx) {
+        if (ctx.ASSIGN() == null) visit(ctx.relational());
         else {
             // Check if the left hand side of the equation symbol
             // is a complete variable name.
@@ -72,20 +147,28 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
             else isVar = false;
             if (!isVar) reportError("only a single variable could be assigned", ctx.relational());
 
-            StringBuilder sb = new StringBuilder(visit(ctx.expr()));
-            symbolTable.put(v, offset);
-            offset -= 8;
-            return sb;
+            visit(ctx.expr());
+
+            int offset = lookupSymbol(v);
+            if (offset != 0) {
+                sb.append("\tld t1, 0(sp)\n")
+                  .append("\tsd t1, " + offset + "(fp)\n");
+            } else {
+                // create a new symbol
+                symbolTable.lastElement().put(v, currentOffset);
+                currentOffset -= 8;
+            }
         }
+        return null;
     }
 
     @Override
-    public StringBuilder visitRelational(RelationalContext ctx) {
-        StringBuilder sb = new StringBuilder(visit(ctx.add(0)));
+    public Void visitRelational(RelationalContext ctx) {
+        visit(ctx.add(0));
         AddContext add1 = ctx.add(1);
         if (add1 != null) {
-            sb.append(visit(add1))
-              .append("\tld t2, 0(sp)\n")
+            visit(add1);
+            sb.append("\tld t2, 0(sp)\n")
               .append("\tld t1, 8(sp)\n")
               .append("\taddi sp, sp, 8\n");
             if (ctx.EQ() != null) {
@@ -114,21 +197,14 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
                   .append("\tsd t1, 0(sp)\n");
             }
         }
-        return sb;
+        return null;
     }
 
     @Override
-    public StringBuilder visitAdd(AddContext ctx) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(visit(ctx.mul(0)));
-
-        // System.out.printf("children of add:");
-        // for (int i = 0; i < ctx.children.size(); ++i)
-        //     System.out.printf(" " + ctx.children.get(i).getText());
-        // System.out.println();
-
+    public Void visitAdd(AddContext ctx) {
+        visit(ctx.mul(0));
         for (int i = 2; i < ctx.children.size(); i += 2) {
-            sb.append(visit(ctx.children.get(i)));
+            visit(ctx.children.get(i));
 
             String op = ctx.children.get(i - 1).getText().equals("+") ? "add" : "sub";
             sb.append("# " + op + "\n")
@@ -138,15 +214,14 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
               .append("\taddi sp, sp, 8\n")
               .append("\tsd t1, 0(sp)\n");
         }
-        return sb;
+        return null;
     }
 
     @Override
-    public StringBuilder visitMul(MulContext ctx) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(visit(ctx.unary(0)));
+    public Void visitMul(MulContext ctx) {
+        visit(ctx.unary(0));
         for (int i = 2; i < ctx.children.size(); i += 2) {
-            sb.append(visit(ctx.children.get(i)));
+            visit(ctx.children.get(i));
 
             String op = ctx.children.get(i - 1).getText().equals("*") ? "mul" : "div";
             sb.append("# " + op + "\n")
@@ -156,25 +231,23 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
               .append("\taddi sp, sp, 8\n")
               .append("\tsd t1, 0(sp)\n");
         }
-        return sb;
+        return null;
     }
 
     @Override
-    public StringBuilder visitUnary(UnaryContext ctx) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(visit(ctx.primary()));
+    public Void visitUnary(UnaryContext ctx) {
+        visit(ctx.primary());
         TerminalNode sub = ctx.SUB();
         if (sub != null) {
             sb.append("\tld t1, 0(sp)\n")
               .append("\tneg t1, t1\n")
               .append("\tsd t1, 0(sp)\n");
         }
-        return sb;
+        return null;
     }
 
     @Override
-    public StringBuilder visitNumPrimary(NumPrimaryContext ctx) {
-        StringBuilder sb = new StringBuilder();
+    public Void visitNumPrimary(NumPrimaryContext ctx) {
         TerminalNode node = ctx.NUM();
         if (compare(Integer.toString(Integer.MAX_VALUE), node.getText()) == -1)
             reportError("too large number", ctx);
@@ -182,29 +255,48 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
           .append("\tli t1, " + ctx.NUM().getText() + "\n")
           .append("\taddi sp, sp, -8\n")
           .append("\tsd t1, 0(sp)\n");
-        return sb;
+        return null;
     }
 
     @Override
-    public StringBuilder visitIdentPrimary(IdentPrimaryContext ctx) {
-        StringBuilder sb = new StringBuilder();
+    public Void visitIdentPrimary(IdentPrimaryContext ctx) {
+        String v = ctx.IDENT().getText();
+        int offset = lookupSymbol(v);
+        if (offset == 0)
+            reportError("use variable that is not defined", ctx);
         sb.append("# read variable\n")
-          .append("\tld t1, " + symbolTable.get(ctx.IDENT().getText()) + "(fp)\n")
+          .append("\tld t1, " + offset + "(fp)\n")
           .append("\taddi sp, sp, -8\n")
           .append("\tsd t1, 0(sp)\n");
-        return sb;
+        return null;
     }
     
     @Override
-    public StringBuilder visitParenthesizePrimary(ParenthesizePrimaryContext ctx) {
-        return visit(ctx.expr());
+    public Void visitParenthesizePrimary(ParenthesizePrimaryContext ctx) {
+        visit(ctx.expr());
+        return null;
     }
 
     // Symbol table
     // So far, we only have global variables.
     // Therefore, here we only record an offset to the global fp.
-    Map<String, Integer> symbolTable = new HashMap<>();
-    Integer offset = -8;
+    Stack<Map<String, Integer>> symbolTable = new Stack<>();
+    Integer currentOffset = -8;
+
+    // look the symbol up for the offset (0 means non-existence)
+    private int lookupSymbol(String v) {
+        int offset = 0;
+        for (int i = symbolTable.size() - 1; i >= 0; --i) {
+            var map = symbolTable.elementAt(i);
+            if (map.containsKey(v)) {
+                offset = map.get(v);
+                break;
+            }
+        }
+        return offset;
+    }
+
+    Integer labelNo = 0;
 
     // Utils
     private int compare(String s, String t) {
@@ -228,4 +320,4 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<StringBuilder> 
     }
 }
 
-// TODO: only one StringBuilder?
+// TODO: how large could the intermediate number in the assembly be?

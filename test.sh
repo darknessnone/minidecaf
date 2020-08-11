@@ -60,5 +60,14 @@ assert "a=3; b=1+a*a; b;" 10
 assert "a=3*2; b=2; c=2+b*a+10+2*b;" 28
 assert "abc=3*2; bcde=2; c=2+bcde*abc;" 14
 assert "abc=3*2; xy=6; abc==xy;" 1
+assert "x=0; x=x+1; x=x+1;" 2
 assert "abc=3*2; xy=10; abc==xy; return xy;" 10
 assert "abc=3*2; xy=10; return abc+xy+4; return xy;" 20
+assert "abc=3*2; xy=10; { xy = 5; return abc+xy+4; }" 15
+assert "x=0; if(0)x=1; x;" 0
+assert "x=0; if(1)x=1; x;" 1
+assert "x=0; if(x)x=1;else x=2; x;" 2
+assert "x=0; if(x==0)x=1;else x=2; x;" 1
+assert "x=-4; z=0; for(;x=x+1;)z=z-x; z;" 6
+assert "x=-4; z=0; while(x=x+1)z=z-x; z;" 6
+assert "z=0; for(x=0;x<4;x=x+1)z=z+x; z;" 6
