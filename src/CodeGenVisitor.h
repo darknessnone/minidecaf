@@ -28,6 +28,7 @@ public:
     antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
     antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
     antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
+    antlrcpp::Any visitPureAssign(MiniDecafParser::PureAssignContext *ctx);
     antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *ctx);
     antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *ctx);
 
@@ -39,7 +40,7 @@ private:
     symTab<int> varTab, typeTab;
     symTab<std::vector<int> > sizeTab;
     enum VarType {
-        INT, INT_PTR, INT_ARR
+        INT, INT_PTR, INT_ARR, UNDEF
     };
 
     std::string curFunc;

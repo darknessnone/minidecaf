@@ -53,6 +53,8 @@ public:
 
     virtual antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *context) = 0;
 
+    virtual antlrcpp::Any visitPureAssign(MiniDecafParser::PureAssignContext *context) = 0;
+
     virtual antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *context) = 0;
 
     virtual antlrcpp::Any visitParen(MiniDecafParser::ParenContext *context) = 0;

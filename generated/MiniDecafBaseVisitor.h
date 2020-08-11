@@ -83,6 +83,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitPureAssign(MiniDecafParser::PureAssignContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx) override {
     return visitChildren(ctx);
   }

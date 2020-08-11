@@ -15,6 +15,7 @@ public:
     antlrcpp::Any visitProg(MiniDecafParser::ProgContext *ctx);
     // antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *ctx);
     
+    antlrcpp::Any visitPureAssign(MiniDecafParser::PureAssignContext *ctx);
     antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
     antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *ctx);
     antlrcpp::Any visitType(MiniDecafParser::TypeContext *ctx);
@@ -23,7 +24,7 @@ private:
     symTab<int> varTab, typeTab;
     symTab<std::vector<int> > sizeTab;
     enum VarType {
-        INT, INT_PTR, INT_ARR
+        INT, INT_PTR, INT_ARR, UNDEF
     };
 
     int offset;
