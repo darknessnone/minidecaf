@@ -1,13 +1,15 @@
 grammar MiniDecaf;
 
-prog : (stmts)* EOF
+toplv : (prog)* EOF
+     ;
+
+prog : type ID '(' (type ID ',')* (type ID)? ')' stmts           
      ;
 
 stmts : 'return' expr ';'                                        # Return
      | IF '(' expr ')' stmts (ELSE stmts)?                       # IfStmt
      | WHILE '(' expr ')' stmts                                  # WhileLoop
      | FOR '(' (expr)? ';' (expr)? ';' (expr)? ')' stmts         # ForLoop
-     | type ID '(' (type ID ',')* (type ID)? ')' stmts           # FuncDef
      | expr ';'                                                  # PrintExpr
      | '{' (stmts)* '}'                                          # StmtBlock
      ;
@@ -19,12 +21,13 @@ expr : ('+'|'-'|'*'|'&') expr                                    # Unary
      | expr op=(EQ|NEQ) expr                                     # Equal
      | type ID '=' expr                                          # Assign
      | ID '(' (expr ',')* (expr)? ')'                            # CallFunc
+     | SIZEOF '(' ID ')'                                         # SizeOf
      | ID                                                        # Identifier
      | INTEGER                                                   # Literal
      | '(' expr ')'                                              # Paren
      ;
 
-type : INT
+type : INT ('*')*
      ;
 
 WS : [ \t\r\n] -> skip; 
@@ -47,6 +50,7 @@ LE : '<=';
 GT : '>';
 GE : '>=';
 ASSIGN : '=';
+SIZEOF : 'sizeof';
 INT : 'int';
 RET : 'return';
 IF : 'if';

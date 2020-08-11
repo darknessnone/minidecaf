@@ -19,6 +19,8 @@ public:
   /**
    * Visit parse trees produced by MiniDecafParser.
    */
+    virtual antlrcpp::Any visitToplv(MiniDecafParser::ToplvContext *context) = 0;
+
     virtual antlrcpp::Any visitProg(MiniDecafParser::ProgContext *context) = 0;
 
     virtual antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *context) = 0;
@@ -28,8 +30,6 @@ public:
     virtual antlrcpp::Any visitWhileLoop(MiniDecafParser::WhileLoopContext *context) = 0;
 
     virtual antlrcpp::Any visitForLoop(MiniDecafParser::ForLoopContext *context) = 0;
-
-    virtual antlrcpp::Any visitFuncDef(MiniDecafParser::FuncDefContext *context) = 0;
 
     virtual antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *context) = 0;
 
@@ -48,6 +48,8 @@ public:
     virtual antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *context) = 0;
 
     virtual antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *context) = 0;
+
+    virtual antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *context) = 0;
 
     virtual antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *context) = 0;
 

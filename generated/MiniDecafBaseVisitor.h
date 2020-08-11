@@ -15,6 +15,10 @@
 class  MiniDecafBaseVisitor : public MiniDecafVisitor {
 public:
 
+  virtual antlrcpp::Any visitToplv(MiniDecafParser::ToplvContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitProg(MiniDecafParser::ProgContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -32,10 +36,6 @@ public:
   }
 
   virtual antlrcpp::Any visitForLoop(MiniDecafParser::ForLoopContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitFuncDef(MiniDecafParser::FuncDefContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -72,6 +72,10 @@ public:
   }
 
   virtual antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *ctx) override {
     return visitChildren(ctx);
   }
 

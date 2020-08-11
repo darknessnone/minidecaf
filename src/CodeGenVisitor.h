@@ -2,31 +2,46 @@
 
 #include "MiniDecafBaseVisitor.h"
 #include <string>
+#include <unordered_map>
+#include <tuple>
+
+template<typename T>
+using symTab = std::unordered_map<std::string, std::unordered_map<std::string, T> >;
+
 
 class CodeGenVisitor : public MiniDecafBaseVisitor {
 public:
-    antlrcpp::Any visitProg(MiniDecafParser::ProgContext* ctx, std::unordered_map<std::string, std::unordered_map<std::string, int> >& symbol_); 
-    antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *ctx);
-    antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx);
-    antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *ctx);
-    antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *ctx);
-    antlrcpp::Any visitParen(MiniDecafParser::ParenContext *ctx);
-    antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
-    antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *ctx);
-    antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
-    antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *ctx);
-    antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
+    antlrcpp::Any visitToplv(MiniDecafParser::ToplvContext *ctx, std::tuple<symTab<int>, symTab<int>, symTab<std::vector<int> > >& symbol_);
+    antlrcpp::Any visitProg(MiniDecafParser::ProgContext *ctx); 
     antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *ctx);
     antlrcpp::Any visitIfStmt(MiniDecafParser::IfStmtContext *ctx);
     antlrcpp::Any visitWhileLoop(MiniDecafParser::WhileLoopContext *ctx);
     antlrcpp::Any visitForLoop(MiniDecafParser::ForLoopContext *ctx);
+    antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *ctx);
     antlrcpp::Any visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx);
+    antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *ctx);
+    antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *ctx);
+    antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *ctx);
+    antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *ctx);
+    antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx);
+    antlrcpp::Any visitParen(MiniDecafParser::ParenContext *ctx);
+    antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
+    antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
+    antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
     antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *ctx);
-    antlrcpp::Any visitFuncDef(MiniDecafParser::FuncDefContext *ctx);
+    antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *ctx);
 
 private:
     std::ostringstream code_;
-    std::unordered_map<std::string, std::unordered_map<std::string, int> > symbol;
+    std::ostringstream data_;
+    std::ostringstream bss_;
+
+    symTab<int> varTab, typeTab;
+    symTab<std::vector<int> > sizeTab;
+    enum VarType {
+        INT, INT_PTR, INT_ARR
+    };
+
     std::string curFunc;
     int labelOrder;
     /* A simple stack machine model */

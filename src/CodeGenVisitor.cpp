@@ -1,36 +1,37 @@
 #include "CodeGenVisitor.h"
 #include <typeinfo>
 
-antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx, 
-    std::unordered_map<std::string, std::unordered_map<std::string, int> >& symbol_) {
-    code_ << ".global main\n";
-        //   << "main:\n"
-        //   << "\tsd fp, -8(sp)\n"
-        //   << "\tmv fp, sp\n";
-    symbol = symbol_;
+antlrcpp::Any CodeGenVisitor::visitToplv(MiniDecafParser::ToplvContext *ctx,
+    std::tuple<symTab<int>, symTab<int>, symTab<std::vector<int> > >& symbol_) {
+    
+    code_ << ".section .text\n"
+          << ".globl main\n";
+    varTab = std::get<0>(symbol_);
+    typeTab = std::get<1>(symbol_);
+    sizeTab = std::get<2>(symbol_);
     labelOrder = 0;
     visitChildren(ctx);
-    return code_.str();
+    return code_.str() + data_.str() + bss_.str();
 }
 
-antlrcpp::Any CodeGenVisitor::visitPrintExpr(MiniDecafParser::PrintExprContext *ctx) {
-    visitChildren(ctx);
-    return nullptr;
-}
-
-antlrcpp::Any CodeGenVisitor::visitFuncDef(MiniDecafParser::FuncDefContext *ctx) {
+antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx) { 
     curFunc = ctx->ID(0)->getText();
-    code_ << ctx->ID(0)->getText() << ":\n"
+    code_ << curFunc << ":\n"
           << "\tsd ra, -8(sp)\n"
           << "\taddi sp, sp, -8\n"
           << "\tsd fp, -8(sp)\n"
           << "\taddi fp, sp, -8\n"
-          << "\taddi sp, fp, " << -8 * (int)symbol[curFunc].size() << "\n";
+          << "\taddi sp, fp, " << -8 * (int)varTab[curFunc].size() << "\n";
     for (auto i = 1; i < ctx->ID().size(); ++i) {
-        code_ << "\tld t0, " << 16 + 8 * symbol[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
-        code_ << "\tsd t0, " << -8 - 8 * symbol[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+        code_ << "\tld t0, " << 16 + 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+        code_ << "\tsd t0, " << -8 - 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
     }
     visit(ctx->stmts());
+    return nullptr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitPrintExpr(MiniDecafParser::PrintExprContext *ctx) {
+    visit(ctx->expr());
     return nullptr;
 }
 
@@ -52,18 +53,29 @@ antlrcpp::Any CodeGenVisitor::visitReturn(MiniDecafParser::ReturnContext *ctx) {
 }
 
 antlrcpp::Any CodeGenVisitor::visitAssign(MiniDecafParser::AssignContext *ctx) {
-    // code_ << "\taddi sp, fp, " << -8 - 8 * (int)symbol[curFunc].size() << "\n";
     visit(ctx->expr());
-    code_ << "\tsd a0, " << -8 - 8 * symbol[curFunc][ctx->ID()->getText()] << "(fp)\n";
+    code_ << "\tsd a0, " << -8 - 8 * varTab[curFunc][ctx->ID()->getText()] << "(fp)\n";
+    return nullptr;
+}
+
+antlrcpp::Any CodeGenVisitor::visitSizeOf(MiniDecafParser::SizeOfContext *ctx) {
+    std::string varName = ctx->ID()->getText();
+    if (typeTab[curFunc][varName] == VarType::INT ||
+        typeTab[curFunc][varName] == VarType::INT_PTR) {
+        
+        code_ << "\tli a0, 8\n" 
+              << push;
+    }
     return nullptr;
 }
 
 antlrcpp::Any CodeGenVisitor::visitIdentifier(MiniDecafParser::IdentifierContext *ctx) {
-    if (symbol[curFunc][ctx->ID()->getText()] == -1) {
-        std::cerr << "[error] Var " << ctx->ID()->getText() << " is used before define\n";
+    std::string varName = ctx->ID()->getText();
+    if (varTab[curFunc].count(varName) == 0) {
+        std::cerr << "[error] Var " << varName << " is used before define\n";
         exit(1);
     } else {
-        code_ << "\tld a0, " << -8 - 8 * symbol[curFunc][ctx->ID()->getText()] << "(fp)\n"
+        code_ << "\tld a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n"
               << push;
     }
     return nullptr;
@@ -118,7 +130,7 @@ antlrcpp::Any CodeGenVisitor::visitUnary(MiniDecafParser::UnaryContext *ctx) {
               << push;
     } else if (ctx->AND()) {
         code_ << pop1
-              << "\taddi a0, fp, " << -8 - 8 * symbol[curFunc][ctx->expr()->getText()] << "\n"
+              << "\taddi a0, fp, " << -8 - 8 * varTab[curFunc][ctx->expr()->getText()] << "\n"
               << push;
     }
     return nullptr;

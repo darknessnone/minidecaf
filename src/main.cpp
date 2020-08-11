@@ -21,13 +21,13 @@ int main(int argc, const char* argv[]) {
     CommonTokenStream tokens(&lexer);
     MiniDecafParser parser(&tokens);
 
-    MiniDecafParser::ProgContext* treeNode = parser.prog();
+    MiniDecafParser::ToplvContext* treeNode = parser.toplv();
 
     VarAllocVisitor varAllocVisitor;
-    unordered_map<string, unordered_map<string, int> > symbol_ = varAllocVisitor.visitProg(treeNode);
-    
+    std::tuple<symTab<int>, symTab<int>, symTab<vector<int> > > symbol_ = varAllocVisitor.visitToplv(treeNode);
+
     CodeGenVisitor codeGenVisitor;
-    string asmCode = codeGenVisitor.visitProg(treeNode, symbol_);
+    string asmCode = codeGenVisitor.visitToplv(treeNode, symbol_);
     cout << asmCode << endl;
     return 0;
 }
