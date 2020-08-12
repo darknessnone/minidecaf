@@ -7,8 +7,9 @@ struct VarStack {
 };
 
 static int stack_depth = 0;
-static Var* func_locals;
-static VarStack *var_stack;
+static Var* func_locals = NULL;
+static VarStack *var_stack = NULL;
+static Var* globals = NULL;
 
 void push_stack() {
     stack_depth++;
@@ -103,6 +104,15 @@ Token* parse_num() {
     return tok;
 }
 
+bool is_func() {
+    Token *tok = token;
+    assert(parse_basetype());
+    char *name = parse_ident();
+    bool isfunc = name && parse_reserved("(");
+    token = tok;
+    return isfunc;
+}
+
 Node* new_num(Token* tok) {
     Node* node = new_node(ND_NUM);
     node->ty = tok->ty;
@@ -141,6 +151,23 @@ Node* new_unused(Node* expr) {
     return node;
 }
 
+Var* new_var(char* name, Type* ty) {
+    Var *var = new Var();
+    var->name = name;
+    var->ty = ty;
+    var->init = NULL;
+    var->next = NULL;
+    var->is_local = false;
+    return var;
+}
+
+Var* new_gvar(char *name, Type *ty) {
+    Var* var = new_var(name, ty);
+    var->next = globals;
+    globals = var;
+    return var;
+}
+
 Node* expr();
 
 Node* num() {
@@ -159,14 +186,34 @@ Node* find_local_var(char* name) {
         if(strnlen(var->name, 1000) == len && !strncmp(var->name, name, len))
             return new_var_node(var);
     }
-    for(Var* var = hot_func->arg; var; var = var->next) {
+    if(hot_func) {
+        for(Var* var = hot_func->arg; var; var = var->next) {
+            if(strnlen(var->name, 1000) == len && !strncmp(var->name, name, len))
+                return new_var_node(var);
+        }
+    }
+    return NULL;
+}
+
+Node* find_gvar(char* name) {
+    int len = strnlen(name, 1000);
+    for(Var* var = globals; var; var = var->next) {
         if(strnlen(var->name, 1000) == len && !strncmp(var->name, name, len))
             return new_var_node(var);
     }
     return NULL;
 }
 
+Node* find_var(char* name) {
+    Node* var;
+    if((var = find_local_var(name)))
+        return var;
+    return find_gvar(name);
+}
+
 Var* add_local(Var* var) {
+    var->is_local = true;
+
     func_locals->next = var;
     func_locals = var;
 
@@ -199,7 +246,7 @@ Function* add_func(Function* func) {
 }
 
 Node* var() {
-    return find_local_var(parse_ident());
+    return find_var(parse_ident());
 }
 
 Node* func_args(Function* fn) {
@@ -238,8 +285,7 @@ Node* primary() {
             node->args = func_args(node->func);
             return node;
         }
-        // local var
-        return find_local_var(name);
+        return find_var(name);
     }
     return num();
 }
@@ -347,11 +393,7 @@ Node* assign() {
 Node* declaration(Type* ty) {
     assert(ty);
     char* name = parse_ident();
-    Var* var = new Var();
-    var->name = name;
-    var->init = NULL;
-    var->ty = ty;
-    var->next = NULL;
+    Var* var = new_var(name, ty);
     add_local(var);
     if (parse_reserved("=")) {
         var->init = new_binary(ND_ASSIGN, new_var_node(var), expr());
@@ -364,6 +406,12 @@ Node* declaration(Type* ty) {
 
 Node* expr() {
     return assign();
+}
+
+Node* ginit() {
+    Node* node = num();
+    assert(node);
+    return node;
 }
 
 Node* stmt() {
@@ -438,10 +486,8 @@ Node* stmt() {
 
 Var* decl_func_arg() {
     Type* ty = parse_basetype();
-    Var* var = new Var();
-    var->ty = ty;
-    var->name = parse_ident();
-    var->init = NULL;
+    Var* var = new_var(parse_ident(), ty);
+    var->is_local = true;
     return var;
 }
 
@@ -516,7 +562,6 @@ Var* decl_func_args() {
 // <primary> ::= <function-call> | "(" <exp> ")" | <unary_op> <factor> | <int> | <id>
 // <function-call> ::= id "(" [ <exp> { "," <exp> } ] ")"
 
-
 Function *parse_function() {
     Type *ty = parse_basetype();
     assert(ty);
@@ -560,17 +605,45 @@ Function *parse_function() {
     return fn;
 }
 
-Function* parsing() {
+void global_var() {
+    Type *ty = parse_basetype();
+    char *name = parse_ident();
+
+    Node* var;
+    if(var = find_gvar(name)) {
+        assert(var->var->init == NULL);
+        if (parse_reserved("="))
+            var->var->init = ginit();
+    } else {
+        Var *var = new_gvar(name, ty);
+        if (parse_reserved("="))
+            var->init = ginit();
+    }
+    assert(parse_reserved(";")); 
+}
+
+Program* parsing() {
     Function head = {};
     Function* cur = &head;
-
     while (token->kind != TK_EOF) {
-        Function *fn = parse_function();
-        if (!fn)
+        if(is_func()) {
+            Function *fn = parse_function();
+            if (!fn)
+                continue;
+            cur->next = fn;
+            cur = fn;
+
+            func_locals = NULL;
+            var_stack = NULL;
+            hot_func = NULL;
+
             continue;
-        cur->next = fn;
-        cur = fn;
+        }
+        global_var();
     }
 
-    return head.next;
+    Program* program = new Program();
+    program->functions = head.next;
+    program->globals = globals;
+    return program;
 }

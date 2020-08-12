@@ -2,7 +2,7 @@
 
 char user_input[10*1024*1024];
 Token* token;
-Function* func;
+Program* prog;
 bool debug = false;
 
 static void read_input(char *path) {
@@ -28,8 +28,8 @@ int main(int argc, char **argv) {
        printf("invalid number of arguments\n");
     read_input(argv[1]);
     token = lexing();
-    func = parsing();
-    for (Function *fn = func; fn; fn = fn->next) {
+    prog = parsing();
+    for (Function *fn = prog->functions; fn; fn = fn->next) {
         int offset = 8;
         for (Var *var = fn->arg; var; var = var->next) {
             var->offset = offset;

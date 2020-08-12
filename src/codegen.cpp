@@ -4,6 +4,7 @@ static int labelseq = 0;
 static char* func_name = NULL;
 static int brkseq = 0;
 static int contseq = 0;
+static bool return_stmt = false;
 
 void gen_node(Node *node);
 
@@ -53,8 +54,13 @@ void gen_binary(Node* node) {
 void gen_addr(Node* node) {
     switch (node->kind) {
     case ND_VAR:
-        printf("  lea rax, [rbp-%d]\n", node->var->offset);
-        printf("  push rax\n");
+        Var* var = node->var;
+        if (var->is_local) {
+            printf("  lea rax, [rbp-%d]\n", var->offset);
+            printf("  push rax\n");
+        } else {
+            printf("  push offset %s\n", var->name);
+        }
         break;
     }
 }
@@ -82,6 +88,7 @@ void gen_node(Node *node) {
         gen_node(node->lexpr);
         printf("  pop rax\n");
         printf("  jmp .L.return.%s\n", func_name);
+        return_stmt = true;
         break;
     case ND_DECL:
         var = node->var;
@@ -264,11 +271,37 @@ void load_arg(Var *var, int idx) {
     printf("  mov [rbp-%d], %s\n", var->offset, argreg4[idx]);
 }
 
-void gen_text(Function* func) {
-    printf(".intel_syntax noprefix\n");
+void gen_data(Program *prog) {
+    for (Var* var = prog->globals; var; var = var->next)
+        printf(".global %s\n", var->name);
+
+    printf("  .bss\n");
+
+    for (Var* var = prog->globals; var; var = var->next) {
+        if (var->init)
+            continue;
+
+        printf(".align %d\n", 4);
+        printf("%s:\n", var->name);
+        printf("  .zero %d\n", 4);
+    }
+
+    printf("  .data\n");
+
+    for (Var* var = prog->globals; var; var = var->next) {
+        if (!var->init)
+            continue;
+
+        printf(".align %d\n", 4);
+        printf("%s:\n", var->name);
+        printf("  .long %ld\n", var->init->val);
+    }
+}
+
+void gen_text(Program* prog) {
     printf(".text\n");
 
-    for (Function *fn = func; fn; fn = fn->next) {
+    for (Function *fn = prog->functions; fn; fn = fn->next) {
         printf(".global %s\n", fn->name);
         printf("%s:\n", fn->name);
         func_name = fn->name;
@@ -286,6 +319,10 @@ void gen_text(Function* func) {
         for (Node *node = fn->node; node; node = node->next)
             gen_node(node);
 
+        if(!return_stmt) {
+            printf("  xor rax, rax\n");
+        }
+
         // Epilogue
         printf(".L.return.%s:\n", func_name);
         printf("  mov rsp, rbp\n");
@@ -295,5 +332,7 @@ void gen_text(Function* func) {
 }
 
 void codegen() {
-    gen_text(func);
+    printf(".intel_syntax noprefix\n");
+    gen_data(prog);
+    gen_text(prog);
 }

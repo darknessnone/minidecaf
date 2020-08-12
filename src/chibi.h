@@ -80,6 +80,7 @@ struct Var {       // Local variable
     int offset;    // Offset from %rbp
     Node* init;    // initialization
     Var* next;
+    bool is_local;
 };
 
 struct Function {
@@ -115,9 +116,12 @@ struct Node {
     Node* args;
 };
 
+struct Program {
+    Function* functions;
+    Var* globals;
+};
 
-
-Function* parsing();
+Program* parsing();
 
 // asmgen.h
 
@@ -125,7 +129,7 @@ void codegen();
 
 extern char user_input[];
 extern Token* token;
-extern Function* func;
+extern Program* prog;
 extern bool debug;
 
 
