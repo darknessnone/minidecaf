@@ -30,12 +30,12 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
 
         // open a new scope
         symbolTable.add(new HashMap<>());
-        currentOffset.add(0);
+        currentOffset.add(2 * 8);
         
         sb.append("# prologue\n");
-        sb.append("\tmv fp, sp\n");
         push("ra");
         push("fp");
+        sb.append("\tmv fp, sp\n");
 
         for (int i = 1; i < ctx.IDENT().size(); ++i) {
             String paraName = ctx.IDENT().get(i).getText();
