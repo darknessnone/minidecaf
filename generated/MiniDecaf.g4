@@ -12,6 +12,7 @@ stmts : 'return' expr ';'                                        # Return
      | FOR '(' (expr)? ';' (expr)? ';' (expr)? ')' stmts         # ForLoop
      | expr ';'                                                  # PrintExpr
      | '{' (stmts)* '}'                                          # StmtBlock
+     | ';'                                                       # Nop
      ;
 
 expr : ('+'|'-'|'*'|'&'|'!'|'~') expr                            # Unary

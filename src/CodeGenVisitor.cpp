@@ -12,6 +12,9 @@ antlrcpp::Any CodeGenVisitor::visitToplv(MiniDecafParser::ToplvContext *ctx,
     sizeTab = std::get<2>(symbol_);
     labelOrder = 0;
     visitChildren(ctx);
+    // for (auto i : varTab) {
+    //     std::cerr <<  i.first << "\n";
+    // }
     return code_.str() + data_.str() + bss_.str();
 }
 
@@ -23,12 +26,21 @@ antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
     } else {
         curFunc = ctx->ID(0)->getText();
         retState = false;
+        blockDep = 0; blockOrder = 0;
         code_ << curFunc << ":\n"
               << "\tsd ra, -8(sp)\n"
               << "\taddi sp, sp, -8\n"
               << "\tsd fp, -8(sp)\n"
               << "\taddi fp, sp, -8\n"
-              << "\taddi sp, fp, " << -8 * (int)varTab[curFunc].size() << "\n";
+              << "\taddi sp, fp, ";
+        
+        int capacity= 0;
+        for (auto& var : varTab) {
+            if (var.first.substr(0, curFunc.length()) == curFunc) {
+                capacity += varTab[var.first].size();
+            }
+        }
+        code_ << -8 * capacity << "\n";
 
         for (int i = 1; i < ctx->ID().size(); ++i) {
             if (ctx->ID().size() > 8) {
@@ -84,6 +96,27 @@ antlrcpp::Any CodeGenVisitor::visitPrintExpr(MiniDecafParser::PrintExprContext *
     return visit(ctx->expr());
 }
 
+antlrcpp::Any CodeGenVisitor::visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx) {
+    if (blockDep == 0) {
+        ++blockDep;        
+        for(auto stmt : ctx->stmts()) {
+            visit(stmt);
+        }
+    } else {
+        curFunc += "@" + std::to_string(blockOrder) + std::to_string(++blockDep);
+        for(auto stmt : ctx->stmts()) {
+            visit(stmt);
+        }
+        --blockDep;
+        if (blockDep == 1) {
+            ++blockOrder;
+        }
+        int pos = curFunc.find_last_of('@');
+        curFunc = curFunc.substr(0, pos);
+    }
+    return -1;
+}
+
 antlrcpp::Any CodeGenVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) {
     std::string varName = ctx->ID()->getText();
     if (ctx->type() && ctx->expr()) {
@@ -91,30 +124,55 @@ antlrcpp::Any CodeGenVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) {
         code_ << "\tsd a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n";       
     } else if (!ctx->type() && ctx->expr()) {
         visit(ctx->expr());
-        if (varTab[curFunc].count(varName) == 0) {
-            if (varTab["global"].count(varName) == 0) {
-                std::cerr << "[error] Undeclared variable " << ctx->getText() << " used\n";
-                exit(1);
-            } else {
-                code_ << "\tla t0, " << varName << "\n"
-                    << "\tsd a0, (t0)\n";
+        std::string tmpFunc = curFunc;
+        int tmpDep = blockDep;
+
+        if (varTab[curFunc].count(varName+"@") != 0) {
+            int pos = tmpFunc.find_last_of('@');
+            tmpFunc = tmpFunc.substr(0, pos);
+            --tmpDep;
+        }
+
+        for (int i = 0; i < tmpDep; ++i) {
+            if (varTab[tmpFunc].count(varName) == 0) {
+                int pos = tmpFunc.find_last_of('@');
+                tmpFunc = tmpFunc.substr(0, pos);
+                continue;
             }
+            code_ << "\tsd a0, " << -8 - 8 * varTab[tmpFunc][varName] << "(fp)\n";
+            return -1;
+        }
+        if (varTab["global"].count(varName) == 0) {
+            std::cerr << "[error] Undeclared variable " << ctx->getText() << " used\n";
+            exit(1);
         } else {
-            code_ << "\tsd a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n";
-        }      
+            code_ << "\tla t0, " << varName << "\n"
+                << "\tsd a0, (t0)\n";
+        }
     } else if (!ctx->type() && !ctx->expr()) {
-        if (varTab[curFunc].count(varName) == 0) {
-            if (varTab["global"].count(varName) == 0) {
-                std::cerr << "[error] Var " << varName << " is used before define\n";
-                exit(1);
-            } else {
-                code_ << "\tla t0, " << varName << "\n"
-                    << "\tld a0, " << "(t0)\n"
-                    << push;
+        std::string tmpFunc = curFunc;
+        int tmpDep = blockDep;
+        
+        if (varTab[curFunc].count(varName+"@") != 0) {
+            int pos = tmpFunc.find_last_of('@');
+            tmpFunc = tmpFunc.substr(0, pos);
+            --tmpDep;
+        }
+        for (int i = 0; i < tmpDep; ++i) {
+            if (varTab[tmpFunc].count(varName) == 0) {
+                int pos = tmpFunc.find_last_of('@');
+                tmpFunc = tmpFunc.substr(0, pos);
+                continue;
             }
+            code_ << "\tld a0, " << -8 - 8 * varTab[tmpFunc][varName] << "(fp)\n";
+            return -1;
+        }
+        if (varTab["global"].count(varName) == 0) {
+            std::cerr << "[error] Undeclared variable " << ctx->getText() << " used\n";
+            exit(1);
         } else {
-            code_ << "\tld a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n"
-                << push;
+            code_ << "\tla t0, " << varName << "\n"
+                << "\tld a0, (t0)\n";
         }
     }
     return -1;
@@ -349,11 +407,6 @@ antlrcpp::Any CodeGenVisitor::visitForLoop(MiniDecafParser::ForLoopContext *ctx)
     }
     code_ << "\tj label_" << startBranch << "\n"
                 << "label_" << endBranch << ":\n";
-    return -1;
-}
-
-antlrcpp::Any CodeGenVisitor::visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx) {
-    visitChildren(ctx);
     return -1;
 }
 

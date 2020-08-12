@@ -47,6 +47,7 @@ private:
     };
 
     std::string curFunc;
+    int blockOrder, blockDep;
     int labelOrder;
     bool retState;
     /* A simple stack machine model */

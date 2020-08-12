@@ -18,6 +18,7 @@ public:
     antlrcpp::Any visitVarDef(MiniDecafParser::VarDefContext *ctx);
     antlrcpp::Any visitType(MiniDecafParser::TypeContext *ctx);
 
+    antlrcpp::Any visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx);
     // antlrcpp::Any visitArrayCall(MiniDecafParser::ArrayCallContext *ctx);
     // antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *ctx);
 
@@ -30,4 +31,5 @@ private:
 
     int offset;
     std::string curFunc;
+    int blockOrder, blockDep;
 };

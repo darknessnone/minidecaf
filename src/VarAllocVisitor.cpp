@@ -25,7 +25,7 @@ antlrcpp::Any VarAllocVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
         }
 
         varTab[curFunc] = std::unordered_map<std::string, int> ();
-        offset = 0;
+        offset = 0; blockOrder = 0; blockDep = 0;
 
         for (auto i = 1; i < ctx->ID().size(); ++i) {
             std::string varName = ctx->ID(i)->getText();
@@ -37,6 +37,27 @@ antlrcpp::Any VarAllocVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
         visit(ctx->stmts());
     }
     return nullptr;
+}
+
+antlrcpp::Any VarAllocVisitor::visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx) {
+    if (blockDep == 0) {
+        ++blockDep;
+        for(auto stmt : ctx->stmts()) {
+            visit(stmt);
+        }
+    } else {
+        curFunc += "@" + std::to_string(blockOrder) + std::to_string(++blockDep);
+        for(auto stmt : ctx->stmts()) {
+            visit(stmt);
+        }
+        --blockDep;
+        if (blockDep == 1) {
+            ++blockOrder;
+        }
+        int pos = curFunc.find_last_of('@');
+        curFunc = curFunc.substr(0, pos);
+    }
+    return -1;
 }
 
 antlrcpp::Any VarAllocVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) {
@@ -51,13 +72,25 @@ antlrcpp::Any VarAllocVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) 
         typeTab[curFunc][varName] = std::get<0>(rvalueType);
         sizeTab[curFunc][varName] = std::get<1>(rvalueType);
     } else {
-        if (varTab[curFunc].count(varName) == 0 &&
-        varTab["global"].count(varName) == 0) {
+        std::string tmpFunc = curFunc;
+        for (int i = 0; i < blockDep; ++i) {
+            if (varTab[tmpFunc].count(varName) == 0) {
+                int pos = tmpFunc.find_last_of('@');
+                tmpFunc = tmpFunc.substr(0,pos);
+                continue;
+            }
+            if (varTab[curFunc].count(varName) == 0) {
+                varTab[curFunc][varName+"@"] = 0;
+            }
+            return -1;
+            
+        }
+        if (varTab["global"].count(varName) == 0) {
             std::cerr << "[error] Undeclared variable " << varName << " Used\n";
             exit(1);
         }
     }
-    return nullptr;
+    return -1;
 }
 
 antlrcpp::Any VarAllocVisitor::visitType(MiniDecafParser::TypeContext *ctx) {
