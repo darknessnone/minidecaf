@@ -1,4 +1,4 @@
-for i in examples/step9/*.c
+for i in examples/step10/*.c
 do
     echo "$i:    "
     gcc -w $i             #compile with gcc

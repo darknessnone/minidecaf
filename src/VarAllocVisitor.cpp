@@ -8,15 +8,27 @@ antlrcpp::Any VarAllocVisitor::visitToplv(MiniDecafParser::ToplvContext *ctx) {
 
 antlrcpp::Any VarAllocVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
     if (ctx->SEMICOLON()) {
-        std::string varName = ctx->ID(0)->getText();
-        if (varTab["global"].count(varName) > 0) {
-            std::cerr << "[error] redefinition of variable " << varName << " \n";
-            exit(1);
+        if (ctx->ASSIGN()) {
+            std::string varName = ctx->ID(0)->getText();
+            if (varTab["global"].count(varName) > 0 && varTab["global"][varName] != -1) {
+                std::cerr << "[error] redefinition of variable " << varName << " \n";
+                exit(1);
+            }
+            varTab["global"][varName] = 1;
+            std::tuple<int, std::vector<int> > rvalueType = visit(ctx->type(0));
+            typeTab["global"][varName] = std::get<0>(rvalueType);
+            sizeTab["global"][varName] = std::get<1>(rvalueType);
+        } else {
+            std::string varName = ctx->ID(0)->getText(); 
+            if (varTab["global"].count(varName) > 0) {
+                std::cerr << "[error] redefinition of variable " << varName << " \n";
+                exit(1);
+            }
+            varTab["global"][varName] = -1;
+            std::tuple<int, std::vector<int> > rvalueType = visit(ctx->type(0));
+            typeTab["global"][varName] = std::get<0>(rvalueType);
+            sizeTab["global"][varName] = std::get<1>(rvalueType);
         }
-        varTab["global"][varName] = -1;
-        std::tuple<int, std::vector<int> > rvalueType = visit(ctx->type(0));
-        typeTab["global"][varName] = std::get<0>(rvalueType);
-        sizeTab["global"][varName] = std::get<1>(rvalueType);
     } else {
         if (ctx->stmts()->getText() != ";") {
             curFunc = ctx->ID(0)->getText();

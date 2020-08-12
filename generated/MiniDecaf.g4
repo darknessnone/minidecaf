@@ -3,7 +3,7 @@ grammar MiniDecaf;
 toplv : (prog)* EOF
      ;
 
-prog : type ID ('(' (type ID ',')* (type ID)? ')' stmts | ('[' INTEGER ']')* ';') 
+prog : type ID ('(' (type ID ',')* (type ID)? ')' stmts | ('[' INTEGER ']')* ';' | '=' INTEGER ';') 
      ;
 
 stmts : 'return' expr ';'                                        # Return

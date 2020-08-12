@@ -68,12 +68,13 @@ public:
     antlr4::tree::TerminalNode *RPAREN();
     StmtsContext *stmts();
     antlr4::tree::TerminalNode *SEMICOLON();
+    antlr4::tree::TerminalNode *ASSIGN();
+    std::vector<antlr4::tree::TerminalNode *> INTEGER();
+    antlr4::tree::TerminalNode* INTEGER(size_t i);
     std::vector<antlr4::tree::TerminalNode *> COMMA();
     antlr4::tree::TerminalNode* COMMA(size_t i);
     std::vector<antlr4::tree::TerminalNode *> LSQUBRACE();
     antlr4::tree::TerminalNode* LSQUBRACE(size_t i);
-    std::vector<antlr4::tree::TerminalNode *> INTEGER();
-    antlr4::tree::TerminalNode* INTEGER(size_t i);
     std::vector<antlr4::tree::TerminalNode *> RSQUBRACE();
     antlr4::tree::TerminalNode* RSQUBRACE(size_t i);
 

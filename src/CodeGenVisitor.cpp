@@ -7,6 +7,7 @@ antlrcpp::Any CodeGenVisitor::visitToplv(MiniDecafParser::ToplvContext *ctx,
     code_ << ".section .text\n"
           << ".globl main\n";
     bss_ << ".section .bss\n";
+    data_ << ".section .data\n";
     varTab = std::get<0>(symbol_);
     typeTab = std::get<1>(symbol_);
     sizeTab = std::get<2>(symbol_);
@@ -24,9 +25,17 @@ antlrcpp::Any CodeGenVisitor::visitToplv(MiniDecafParser::ToplvContext *ctx,
 
 antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
     if (ctx->SEMICOLON()) {
-        std::string varName = ctx->ID(0)->getText();
-        bss_ << ".globl " << varName << "\n"
-             << varName << ":\n" << ".space 8*" << sizeTab["global"][varName].at(0) << "\n";
+        if (ctx->ASSIGN()) {
+            std::string varName = ctx->ID(0)->getText();
+            data_ << ".globl " << varName << "\n"
+                  << varName << ":\n" << "\t.word " << ctx->INTEGER(0)->getText() << "\n";
+        } else {
+            std::string varName = ctx->ID(0)->getText();
+            if (varTab["global"][varName] == -1) {
+                bss_ << ".globl " << varName << "\n"
+                     << varName << ":\n" << ".space 8*" << sizeTab["global"][varName].at(0) << "\n";
+            }
+        }
     } else {
         if (ctx->stmts()->getText() != ";") {
             curFunc = ctx->ID(0)->getText();
