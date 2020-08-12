@@ -177,7 +177,7 @@ ident = [a-z]+[a-z0-9_]*
 支持函数
 ```
 program = func*
-func   = ident ("(" (ident ("," ident)*)? ")" "{" stmt* "}"
+func   = ident ("(" (ident ("," ident)*)? ")" block "{" stmt* "}"
 stmt    = expr ";"
         | "return" expr ";"
         | "if" "(" expr ")" stmt ("else" stmt)?
@@ -199,7 +199,7 @@ digit  =  [0-9]
 ident = [a-z]+[a-z0-9_]*
 ```
 
-函数的先后顺序有影响嘛？
+是不是要统一一下 calling convention？
 
 ## 步骤14/15/.../X：支持字符串操作/支持数组操作等
 需要如下步骤
@@ -287,6 +287,8 @@ typ        = ("int" | "char") "*"*
 
 ## 步骤1：Integers
 只有正整数，大致形式是 `0` 或 `5`，语言语法为：
+
+这好像上来就需要有符号表，是不是有点跨度太大了？
 
 ```
 <program> ::= <function>
@@ -415,6 +417,9 @@ exp = BinOp(binary_operator, exp, exp)
 ```
 
 ## 步骤4：Logical Binary Operators
+
+这里貌似会有优先级和结合性的问题。
+
 支持
 ```
 Logical AND &&

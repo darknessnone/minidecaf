@@ -1,16 +1,15 @@
 package minidecaf;
 
-import minidecaf.parser.*;
-import minidecaf.parser.MiniDecafParser.*;
+import minidecaf.MiniDecafParser.*;
 
 import java.util.*;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
-public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
+public class MainVisitor extends MiniDecafBaseVisitor<Void> {
     private StringBuilder sb;
-    MiniDecafVisitor(StringBuilder sb) {
+    MainVisitor(StringBuilder sb) {
         this.sb = sb;
     }
 
@@ -102,7 +101,7 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
         visit(ctx.stmt().get(0));
         sb.append("\tj _afterIf" + ifNo + "\n")
           .append("_else" + ifNo + ":\n");
-        if (ctx.ELSE() != null)
+        if (ctx.stmt().size() > 1)
             visit(ctx.stmt().get(1));
         sb.append("_afterIf" + ifNo + ":\n");
         ++ifNo;
@@ -160,7 +159,7 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
 
     @Override
     public Void visitExpr(ExprContext ctx) {
-        if (ctx.ASSIGN() == null) visit(ctx.relational());
+        if (ctx.children.size() == 1) visit(ctx.relational());
         else {
             // Check if the left hand side of the equation symbol
             // is a complete variable name.
@@ -266,8 +265,7 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
     @Override
     public Void visitUnary(UnaryContext ctx) {
         visit(ctx.primary());
-        TerminalNode sub = ctx.SUB();
-        if (sub != null) {
+        if (ctx.children.get(0).getText().equals('-')) {
             sb.append("\tld t1, 0(sp)\n")
               .append("\tneg t1, t1\n")
               .append("\tsd t1, 0(sp)\n");

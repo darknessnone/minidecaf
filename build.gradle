@@ -1,4 +1,7 @@
-apply plugin: 'java-library'
+plugins {
+    id 'java-library'
+    id 'antlr'
+}
 
 group 'decaf'
 
@@ -11,8 +14,15 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.antlr:antlr4-maven-plugin:4.7.1'
+    antlr "org.antlr:antlr4:4.7.1"
+    implementation "org.antlr:antlr4-runtime:4.7.1"
 }
+
+generateGrammarSource {
+    arguments += ["-visitor", "-no-listener", "-package", "minidecaf"]
+}
+
+sourceSets.main.java.srcDirs += "${buildDir}/generated-src/antlr/main"
 
 jar {
     manifest {

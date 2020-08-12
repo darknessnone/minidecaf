@@ -1,7 +1,5 @@
 package minidecaf;
 
-import minidecaf.parser.*;
-
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 
@@ -22,7 +20,7 @@ public class Main {
         MiniDecafParser parser = new MiniDecafParser(tokens);
         ParseTree tree = parser.program();
         StringBuilder asm = new StringBuilder();
-        MiniDecafVisitor visitor = new MiniDecafVisitor(asm);
+        MainVisitor visitor = new MainVisitor(asm);
         visitor.visit(tree);
         FileWriter writer = new FileWriter(args[1]);
         writer.write(asm.toString());
