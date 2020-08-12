@@ -19,6 +19,7 @@ public:
     antlrcpp::Any visitType(MiniDecafParser::TypeContext *ctx);
 
     antlrcpp::Any visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx);
+    antlrcpp::Any visitForLoop(MiniDecafParser::ForLoopContext *ctx);
     // antlrcpp::Any visitArrayCall(MiniDecafParser::ArrayCallContext *ctx);
     // antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *ctx);
 

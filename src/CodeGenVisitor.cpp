@@ -13,7 +13,11 @@ antlrcpp::Any CodeGenVisitor::visitToplv(MiniDecafParser::ToplvContext *ctx,
     labelOrder = 0;
     visitChildren(ctx);
     // for (auto i : varTab) {
-    //     std::cerr <<  i.first << "\n";
+    //     std::cerr <<  i.first << ":";
+    //     for (auto j : i.second) {
+    //         std::cerr << j.first  << " ";
+    //     }
+    //     std::cerr << "\n";
     // }
     return code_.str() + data_.str() + bss_.str();
 }
@@ -164,7 +168,8 @@ antlrcpp::Any CodeGenVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) {
                 tmpFunc = tmpFunc.substr(0, pos);
                 continue;
             }
-            code_ << "\tld a0, " << -8 - 8 * varTab[tmpFunc][varName] << "(fp)\n";
+            code_ << "\tld a0, " << -8 - 8 * varTab[tmpFunc][varName] << "(fp)\n"
+                  << push;
             return -1;
         }
         if (varTab["global"].count(varName) == 0) {
@@ -172,7 +177,8 @@ antlrcpp::Any CodeGenVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) {
             exit(1);
         } else {
             code_ << "\tla t0, " << varName << "\n"
-                << "\tld a0, (t0)\n";
+                << "\tld a0, (t0)\n"
+                << push;
         }
     }
     return -1;
@@ -233,6 +239,10 @@ antlrcpp::Any CodeGenVisitor::visitMulDiv(MiniDecafParser::MulDivContext *ctx) {
     } else if (ctx->op->getType() == MiniDecafParser::DIV) {
         code_ << pop 
               << "\tdiv a0, t0, t1\n"
+              << push;
+    } else if (ctx->op->getType() == MiniDecafParser::MOD) {
+        code_ << pop
+              << "\trem a0, t0, t1\n"
               << push;
     } else {
         std::cerr << "[error] Illegal operation given to the calculator.\n";
@@ -375,21 +385,47 @@ antlrcpp::Any CodeGenVisitor::visitIfStmt(MiniDecafParser::IfStmtContext *ctx) {
     return -1;
 }
 
+antlrcpp::Any CodeGenVisitor::visitDowhile(MiniDecafParser::DowhileContext *ctx) {
+    int startBranch = labelOrder++;
+    int endBranch = labelOrder++;
+    breakTarget.push_back(endBranch);
+    continueTarget.push_back(startBranch);
+
+    code_ << "label_" << startBranch << ":\n";
+    visit(ctx->stmts());
+    visit(ctx->expr());
+    code_ << "\tbnez a0, label_" << startBranch << "\n";
+    code_ << "label_" << endBranch << ":\n";
+
+    breakTarget.pop_back();
+    continueTarget.pop_back();
+    return -1;
+}
+
 antlrcpp::Any CodeGenVisitor::visitWhileLoop(MiniDecafParser::WhileLoopContext *ctx) {
     int startBranch = labelOrder++;
     int endBranch = labelOrder++;
+    breakTarget.push_back(endBranch);
+    continueTarget.push_back(startBranch);
     code_ << "label_" << startBranch << ":\n";
     visit(ctx->expr());
     code_ << "\tbeqz a0, label_" << endBranch << "\n";
     visit(ctx->stmts());
     code_ << "\tj label_" << startBranch << "\n"
                 << "label_" << endBranch << ":\n";
+    breakTarget.pop_back();
+    continueTarget.pop_back();
     return -1;
 }
 
 antlrcpp::Any CodeGenVisitor::visitForLoop(MiniDecafParser::ForLoopContext *ctx) {
+    curFunc += "@" + std::to_string(blockOrder) + std::to_string(++blockDep);
+
     int startBranch = labelOrder++;
     int endBranch = labelOrder++;
+    int continueBranch = labelOrder++;
+    breakTarget.push_back(endBranch);
+    continueTarget.push_back(continueBranch);
     if (ctx->expr(0)) {
         visit(ctx->expr(0));
     }
@@ -398,18 +434,34 @@ antlrcpp::Any CodeGenVisitor::visitForLoop(MiniDecafParser::ForLoopContext *ctx)
         visit(ctx->expr(1));
         code_ << "\tbeqz a0, label_" << endBranch << "\n";
     } 
-    // else {
-    //     std::cerr << "[error] Missing forloop control expr\n";
-    // }
     visit(ctx->stmts());
+    code_ << "label_" << continueBranch << ":\n";
     if (ctx->expr(2)) {
         visit(ctx->expr(2));
     }
     code_ << "\tj label_" << startBranch << "\n"
                 << "label_" << endBranch << ":\n";
+    breakTarget.pop_back();
+    continueTarget.pop_back();
+
+    --blockDep;
+    if (blockDep == 1) {
+        ++blockOrder;
+    }
+    int pos = curFunc.find_last_of('@');
+    curFunc = curFunc.substr(0, pos);
     return -1;
 }
 
+antlrcpp::Any CodeGenVisitor::visitBreak(MiniDecafParser::BreakContext *ctx) {
+    code_ << "\tj label_" << breakTarget.back() << "\n";
+    return -1;
+}
+
+antlrcpp::Any CodeGenVisitor::visitContinue(MiniDecafParser::ContinueContext *ctx) {
+    code_ << "\tj label_" << continueTarget.back() << "\n";
+    return -1;
+}
 antlrcpp::Any CodeGenVisitor::visitLiteral(MiniDecafParser::LiteralContext *ctx) {
     std::string literal = ctx->getText();
     if (!std::all_of(literal.begin(), literal.end(), ::isdigit)) {

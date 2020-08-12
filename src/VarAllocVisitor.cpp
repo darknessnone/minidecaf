@@ -57,7 +57,24 @@ antlrcpp::Any VarAllocVisitor::visitStmtBlock(MiniDecafParser::StmtBlockContext 
         int pos = curFunc.find_last_of('@');
         curFunc = curFunc.substr(0, pos);
     }
-    return -1;
+    return nullptr;
+}
+
+antlrcpp::Any VarAllocVisitor::visitForLoop(MiniDecafParser::ForLoopContext *ctx) {
+    if (blockDep == 0) {
+        ++blockDep;
+        visitChildren(ctx);
+    } else {
+        curFunc += "@" + std::to_string(blockOrder) + std::to_string(++blockDep);
+        visitChildren(ctx);
+        --blockDep;
+        if (blockDep == 1) {
+            ++blockOrder;
+        }
+        int pos = curFunc.find_last_of('@');
+        curFunc = curFunc.substr(0, pos);
+    }
+    return nullptr;
 }
 
 antlrcpp::Any VarAllocVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) {
@@ -83,7 +100,6 @@ antlrcpp::Any VarAllocVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) 
                 varTab[curFunc][varName+"@"] = 0;
             }
             return -1;
-            
         }
         if (varTab["global"].count(varName) == 0) {
             std::cerr << "[error] Undeclared variable " << varName << " Used\n";

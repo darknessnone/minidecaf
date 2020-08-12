@@ -13,11 +13,12 @@ class  MiniDecafParser : public antlr4::Parser {
 public:
   enum {
     WS = 1, INTEGER = 2, SEMICOLON = 3, COMMA = 4, ADD = 5, SUB = 6, MUL = 7, 
-    AND = 8, DIV = 9, NOT = 10, QUES = 11, COLON = 12, BITNOT = 13, LPAREN = 14, 
-    RPAREN = 15, LBRACE = 16, RBRACE = 17, LSQUBRACE = 18, RSQUBRACE = 19, 
-    EQ = 20, NEQ = 21, LT = 22, LE = 23, GT = 24, GE = 25, LAND = 26, LOR = 27, 
-    ASSIGN = 28, SIZEOF = 29, INT = 30, RET = 31, IF = 32, ELSE = 33, WHILE = 34, 
-    FOR = 35, ID = 36
+    AND = 8, DIV = 9, NOT = 10, MOD = 11, QUES = 12, COLON = 13, BITNOT = 14, 
+    LPAREN = 15, RPAREN = 16, LBRACE = 17, RBRACE = 18, LSQUBRACE = 19, 
+    RSQUBRACE = 20, EQ = 21, NEQ = 22, LT = 23, LE = 24, GT = 25, GE = 26, 
+    LAND = 27, LOR = 28, ASSIGN = 29, SIZEOF = 30, INT = 31, RET = 32, IF = 33, 
+    ELSE = 34, WHILE = 35, FOR = 36, CONTINUE = 37, BREAK = 38, DO = 39, 
+    ID = 40
   };
 
   enum {
@@ -150,6 +151,18 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  DowhileContext : public StmtsContext {
+  public:
+    DowhileContext(StmtsContext *ctx);
+
+    antlr4::tree::TerminalNode *DO();
+    StmtsContext *stmts();
+    antlr4::tree::TerminalNode *WHILE();
+    ExprContext *expr();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  WhileLoopContext : public StmtsContext {
   public:
     WhileLoopContext(StmtsContext *ctx);
@@ -168,6 +181,15 @@ public:
     PrintExprContext(StmtsContext *ctx);
 
     ExprContext *expr();
+    antlr4::tree::TerminalNode *SEMICOLON();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  NopContext : public StmtsContext {
+  public:
+    NopContext(StmtsContext *ctx);
+
     antlr4::tree::TerminalNode *SEMICOLON();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -197,6 +219,7 @@ public:
     ExprContext* expr(size_t i);
     antlr4::tree::TerminalNode *MUL();
     antlr4::tree::TerminalNode *DIV();
+    antlr4::tree::TerminalNode *MOD();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -254,6 +277,15 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  BreakContext : public ExprContext {
+  public:
+    BreakContext(ExprContext *ctx);
+
+    antlr4::tree::TerminalNode *BREAK();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  LANDContext : public ExprContext {
   public:
     LANDContext(ExprContext *ctx);
@@ -274,6 +306,15 @@ public:
     antlr4::tree::TerminalNode *LSQUBRACE();
     ExprContext *expr();
     antlr4::tree::TerminalNode *RSQUBRACE();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
+  class  ContinueContext : public ExprContext {
+  public:
+    ContinueContext(ExprContext *ctx);
+
+    antlr4::tree::TerminalNode *CONTINUE();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

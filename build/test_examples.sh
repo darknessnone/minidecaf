@@ -1,4 +1,4 @@
-for i in examples/step7/*.c
+for i in examples/step8/*.c
 do
     echo "$i:    "
     gcc -w $i             #compile with gcc
@@ -15,6 +15,7 @@ do
     then
         echo "FAIL"
         echo $actual
+        echo $expected
         exit 1
     else
         echo "OK"

@@ -10,13 +10,14 @@ stmts : 'return' expr ';'                                        # Return
      | IF '(' expr ')' stmts (ELSE stmts)?                       # IfStmt
      | WHILE '(' expr ')' stmts                                  # WhileLoop
      | FOR '(' (expr)? ';' (expr)? ';' (expr)? ')' stmts         # ForLoop
+     | DO stmts WHILE expr                                       # Dowhile
      | expr ';'                                                  # PrintExpr
      | '{' (stmts)* '}'                                          # StmtBlock
      | ';'                                                       # Nop
      ;
 
 expr : ('+'|'-'|'*'|'&'|'!'|'~') expr                            # Unary
-     | expr op=(MUL|DIV) expr                                    # MulDiv
+     | expr op=(MUL|DIV|MOD) expr                                    # MulDiv
      | expr op=(ADD|SUB) expr                                    # AddSub
      | expr op=(LT|LE|GT|GE) expr                                # LessGreat 
      | expr op=(EQ|NEQ) expr                                     # Equal
@@ -30,6 +31,8 @@ expr : ('+'|'-'|'*'|'&'|'!'|'~') expr                            # Unary
      | ID '[' expr ']'                                           # ArrayCall
      | INTEGER                                                   # Literal
      | '(' expr ')'                                              # Paren
+     | BREAK                                                     # Break
+     | CONTINUE                                                  # Continue
      ;
 
 type : INT ('*')*
@@ -45,6 +48,7 @@ MUL : '*';
 AND : '&';
 DIV : '/';
 NOT : '!';
+MOD : '%';
 QUES : '?';
 COLON : ':';
 BITNOT : '~';
@@ -70,4 +74,7 @@ IF : 'if';
 ELSE : 'else';
 WHILE : 'while';
 FOR : 'for';
+CONTINUE : 'continue';
+BREAK : 'break';
+DO : 'do';
 ID : [a-zA-Z_][a-zA-Z_0-9]*;

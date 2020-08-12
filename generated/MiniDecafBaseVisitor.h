@@ -39,11 +39,19 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitDowhile(MiniDecafParser::DowhileContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *ctx) override {
     return visitChildren(ctx);
   }
 
   virtual antlrcpp::Any visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitNop(MiniDecafParser::NopContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -67,11 +75,19 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitBreak(MiniDecafParser::BreakContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitLAND(MiniDecafParser::LANDContext *ctx) override {
     return visitChildren(ctx);
   }
 
   virtual antlrcpp::Any visitArrayCall(MiniDecafParser::ArrayCallContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitContinue(MiniDecafParser::ContinueContext *ctx) override {
     return visitChildren(ctx);
   }
 

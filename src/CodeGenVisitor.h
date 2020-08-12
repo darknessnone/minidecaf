@@ -32,6 +32,9 @@ public:
     antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *ctx);
     antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *ctx);
     antlrcpp::Any visitVarDef(MiniDecafParser::VarDefContext *ctx);
+    antlrcpp::Any visitBreak(MiniDecafParser::BreakContext *ctx);
+    antlrcpp::Any visitContinue(MiniDecafParser::ContinueContext *ctx);
+    antlrcpp::Any visitDowhile(MiniDecafParser::DowhileContext *ctx);
     // antlrcpp::Any visitArrayCall(MiniDecafParser::ArrayCallContext *ctx);
     // antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *ctx);
 
@@ -50,6 +53,7 @@ private:
     int blockOrder, blockDep;
     int labelOrder;
     bool retState;
+    std::vector<int> breakTarget, continueTarget;
     /* A simple stack machine model */
     const char* push = "\taddi sp, sp, -8\n"
                        "\tsd a0, (sp)\n";
