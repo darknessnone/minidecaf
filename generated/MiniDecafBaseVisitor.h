@@ -55,6 +55,10 @@ public:
     return visitChildren(ctx);
   }
 
+  virtual antlrcpp::Any visitTernary(MiniDecafParser::TernaryContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
   virtual antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *ctx) override {
     return visitChildren(ctx);
   }

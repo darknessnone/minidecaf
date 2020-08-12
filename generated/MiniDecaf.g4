@@ -21,6 +21,7 @@ expr : ('+'|'-'|'*'|'&'|'!'|'~') expr                            # Unary
      | expr op=(EQ|NEQ) expr                                     # Equal
      | expr op=LAND expr                                         # LAND
      | expr op=LOR expr                                          # LOR
+     | expr QUES expr COLON expr                                 # Ternary
      | (type)? ID ('=' expr)?                                    # VarDef
      | type ID '[' INTEGER ']'                                   # ArrayDef
      | ID '(' (expr ',')* (expr)? ')'                            # CallFunc
@@ -43,6 +44,8 @@ MUL : '*';
 AND : '&';
 DIV : '/';
 NOT : '!';
+QUES : '?';
+COLON : ':';
 BITNOT : '~';
 LPAREN : '(';
 RPAREN : ')';

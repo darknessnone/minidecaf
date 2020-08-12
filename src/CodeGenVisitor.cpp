@@ -22,6 +22,7 @@ antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
              << varName << ":\n" << ".space 8*" << sizeTab["global"][varName].at(0) << "\n";
     } else {
         curFunc = ctx->ID(0)->getText();
+        retState = false;
         code_ << curFunc << ":\n"
               << "\tsd ra, -8(sp)\n"
               << "\taddi sp, sp, -8\n"
@@ -38,6 +39,13 @@ antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
             }
         } 
         visit(ctx->stmts());
+        if(!retState) {
+            code_ << "\tli a0, 0\n"
+                  << "\taddi sp, fp, 8\n"
+                  << "\tld ra, (sp)\n" 
+                  << "\tld fp, -8(sp)\n"
+                  << "\tret\n";
+        }
     }
     return -1;
 }
@@ -63,6 +71,7 @@ antlrcpp::Any CodeGenVisitor::visitCallFunc(MiniDecafParser::CallFuncContext *ct
 }
 
 antlrcpp::Any CodeGenVisitor::visitReturn(MiniDecafParser::ReturnContext *ctx) {
+    retState = true;
     visit(ctx->expr());
     code_ << "\taddi sp, fp, 8\n"
           << "\tld ra, (sp)\n" 
@@ -198,6 +207,19 @@ antlrcpp::Any CodeGenVisitor::visitUnary(MiniDecafParser::UnaryContext *ctx) {
               << "\tnot a0, t0\n"
               << push;
     }
+    return -1;
+}
+
+antlrcpp::Any CodeGenVisitor::visitTernary(MiniDecafParser::TernaryContext *ctx) {
+    visit(ctx->expr(0));
+    int elseBranch = labelOrder++;
+    int endBranch = labelOrder++;
+    code_ << "\tbeqz a0, label_" << elseBranch << "\n";
+    visit(ctx->expr(1));
+    code_ << "\tj label_" << endBranch << "\n";
+    code_ << "label_" << elseBranch << ":\n";
+    visit(ctx->expr(2));
+    code_ << "label_" << endBranch << ":\n";
     return -1;
 }
 

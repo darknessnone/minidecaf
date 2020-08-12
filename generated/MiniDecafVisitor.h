@@ -39,6 +39,8 @@ public:
 
     virtual antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *context) = 0;
 
+    virtual antlrcpp::Any visitTernary(MiniDecafParser::TernaryContext *context) = 0;
+
     virtual antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *context) = 0;
 
     virtual antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *context) = 0;

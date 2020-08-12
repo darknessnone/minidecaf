@@ -25,6 +25,7 @@ public:
     antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx);
     antlrcpp::Any visitParen(MiniDecafParser::ParenContext *ctx);
     antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
+    antlrcpp::Any visitTernary(MiniDecafParser::TernaryContext *ctx);
     antlrcpp::Any visitLAND(MiniDecafParser::LANDContext *ctx);
     antlrcpp::Any visitLOR(MiniDecafParser::LORContext *ctx);
     antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
@@ -47,6 +48,7 @@ private:
 
     std::string curFunc;
     int labelOrder;
+    bool retState;
     /* A simple stack machine model */
     const char* push = "\taddi sp, sp, -8\n"
                        "\tsd a0, (sp)\n";
