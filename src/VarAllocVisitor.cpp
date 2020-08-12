@@ -10,7 +10,7 @@ antlrcpp::Any VarAllocVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
     if (ctx->SEMICOLON()) {
         std::string varName = ctx->ID(0)->getText();
         if (varTab["global"].count(varName) > 0) {
-            std::cerr << "[error] redefinition of variable " << varName << "\n";
+            std::cerr << "[error] redefinition of variable " << varName << " \n";
             exit(1);
         }
         varTab["global"][varName] = -1;
@@ -18,23 +18,24 @@ antlrcpp::Any VarAllocVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
         typeTab["global"][varName] = std::get<0>(rvalueType);
         sizeTab["global"][varName] = std::get<1>(rvalueType);
     } else {
-        curFunc = ctx->ID(0)->getText();
-        if (varTab.count(curFunc) > 0) {
-            std::cerr << "[error] Function " << curFunc << "defined more than once\n";
-            exit(1); 
-        }
+        if (ctx->stmts()->getText() != ";") {
+            curFunc = ctx->ID(0)->getText();
+            if (varTab.count(curFunc) > 0) {
+                std::cerr << "[error] redefinition of function " << curFunc << " \n";
+            }
 
-        varTab[curFunc] = std::unordered_map<std::string, int> ();
-        offset = 0; blockOrder = 0; blockDep = 0;
+            varTab[curFunc] = std::unordered_map<std::string, int> ();
+            offset = 0; blockOrder = 0; blockDep = 0;
 
-        for (auto i = 1; i < ctx->ID().size(); ++i) {
-            std::string varName = ctx->ID(i)->getText();
-            varTab[curFunc][varName] = offset++;
-            std::tuple<int, std::vector<int> > rvalueType = visit(ctx->type(i));
-            typeTab[curFunc][varName] = std::get<0>(rvalueType);
-            sizeTab[curFunc][varName] = std::get<1>(rvalueType);
+            for (auto i = 1; i < ctx->ID().size(); ++i) {
+                std::string varName = ctx->ID(i)->getText();
+                varTab[curFunc][varName] = offset++;
+                std::tuple<int, std::vector<int> > rvalueType = visit(ctx->type(i));
+                typeTab[curFunc][varName] = std::get<0>(rvalueType);
+                sizeTab[curFunc][varName] = std::get<1>(rvalueType);
+            }
+            visit(ctx->stmts());
         }
-        visit(ctx->stmts());
     }
     return nullptr;
 }

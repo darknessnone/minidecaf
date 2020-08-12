@@ -28,39 +28,41 @@ antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
         bss_ << ".globl " << varName << "\n"
              << varName << ":\n" << ".space 8*" << sizeTab["global"][varName].at(0) << "\n";
     } else {
-        curFunc = ctx->ID(0)->getText();
-        retState = false;
-        blockDep = 0; blockOrder = 0;
-        code_ << curFunc << ":\n"
-              << "\tsd ra, -8(sp)\n"
-              << "\taddi sp, sp, -8\n"
-              << "\tsd fp, -8(sp)\n"
-              << "\taddi fp, sp, -8\n"
-              << "\taddi sp, fp, ";
-        
-        int capacity= 0;
-        for (auto& var : varTab) {
-            if (var.first.substr(0, curFunc.length()) == curFunc) {
-                capacity += varTab[var.first].size();
+        if (ctx->stmts()->getText() != ";") {
+            curFunc = ctx->ID(0)->getText();
+            retState = false;
+            blockDep = 0; blockOrder = 0;
+            code_ << curFunc << ":\n"
+                << "\tsd ra, -8(sp)\n"
+                << "\taddi sp, sp, -8\n"
+                << "\tsd fp, -8(sp)\n"
+                << "\taddi fp, sp, -8\n"
+                << "\taddi sp, fp, ";
+            
+            int capacity= 0;
+            for (auto& var : varTab) {
+                if (var.first.substr(0, curFunc.length()) == curFunc) {
+                    capacity += varTab[var.first].size();
+                }
             }
-        }
-        code_ << -8 * capacity << "\n";
+            code_ << -8 * capacity << "\n";
 
-        for (int i = 1; i < ctx->ID().size(); ++i) {
-            if (ctx->ID().size() > 8) {
-                code_ << "\tld t0, " << 16 + 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
-                code_ << "\tsd t0, " << -8 - 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
-            } else {
-                code_ << "\tsd a" << i-1 << ", " << -8 - 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+            for (int i = 1; i < ctx->ID().size(); ++i) {
+                if (ctx->ID().size() > 8) {
+                    code_ << "\tld t0, " << 16 + 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+                    code_ << "\tsd t0, " << -8 - 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+                } else {
+                    code_ << "\tsd a" << i-1 << ", " << -8 - 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+                }
+            } 
+            visit(ctx->stmts());
+            if(!retState) {
+                code_ << "\tli a0, 0\n"
+                    << "\taddi sp, fp, 8\n"
+                    << "\tld ra, (sp)\n" 
+                    << "\tld fp, -8(sp)\n"
+                    << "\tret\n";
             }
-        } 
-        visit(ctx->stmts());
-        if(!retState) {
-            code_ << "\tli a0, 0\n"
-                  << "\taddi sp, fp, 8\n"
-                  << "\tld ra, (sp)\n" 
-                  << "\tld fp, -8(sp)\n"
-                  << "\tret\n";
         }
     }
     return -1;

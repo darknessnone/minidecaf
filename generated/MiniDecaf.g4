@@ -17,7 +17,7 @@ stmts : 'return' expr ';'                                        # Return
      ;
 
 expr : ('+'|'-'|'*'|'&'|'!'|'~') expr                            # Unary
-     | expr op=(MUL|DIV|MOD) expr                                    # MulDiv
+     | expr op=(MUL|DIV|MOD) expr                                # MulDiv
      | expr op=(ADD|SUB) expr                                    # AddSub
      | expr op=(LT|LE|GT|GE) expr                                # LessGreat 
      | expr op=(EQ|NEQ) expr                                     # Equal
