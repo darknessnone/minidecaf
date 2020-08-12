@@ -189,6 +189,14 @@ antlrcpp::Any CodeGenVisitor::visitUnary(MiniDecafParser::UnaryContext *ctx) {
               << "\taddi a0, fp, " << -8 - 8 * varTab[curFunc][ctx->expr()->getText()] << "\n"
               << push;
         return int(VarType::INT_PTR);
+    } else if (ctx->NOT()) {
+        code_ << pop1
+              << "\tseqz a0, t0\n"
+              << push;
+    } else if (ctx->BITNOT()) {
+        code_ << pop1
+              << "\tnot a0, t0\n"
+              << push;
     }
     return -1;
 }

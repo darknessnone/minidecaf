@@ -14,7 +14,7 @@ stmts : 'return' expr ';'                                        # Return
      | '{' (stmts)* '}'                                          # StmtBlock
      ;
 
-expr : ('+'|'-'|'*'|'&') expr                                    # Unary
+expr : ('+'|'-'|'*'|'&'|'!'|'~') expr                            # Unary
      | expr op=(MUL|DIV) expr                                    # MulDiv
      | expr op=(ADD|SUB) expr                                    # AddSub
      | expr op=(LT|LE|GT|GE) expr                                # LessGreat 
@@ -40,6 +40,8 @@ SUB : '-';
 MUL : '*';
 AND : '&';
 DIV : '/';
+NOT : '!';
+BITNOT : '~';
 LPAREN : '(';
 RPAREN : ')';
 LBRACE : '{';
