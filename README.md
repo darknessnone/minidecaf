@@ -3,7 +3,6 @@
 ## status
 ### 2020.07.28:
 - cy: step 11 finished.
-<<<<<<< HEAD
 
 ### 2020.08.12:
 - [Mac] 测试脚本: build/test_examples.sh
@@ -13,5 +12,3 @@
   - cd build
   - cmake ..
   - make
-=======
->>>>>>> c4612aab01c6728675eaf7782287d20623752885
