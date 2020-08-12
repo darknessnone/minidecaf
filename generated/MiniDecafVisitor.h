@@ -35,27 +35,31 @@ public:
 
     virtual antlrcpp::Any visitStmtBlock(MiniDecafParser::StmtBlockContext *context) = 0;
 
-    virtual antlrcpp::Any visitVarDef(MiniDecafParser::VarDefContext *context) = 0;
-
     virtual antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *context) = 0;
 
     virtual antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *context) = 0;
 
-    virtual antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *context) = 0;
-
     virtual antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *context) = 0;
-
-    virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *context) = 0;
 
     virtual antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *context) = 0;
 
-    virtual antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *context) = 0;
-
-    virtual antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *context) = 0;
+    virtual antlrcpp::Any visitLAND(MiniDecafParser::LANDContext *context) = 0;
 
     virtual antlrcpp::Any visitArrayCall(MiniDecafParser::ArrayCallContext *context) = 0;
 
     virtual antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *context) = 0;
+
+    virtual antlrcpp::Any visitLOR(MiniDecafParser::LORContext *context) = 0;
+
+    virtual antlrcpp::Any visitVarDef(MiniDecafParser::VarDefContext *context) = 0;
+
+    virtual antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *context) = 0;
+
+    virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *context) = 0;
+
+    virtual antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *context) = 0;
+
+    virtual antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *context) = 0;
 
     virtual antlrcpp::Any visitParen(MiniDecafParser::ParenContext *context) = 0;
 

@@ -19,6 +19,8 @@ expr : ('+'|'-'|'*'|'&'|'!'|'~') expr                            # Unary
      | expr op=(ADD|SUB) expr                                    # AddSub
      | expr op=(LT|LE|GT|GE) expr                                # LessGreat 
      | expr op=(EQ|NEQ) expr                                     # Equal
+     | expr op=LAND expr                                         # LAND
+     | expr op=LOR expr                                          # LOR
      | (type)? ID ('=' expr)?                                    # VarDef
      | type ID '[' INTEGER ']'                                   # ArrayDef
      | ID '(' (expr ',')* (expr)? ')'                            # CallFunc
@@ -54,6 +56,8 @@ LT : '<';
 LE : '<=';
 GT : '>';
 GE : '>=';
+LAND : '&&';
+LOR : '||';
 ASSIGN : '=';
 SIZEOF : 'sizeof';
 INT : 'int';

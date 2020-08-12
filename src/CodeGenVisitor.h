@@ -25,6 +25,8 @@ public:
     antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx);
     antlrcpp::Any visitParen(MiniDecafParser::ParenContext *ctx);
     antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
+    antlrcpp::Any visitLAND(MiniDecafParser::LANDContext *ctx);
+    antlrcpp::Any visitLOR(MiniDecafParser::LORContext *ctx);
     antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
     antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *ctx);
     antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *ctx);

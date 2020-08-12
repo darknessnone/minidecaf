@@ -256,6 +256,25 @@ antlrcpp::Any CodeGenVisitor::visitLessGreat(MiniDecafParser::LessGreatContext *
     return -1;
 }
 
+antlrcpp::Any CodeGenVisitor::visitLAND(MiniDecafParser::LANDContext *ctx) {
+    visit(ctx->expr(0));
+    visit(ctx->expr(1));
+    code_ << pop
+          << "\tmul a0, t0, t1\n"
+          << "\tsnez a0, a0\n"
+          << push;
+    return -1;
+}
+
+antlrcpp::Any CodeGenVisitor::visitLOR(MiniDecafParser::LORContext *ctx) {
+    visit(ctx->expr(0));
+    visit(ctx->expr(1));
+    code_ << pop
+          << "\tor a0, t0, t1\n"
+          << push;
+    return -1; 
+}
+
 antlrcpp::Any CodeGenVisitor::visitIfStmt(MiniDecafParser::IfStmtContext *ctx) {
     visit(ctx->expr());
     if (ctx->ELSE()) {

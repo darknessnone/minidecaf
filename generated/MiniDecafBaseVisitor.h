@@ -47,10 +47,6 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitVarDef(MiniDecafParser::VarDefContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *ctx) override {
     return visitChildren(ctx);
   }
@@ -59,15 +55,7 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
   virtual antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -75,11 +63,7 @@ public:
     return visitChildren(ctx);
   }
 
-  virtual antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *ctx) override {
-    return visitChildren(ctx);
-  }
-
-  virtual antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx) override {
+  virtual antlrcpp::Any visitLAND(MiniDecafParser::LANDContext *ctx) override {
     return visitChildren(ctx);
   }
 
@@ -88,6 +72,30 @@ public:
   }
 
   virtual antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLOR(MiniDecafParser::LORContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitVarDef(MiniDecafParser::VarDefContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLiteral(MiniDecafParser::LiteralContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *ctx) override {
+    return visitChildren(ctx);
+  }
+
+  virtual antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx) override {
     return visitChildren(ctx);
   }
 

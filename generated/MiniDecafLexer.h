@@ -15,8 +15,8 @@ public:
     WS = 1, INTEGER = 2, SEMICOLON = 3, COMMA = 4, ADD = 5, SUB = 6, MUL = 7, 
     AND = 8, DIV = 9, NOT = 10, BITNOT = 11, LPAREN = 12, RPAREN = 13, LBRACE = 14, 
     RBRACE = 15, LSQUBRACE = 16, RSQUBRACE = 17, EQ = 18, NEQ = 19, LT = 20, 
-    LE = 21, GT = 22, GE = 23, ASSIGN = 24, SIZEOF = 25, INT = 26, RET = 27, 
-    IF = 28, ELSE = 29, WHILE = 30, FOR = 31, ID = 32
+    LE = 21, GT = 22, GE = 23, LAND = 24, LOR = 25, ASSIGN = 26, SIZEOF = 27, 
+    INT = 28, RET = 29, IF = 30, ELSE = 31, WHILE = 32, FOR = 33, ID = 34
   };
 
   MiniDecafLexer(antlr4::CharStream *input);
