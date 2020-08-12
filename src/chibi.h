@@ -16,22 +16,35 @@ enum TokenKind {
 };
 
 enum TypeKind {
-    TY_CHAR,
-    TY_SHORT,
-    TY_INT,
-    TY_LONG,
+    TY_VOID = 0,
+    TY_CHAR = 1,
+    TY_SHORT = 1 << 1,
+    TY_INT = 1 << 2,
+    TY_LONG = 1 << 3,
+    TY_STR = 1 << 4,
+    TY_PTR = 1 << 5,
+    TY_ARRAY = 1 << 6,
 };
 
 struct Type {
     TypeKind kind;
     int size;
     int align;
+
+    Type* base;
+    int array_len;
 };
 
 extern Type INT_TYPE;
 extern Type CHAR_TYPE;
 extern Type SHORT_TYPE;
 extern Type LONG_TYPE;
+
+int align_to(int n, int align);
+Type *pointer_to(Type *base);
+Type *array_of(Type *base, int size);
+bool is_integer(Type* ty);
+bool is_ptr(Type* ty);
 
 // Token type
 struct Token {
@@ -54,9 +67,14 @@ enum NodeKind{
     ND_NOT,        // unary !
     ND_BITNOT,     // unary ~
     ND_NEG,        // unary -
+    ND_REF,        // unary &
+    ND_DEREF,      // unary *
     ND_NUM,        // int literal
     ND_ADD,        // binary +
     ND_SUB,        // binary -
+    ND_PTR_ADD,    // ptr + num, [WARN] num + ptr is not supported
+    ND_PTR_SUB,    // ptr - num
+    ND_PTR_DIFF,   // ptr - ptr
     ND_MUL,        // binary *
     ND_DIV,        // binary /
     // ND_GT,      // binary >

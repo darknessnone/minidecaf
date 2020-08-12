@@ -6,6 +6,8 @@ static int brkseq = 0;
 static int contseq = 0;
 static bool return_stmt = false;
 
+static char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 void gen_node(Node *node);
 
 void gen_binary(Node* node) {
@@ -17,8 +19,22 @@ void gen_binary(Node* node) {
     case ND_ADD:
         printf("  add rax, rdi\n");
         break;
+    case ND_PTR_ADD:
+        printf("  imul rdi, %d\n", node->ty->base->size);
+        printf("  add rax, rdi\n");
+        break;
     case ND_SUB:
         printf("  sub rax, rdi\n");
+        break;
+    case ND_PTR_SUB:
+        printf("  imul rdi, %d\n", node->ty->base->size);
+        printf("  sub rax, rdi\n");
+        break;
+    case ND_PTR_DIFF:
+        printf("  sub rax, rdi\n");
+        printf("  cqo\n");
+        printf("  mov rdi, %d\n", node->lexpr->ty->base->size);
+        printf("  idiv rdi\n");
         break;
     case ND_MUL:
         printf("  imul rax, rdi\n");
@@ -68,15 +84,15 @@ void gen_addr(Node* node) {
 void store(Type* _ty) {
     printf("  pop rdi\n");
     printf("  pop rax\n");
-    // sizeof(int) = 4
-    printf("  mov [rax], edi\n");
+    // sizeof(long) = 8
+    printf("  mov [rax], rdi\n");
     printf("  push rdi\n");
 }
 
 void load(Type* _ty) {
     printf("  pop rax\n");
-    // sizeof(int) = 4
-    printf("  movsxd rax, dword ptr [rax]\n");
+    // sizeof(long) = 8
+    printf("  movsxd rax, [rax]\n");
     printf("  push rax\n");
 }
 
@@ -156,7 +172,6 @@ void gen_node(Node *node) {
             gen_node(arg);
             nargs++;
         }
-        static char *argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
         assert(nargs <= 6);
         for (int i = nargs - 1; i >= 0; i--)
             printf("  pop %s\n", argreg[i]);
@@ -228,6 +243,15 @@ void gen_node(Node *node) {
         printf("  sub rax, rdi\n");
         printf("  push rax\n");
         break;
+    case ND_REF:
+        gen_addr(node->lexpr);
+        break;
+    case ND_DEREF:
+        gen_node(node->lexpr);
+        // TODO check node->ty
+        load(node->ty);
+    return;
+        break;
     case ND_LOGAND: 
         seq = labelseq++;
         gen_node(node->lexpr);
@@ -267,8 +291,8 @@ void gen_node(Node *node) {
 }
 
 void load_arg(Var *var, int idx) {
-    static char *argreg4[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
-    printf("  mov [rbp-%d], %s\n", var->offset, argreg4[idx]);
+    // static char *argreg4[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+    printf("  mov [rbp-%d], %s\n", var->offset, argreg[idx]);
 }
 
 void gen_data(Program *prog) {

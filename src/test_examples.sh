@@ -1,4 +1,4 @@
-for i in test/step5/*.c
+for i in test/step10/*.c
 do
     gcc $i             #compile with gcc
     ./a.out                 	#run it

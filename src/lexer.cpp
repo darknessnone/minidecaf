@@ -54,7 +54,7 @@ bool is_alnum(char c) {
 
 char* read_reserved(char *p) {
     // Keyword
-    static char *kw[] = {"return", "char", "short", "int", "long", "if", "else", "for", "break", "continue"};
+    static char *kw[] = {"return", "void", "char", "short", "int", "long", "if", "else", "for", "break", "continue"};
 
     for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++) {
         int len = strlen(kw[i]);

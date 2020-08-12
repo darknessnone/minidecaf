@@ -33,13 +33,13 @@ int main(int argc, char **argv) {
         int offset = 8;
         for (Var *var = fn->arg; var; var = var->next) {
             var->offset = offset;
-            offset += 4;
+            offset += 8;
         }
         for (Var *var = fn->local; var; var = var->next) {
             var->offset = offset;
-            offset += 4;
+            offset += 8;
         }
-        fn->stack_size = 256;
+        fn->stack_size = offset;
     }
     codegen();
     return 0;

@@ -100,6 +100,16 @@ Type* parse_basetype() {
     return ty;
 }
 
+Type* parse_type() {
+    Type* ty = parse_basetype();
+    if(!ty)
+        return NULL;
+    while(parse_reserved("*")) {
+        ty = pointer_to(ty);
+    }
+    return ty;
+}
+
 char* parse_ident() {
     if(!expect_ident())
         return NULL;
@@ -121,7 +131,7 @@ Token* parse_num() {
 
 bool is_func() {
     Token *tok = token;
-    assert(parse_basetype());
+    assert(parse_type());
     char *name = parse_ident();
     bool isfunc = name && parse_reserved("(");
     token = tok;
@@ -138,13 +148,29 @@ Node* new_num(Token* tok) {
 Node* new_unary(NodeKind kind, Node *expr) {
     Node *node = new_node(kind);
     node->lexpr = expr;
+    switch (kind)
+    {
+    case ND_NOT:
+    case ND_BITNOT:
+    case ND_NEG: 
+        node->ty = &LONG_TYPE;
+        break;
+    case ND_REF:
+        assert(node->lexpr->ty);
+        node->ty = pointer_to(node->lexpr->ty);
+    case ND_DEREF:  
+        assert(is_ptr(node->lexpr->ty));
+        node->ty = node->lexpr->ty->base;
+        break;
+    }
     return node;
 }
 
-Node* new_binary(NodeKind kind, Node* lexpr, Node* rexpr) {
+Node* new_binary(NodeKind kind, Node* lexpr, Node* rexpr, Type* ty) {
     Node *node = new_node(kind);
     node->lexpr = lexpr;
     node->rexpr = rexpr;
+    node->ty = ty;
     return node;
 }
 
@@ -157,6 +183,7 @@ Node* new_stmt(NodeKind kind, Node* expr) {
 Node* new_var_node(Var* var) {
     Node *node = new_node(ND_VAR);
     node->var = var;
+    node->ty = var->ty;
     return node;
 }
 
@@ -181,6 +208,26 @@ Var* new_gvar(char *name, Type *ty) {
     var->next = globals;
     globals = var;
     return var;
+}
+
+Node* new_add(Node *lexpr, Node *rexpr) {
+    if (is_integer(lexpr->ty) && is_integer(rexpr->ty))
+        return new_binary(ND_ADD, lexpr, rexpr, &LONG_TYPE);
+    if (is_ptr(lexpr->ty) && is_integer(rexpr->ty))
+        return new_binary(ND_PTR_ADD, lexpr, rexpr, lexpr->ty);
+    if (is_integer(lexpr->ty) && is_ptr(rexpr->ty))
+        return new_binary(ND_PTR_ADD, rexpr, lexpr, rexpr->ty);
+    return NULL;
+}
+
+Node* new_sub(Node *lexpr, Node *rexpr) {
+    if (is_integer(lexpr->ty) && is_integer(rexpr->ty))
+        return new_binary(ND_SUB, lexpr, rexpr, &LONG_TYPE);
+    if (is_ptr(lexpr->ty) && is_integer(rexpr->ty))
+        return new_binary(ND_PTR_SUB, lexpr, rexpr, lexpr->ty);
+    if (is_ptr(lexpr->ty) && is_ptr(rexpr->ty))
+        return new_binary(ND_PTR_DIFF, lexpr, rexpr, lexpr->ty);
+    return NULL;
 }
 
 Node* expr();
@@ -312,6 +359,10 @@ Node* unary() {
         return new_unary(ND_NOT, unary());
     if (parse_reserved("~"))
         return new_unary(ND_BITNOT, unary());
+    if (parse_reserved("*"))
+        return new_unary(ND_DEREF, unary());
+    if (parse_reserved("&"))
+        return new_unary(ND_REF, unary());
     return primary();
 }
 
@@ -319,21 +370,23 @@ Node* mul_div() {
     Node* node = unary();
     while(1) {
         if (parse_reserved("*"))
-            node = new_binary(ND_MUL, node, unary());
+            node = new_binary(ND_MUL, node, unary(), &LONG_TYPE);
         else if (parse_reserved("/"))
-            node = new_binary(ND_DIV, node, unary());
+            node = new_binary(ND_DIV, node, unary(), &LONG_TYPE);
         else 
-            return node;
+            break;
     }
+    node->ty = &LONG_TYPE;
+    return node;
 }
 
 Node* add_sub() {
     Node* node = mul_div();
     while(1) {
         if (parse_reserved("+"))
-            node = new_binary(ND_ADD, node, mul_div());
+            node = new_add(node, mul_div());
         else if (parse_reserved("-"))
-            node = new_binary(ND_SUB, node, mul_div());
+            node = new_sub(node, mul_div());
         else 
             return node;
     }
@@ -342,43 +395,39 @@ Node* add_sub() {
 Node* relational() {
     Node* node = add_sub();
     if (parse_reserved(">"))
-        return new_binary(ND_LT, add_sub(), node);
+        return new_binary(ND_LT, add_sub(), node, &LONG_TYPE);
     if (parse_reserved(">="))
-        return new_binary(ND_LTE, add_sub(), node);
+        return new_binary(ND_LTE, add_sub(), node, &LONG_TYPE);
     if (parse_reserved("<"))
-        return new_binary(ND_LT, node, add_sub());
+        return new_binary(ND_LT, node, add_sub(), &LONG_TYPE);
     if (parse_reserved("<="))
-        return new_binary(ND_LTE, node, add_sub());
+        return new_binary(ND_LTE, node, add_sub(), &LONG_TYPE);
     return node;
 }
 
 Node* equality() {
     Node* node = relational();
     if (parse_reserved("=="))
-        return new_binary(ND_EQ, node, relational());
+        return new_binary(ND_EQ, node, relational(), &LONG_TYPE);
     if (parse_reserved("!="))
-        return new_binary(ND_NEQ, node, relational());
+        return new_binary(ND_NEQ, node, relational(), &LONG_TYPE);
     return node;
 }
 
 Node* logand() {
     Node* node = equality();
-    while(1) {
-        if (parse_reserved("&&"))
-            node = new_binary(ND_LOGAND, node, equality());
-        else 
-            return node;
+    for(;parse_reserved("&&");) {
+        node = new_binary(ND_LOGAND, node, equality(), &LONG_TYPE);
     }
+    return node;
 }
 
 Node* logor() {
     Node* node = logand();
-    while(1) {
-        if (parse_reserved("||"))
-            node = new_binary(ND_LOGOR, node, logand());
-        else 
-            return node;
+    for(;parse_reserved("||");){
+        node = new_binary(ND_LOGOR, node, logand(), &LONG_TYPE);
     }
+    return node;
 }
 
 Node* ternary() {
@@ -391,13 +440,15 @@ Node* ternary() {
     tern->then = expr();
     assert(parse_reserved(":"));
     tern->els = ternary();
+    assert(tern->then->ty);
+    tern->ty = tern->then->ty;
     return tern;
 }
 
 Node* assign() {
     Node* node = ternary();
     if(parse_reserved("=")) {
-        return new_binary(ND_ASSIGN, node, assign());
+        return new_binary(ND_ASSIGN, node, assign(), node->ty);
     }
     return node;
 }
@@ -411,7 +462,7 @@ Node* declaration(Type* ty) {
     Var* var = new_var(name, ty);
     add_local(var);
     if (parse_reserved("=")) {
-        var->init = new_binary(ND_ASSIGN, new_var_node(var), expr());
+        var->init = new_binary(ND_ASSIGN, new_var_node(var), expr(), ty);
     }
     assert(parse_reserved(";"));
     Node* node = new_stmt(ND_DECL, NULL);
@@ -420,7 +471,9 @@ Node* declaration(Type* ty) {
 }
 
 Node* expr() {
-    return assign();
+    Node* node = assign();
+    assert(node->ty);
+    return node;
 }
 
 Node* ginit() {
@@ -500,7 +553,7 @@ Node* stmt() {
 }
 
 Var* decl_func_arg() {
-    Type* ty = parse_basetype();
+    Type* ty = parse_type();
     Var* var = new_var(parse_ident(), ty);
     var->is_local = true;
     return var;
@@ -521,64 +574,8 @@ Var* decl_func_args() {
     return param;
 }
 
-// step1
-
-// <program> ::= <function>
-// <function> ::= <type> <id> "(" ")" "{" <statement> "}"
-// <type> ::= "int"
-// <statement> ::= "return" <exp> ";"
-// <exp> ::= <int>
-
-// step2
-
-// <exp> ::= <unary_op> <exp> | <int>
-// <unary_op> ::= "!" | "~" | "-"
-
-// step3
-
-// <exp> ::= <exp> ("+" | "-") <exp> | <term>
-// <term> ::= <term> ("*" | "/") <term> | <factor>
-// <factor> ::= "(" <exp> ")" | <unary_op> <factor> | <int>
-
-// step4
-
-// <exp> ::= <logical-and-exp> { "||" <logical-and-exp> }
-// <logical-and-exp> ::= <equality-exp> { "&&" <equality-exp> }
-// <equality-exp> ::= <relational-exp> { ("!=" | "==") <relational-exp> }
-// <relational-exp> ::= <additive-exp> { ("<" | ">" | "<=" | ">=") <additive-exp> }
-// <additive-exp> ::= <term> { ("+" | "-") <term> }
-
-
-// step 5
-
-// <statement> ::= "return" <exp> ";"
-//               | <exp> ";"
-//               | "int" <id> [ = <exp> ] ";"
-
-// step 6
-
-// <statement> += "if" "(" <exp> ")" <statement> [ "else" <statement> ]
-
-// step 7
-
-// <statement> += "{" { <block-item> } "}
-
-
-// step 8 (only implement for loops)
-
-// <statement> += "for" "(" <exp-option> ";" <exp-option> ";" <exp-option> ")" <statement>
-//               | "for" "(" <declaration> <exp-option> ";" <exp-option> ")" <statement>
-//               | "break" ";"
-//               | "continue" ";"
-
-// step 9
-
-// <function> ::= "int" <id> "(" [ "int" <id> { "," "int" <id> } ] ")" ( "{" { <block-item> } "}" | ";" )
-// <primary> ::= <function-call> | "(" <exp> ")" | <unary_op> <factor> | <int> | <id>
-// <function-call> ::= id "(" [ <exp> { "," <exp> } ] ")"
-
 Function *parse_function() {
-    Type *ty = parse_basetype();
+    Type *ty = parse_type();
     assert(ty);
     char *name = parse_ident();
     assert(name);
@@ -621,7 +618,7 @@ Function *parse_function() {
 }
 
 void global_var() {
-    Type *ty = parse_basetype();
+    Type *ty = parse_type();
     char *name = parse_ident();
 
     Node* var;
