@@ -16,14 +16,22 @@ enum TokenKind {
 };
 
 enum TypeKind {
+    TY_CHAR,
+    TY_SHORT,
     TY_INT,
+    TY_LONG,
 };
 
 struct Type {
     TypeKind kind;
+    int size;
+    int align;
 };
 
 extern Type INT_TYPE;
+extern Type CHAR_TYPE;
+extern Type SHORT_TYPE;
+extern Type LONG_TYPE;
 
 // Token type
 struct Token {

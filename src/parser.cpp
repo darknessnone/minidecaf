@@ -65,7 +65,16 @@ Token* expect_int_literal() {
 }
 
 Token* expect_basetype() {
-    return expect_reserved("int");
+    Token* tok = NULL;
+    if(tok = expect_reserved("int"))
+        return tok;
+    if(tok = expect_reserved("char"))
+        return tok;
+    if(tok = expect_reserved("short"))
+        return tok;
+    if(tok = expect_reserved("long"))
+        return tok;
+    return NULL;
 }
 
 bool parse_reserved(char* s) {
@@ -76,12 +85,18 @@ bool parse_reserved(char* s) {
 }
 
 Type* parse_basetype() {
-    Token* tok;
-    if(!(tok = expect_basetype()))
-        return NULL;
-    token = token->next;
-    // TODO: decide type through 'tok'
-    Type *ty = &INT_TYPE;
+    Token* tok = NULL;
+    Type* ty = NULL;
+    if(tok = expect_reserved("int"))
+        ty = &INT_TYPE;
+    else if(tok = expect_reserved("char"))
+        ty = &CHAR_TYPE;
+    else if(tok = expect_reserved("short"))
+        ty = &SHORT_TYPE;
+    else if(tok = expect_reserved("long"))
+        ty = &LONG_TYPE;
+    if(ty)
+        token = token->next;
     return ty;
 }
 
