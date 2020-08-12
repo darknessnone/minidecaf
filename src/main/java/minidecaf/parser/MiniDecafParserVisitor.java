@@ -18,6 +18,12 @@ public interface MiniDecafParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProgram(MiniDecafParser.ProgramContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link MiniDecafParser#func}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunc(MiniDecafParser.FuncContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code exprStmt}
 	 * labeled alternative in {@link MiniDecafParser#stmt}.
 	 * @param ctx the parse tree
@@ -110,4 +116,11 @@ public interface MiniDecafParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitParenthesizePrimary(MiniDecafParser.ParenthesizePrimaryContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code callPrimary}
+	 * labeled alternative in {@link MiniDecafParser#primary}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCallPrimary(MiniDecafParser.CallPrimaryContext ctx);
 }

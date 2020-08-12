@@ -16,26 +16,55 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
 
     @Override
     public Void visitProgram(ProgramContext ctx) {
-        sb.append(".global main\n")
-          .append("main:\n");
-        
-        sb.append("# prologue\n")
-          .append("\tmv fp, sp\n");
+        for (var func: ctx.func())
+            visit(func);
+        return null;
+    }
 
-        // symbol
+    @Override
+    public Void visitFunc(FuncContext ctx) {
+        currentFunc = ctx.IDENT().get(0).getText();
+
+        sb.append(".global " + currentFunc + "\n")
+          .append(currentFunc + ":\n");
+        funcTable.add(currentFunc);
+
+        // open a new scope
         symbolTable.add(new HashMap<>());
+        currentOffset.add(0);
         
-        // visit statements
-        for (var stmt: ctx.stmt()) {
-            visit(stmt);
-            if (stmt instanceof ReturnStmtContext)
-                break;
+        sb.append("# prologue\n");
+        sb.append("\tmv fp, sp\n");
+        push("ra");
+        push("fp");
+
+        for (int i = 1; i < ctx.IDENT().size(); ++i) {
+            String paraName = ctx.IDENT().get(i).getText();
+            if (symbolTable.peek().get(paraName) != null)
+                reportError("two parameters have the same names", ctx);
+            
+            if (i < 9) {
+                push("a" + (i - 1));
+                symbolTable.peek().put(paraName, currentOffset.peek());
+            } else {
+                symbolTable.peek().put(paraName, (i - 9 + 2) * 8);
+            }
         }
+        
+        // emit body
+        for (var stmt: ctx.stmt()) visit(stmt);
+
+        // close the scope
+        symbolTable.pop();
+        currentOffset.pop();
 
         sb.append("# epilogue\n")
-          .append("\tld a0, 0(sp)\n");
-        
-        sb.append("\tret\n");
+          .append("_exit_" + currentFunc + ":\n")
+          .append("\tld a0, 0(sp)\n")
+          .append("\tmv sp, fp\n");
+        pop("fp");
+        pop("ra");
+        sb.append("\tret\n\n");
         return null;
     }
 
@@ -50,6 +79,7 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
     @Override
     public Void visitReturnStmt(ReturnStmtContext ctx) {
         visit(ctx.expr());
+        sb.append("\tj _exit_" + currentFunc + "\n");
         return null;
     }
 
@@ -62,42 +92,41 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
         return null;
     }
 
+    int ifNo = 0;
     @Override
     public Void visitIfStmt(IfStmtContext ctx) {
-        int elseLabel = labelNo++;
-        int afterLabel = labelNo++;
         sb.append("# # if\n");
         visit(ctx.expr());
         sb.append("\tld t1, 0(sp)\n")
-          .append("\tbeqz t1, _L" + elseLabel + "\n");
+          .append("\tbeqz t1, _else" + ifNo + "\n");
         visit(ctx.stmt().get(0));
-        sb.append("\tj _L" + afterLabel + "\n")
-          .append("_L" + elseLabel + ":\n");
+        sb.append("\tj _afterIf" + ifNo + "\n")
+          .append("_else" + ifNo + ":\n");
         if (ctx.ELSE() != null)
             visit(ctx.stmt().get(1));
-        sb.append("_L" + afterLabel + ":\n");
+        sb.append("_afterIf" + ifNo + ":\n");
+        ++ifNo;
         return null;
     }
 
+    int loopNo = 0;
     @Override
     public Void visitWhileStmt(WhileStmtContext ctx) {
-        int beforeLabel = labelNo++;
-        int afterLabel = labelNo++;
         sb.append("# while\n");
-        sb.append("_L" + beforeLabel + ":\n");
+        sb.append("_beforeLoop" + loopNo + ":\n");
         visit(ctx.expr());
         sb.append("\tld t1, 0(sp)\n")
-          .append("\tbeqz t1, _L" + afterLabel + "\n");
+          .append("\tbeqz t1, _afterLoop" + loopNo + "\n");
         visit(ctx.stmt());
-        sb.append("\tj _L" + beforeLabel + "\n")
-          .append("_L" + afterLabel + ":\n");
+        sb.append("\tj _beforeLoop" + loopNo + "\n")
+          .append("_afterLoop" + loopNo + ":\n");
+        ++loopNo;
         return null;
     }
 
+    int forNo = 0;
     @Override
     public Void visitForStmt(ForStmtContext ctx) {
-        int beforeLabel = labelNo++;
-        int afterLabel = labelNo++;
         sb.append("# for\n");
         
         ExprContext initExpr = null;
@@ -108,24 +137,24 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
                 ExprContext expr = (ExprContext)(ctx.children.get(i));
                 if (ctx.children.get(i - 1).getText().equals("("))
                     initExpr = expr;
+                else if (ctx.children.get(i + 1).getText().equals(";"))
+                    condExpr = expr;
                 else
-                    if (ctx.children.get(i + 1).getText().equals(";"))
-                        condExpr = expr;
-                    else
-                        afterExpr = expr;
+                    afterExpr = expr;
             }
         
         if (initExpr != null) visit(initExpr);
-        sb.append("_L" + beforeLabel + ":\n");
+        sb.append("_beforeLoop" + loopNo + ":\n");
         if (condExpr != null) {
             visit(condExpr);
             sb.append("\tld t1, 0(sp)\n")
-              .append("\tbeqz t1, _L" + afterLabel + "\n");
+              .append("\tbeqz t1, _afterLoop" + loopNo + "\n");
         }
         visit(ctx.stmt());
         if (afterExpr != null) visit(afterExpr);
-        sb.append("\tj _L" + beforeLabel + "\n")
-          .append("_L" + afterLabel + ":\n");
+        sb.append("\tj _beforeLoop" + loopNo + "\n")
+          .append("_afterLoop" + loopNo + ":\n");
+        ++forNo;
         return null;
     }
 
@@ -148,15 +177,15 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
             if (!isVar) reportError("only a single variable could be assigned", ctx.relational());
 
             visit(ctx.expr());
+            currentOffset.push(currentOffset.peek() - 8);
 
-            int offset = lookupSymbol(v);
-            if (offset != 0) {
+            var optionOffset = lookupSymbol(v);
+            if (optionOffset.isPresent()) {
                 sb.append("\tld t1, 0(sp)\n")
-                  .append("\tsd t1, " + offset + "(fp)\n");
+                  .append("\tsd t1, " + optionOffset.get() + "(fp)\n");
             } else {
                 // create a new symbol
-                symbolTable.lastElement().put(v, currentOffset);
-                currentOffset -= 8;
+                symbolTable.peek().put(v, currentOffset.peek());
             }
         }
         return null;
@@ -261,11 +290,11 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
     @Override
     public Void visitIdentPrimary(IdentPrimaryContext ctx) {
         String v = ctx.IDENT().getText();
-        int offset = lookupSymbol(v);
-        if (offset == 0)
+        Optional<Integer> optionOffset = lookupSymbol(v);
+        if (optionOffset.isEmpty())
             reportError("use variable that is not defined", ctx);
         sb.append("# read variable\n")
-          .append("\tld t1, " + offset + "(fp)\n")
+          .append("\tld t1, " + optionOffset.get() + "(fp)\n")
           .append("\taddi sp, sp, -8\n")
           .append("\tsd t1, 0(sp)\n");
         return null;
@@ -277,26 +306,40 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
         return null;
     }
 
-    // Symbol table
-    // So far, we only have global variables.
-    // Therefore, here we only record an offset to the global fp.
-    Stack<Map<String, Integer>> symbolTable = new Stack<>();
-    Integer currentOffset = -8;
-
-    // look the symbol up for the offset (0 means non-existence)
-    private int lookupSymbol(String v) {
-        int offset = 0;
-        for (int i = symbolTable.size() - 1; i >= 0; --i) {
-            var map = symbolTable.elementAt(i);
-            if (map.containsKey(v)) {
-                offset = map.get(v);
-                break;
-            }
+    @Override
+    public Void visitCallPrimary(CallPrimaryContext ctx) {
+        String name = ctx.IDENT().getText();
+        if (!funcTable.contains(name))
+            reportError("try calling a undeclared function", ctx);
+        sb.append("# prepare arguments\n");
+        for (int i = ctx.expr().size() - 1; i >= 0; --i) {
+            var expr = ctx.expr().get(i);
+            visit(expr);
+            if (i < 8) pop("a" + i);
         }
-        return offset;
+
+        sb.append("\tcall " + name + "\n");
+
+        for (int i = ctx.expr().size() - 1; i >= 8; --i) pop();
+        push("a0");
+        return null;
     }
 
-    Integer labelNo = 0;
+    Stack<Map<String, Integer>> symbolTable = new Stack<>();
+    Stack<Integer> currentOffset = new Stack<>();
+
+    // look the symbol up for the offset (0 means non-existence)
+    private Optional<Integer> lookupSymbol(String v) {
+        for (int i = symbolTable.size() - 1; i >= 0; --i) {
+            var map = symbolTable.elementAt(i);
+            if (map.containsKey(v))
+                return Optional.of(map.get(v));
+        }
+        return Optional.empty();
+    }
+
+    Set<String> funcTable = new HashSet<>();
+    String currentFunc;
 
     // Utils
     private int compare(String s, String t) {
@@ -317,6 +360,22 @@ public class MiniDecafVisitor extends MiniDecafParserBaseVisitor<Void> {
     private void reportError(String s, ParserRuleContext ctx) {
         System.err.printf("Error(%d, %d): %s.", ctx.getStart().getLine(), ctx.getStart().getCharPositionInLine(), s);
         System.exit(1);
+    }
+
+    private void push(String reg) {
+        sb.append("# push " + reg + "\n")
+          .append("\taddi sp, sp, -8\n")
+          .append("\tsd " + reg + ", 0(sp)\n");
+        currentOffset.push(currentOffset.pop() - 8);
+    }
+
+    private void pop(String reg) {
+        sb.append("# pop " + reg + "\n")
+          .append("\tld " + reg + ", 0(sp)\n")
+          .append("\taddi sp, sp, 8\n");
+    }
+    private void pop() {
+        currentOffset.push(currentOffset.pop() + 8);
     }
 }
 

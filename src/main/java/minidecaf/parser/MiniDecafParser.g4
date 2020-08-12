@@ -2,11 +2,11 @@ parser grammar MiniDecafParser;
 
 options { tokenVocab = MiniDecafLexer; }
 
-program: stmt*;
+program: func*;
 
 // toplv      : typ IDENT (LPAREN (typ IDENT (COMMA typ IDENT)*)? RPAREN LBRACK stmt* RBRACK | (LBRACE NUM RBRACE)* SEMI);
 
-// func: IDENT (LPAREN (IDENT (COMMA IDENT)*)?) LBRACE stmt* RBRACE;
+func: IDENT LPAREN (IDENT (COMMA IDENT)*)? RPAREN LBRACE stmt* RBRACE;
 
 stmt: expr SEMI # exprStmt
     | RETURN expr SEMI # returnStmt
@@ -36,7 +36,8 @@ unary: ADD? primary
 
 primary: NUM # numPrimary
 	| IDENT # identPrimary
-	| LPAREN expr RPAREN # parenthesizePrimary;
-        //    | IDENT (LPAREN (expr (COMMA expr)*)? RPAREN)?
+	| LPAREN expr RPAREN # parenthesizePrimary
+        | IDENT (LPAREN (expr (COMMA expr)*)? RPAREN)? # callPrimary
+        ;
 
 // typ        : (INT | CHAR) MUL*;

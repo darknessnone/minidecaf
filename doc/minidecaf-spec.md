@@ -176,7 +176,8 @@ ident = [a-z]+[a-z0-9_]*
 ```
 支持函数
 ```
-program    = stmt*
+program = func*
+func   = ident ("(" (ident ("," ident)*)? ")" "{" stmt* "}"
 stmt    = expr ";"
         | "return" expr ";"
         | "if" "(" expr ")" stmt ("else" stmt)?
