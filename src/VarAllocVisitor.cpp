@@ -30,43 +30,32 @@ antlrcpp::Any VarAllocVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
         for (auto i = 1; i < ctx->ID().size(); ++i) {
             std::string varName = ctx->ID(i)->getText();
             varTab[curFunc][varName] = offset++;
-            std::tuple<int, int> rvalueType = visit(ctx->type(i));
+            std::tuple<int, std::vector<int> > rvalueType = visit(ctx->type(i));
             typeTab[curFunc][varName] = std::get<0>(rvalueType);
-            sizeTab[curFunc][varName] = std::vector<int>(1, std::get<1>(rvalueType));
+            sizeTab[curFunc][varName] = std::get<1>(rvalueType);
         }
         visit(ctx->stmts());
     }
     return nullptr;
 }
 
-antlrcpp::Any VarAllocVisitor::visitAssign(MiniDecafParser::AssignContext *ctx) {
+antlrcpp::Any VarAllocVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) {
     std::string varName = ctx->ID()->getText();
-    if (varTab[curFunc].count(varName) > 0) {
-        std::cerr << "[error] redefinition of variable " << varName << "\n";
-        exit(1);
-    }
-    varTab[curFunc][varName] = offset++;
-    std::tuple<int, int> rvalueType = visit(ctx->type());
-    typeTab[curFunc][varName] = std::get<0>(rvalueType);
-    sizeTab[curFunc][varName] = std::vector<int>(1, std::get<1>(rvalueType));
-
-    return nullptr;
-}
-
-antlrcpp::Any VarAllocVisitor::visitIdentifier(MiniDecafParser::IdentifierContext *ctx) {
-    if (varTab[curFunc].count(ctx->getText()) == 0 &&
-        varTab["global"].count(ctx->getText()) == 0) {
-        std::cerr << "[error] Undeclared variable " << ctx->getText() << " used\n";
-        exit(1);
-    }
-    return nullptr;
-}
-
-antlrcpp::Any VarAllocVisitor::visitPureAssign(MiniDecafParser::PureAssignContext *ctx) {
-    if (varTab[curFunc].count(ctx->ID()->getText()) == 0 &&
-        varTab["global"].count(ctx->ID()->getText()) == 0) {
-        std::cerr << "[error] Undeclared variable " << ctx->ID()->getText() << " Used\n";
-        exit(1);
+    if (ctx->type()) {
+        if (varTab[curFunc].count(varName) > 0) {
+            std::cerr << "[error] redefinition of variable " << varName << "\n";
+            exit(1);
+        }
+        varTab[curFunc][varName] = offset++;
+        std::tuple<int, std::vector<int> > rvalueType = visit(ctx->type());
+        typeTab[curFunc][varName] = std::get<0>(rvalueType);
+        sizeTab[curFunc][varName] = std::get<1>(rvalueType);
+    } else {
+        if (varTab[curFunc].count(varName) == 0 &&
+        varTab["global"].count(varName) == 0) {
+            std::cerr << "[error] Undeclared variable " << varName << " Used\n";
+            exit(1);
+        }
     }
     return nullptr;
 }

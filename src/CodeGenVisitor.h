@@ -19,7 +19,6 @@ public:
     antlrcpp::Any visitForLoop(MiniDecafParser::ForLoopContext *ctx);
     antlrcpp::Any visitPrintExpr(MiniDecafParser::PrintExprContext *ctx);
     antlrcpp::Any visitStmtBlock(MiniDecafParser::StmtBlockContext *ctx);
-    antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *ctx);
     antlrcpp::Any visitAddSub(MiniDecafParser::AddSubContext *ctx);
     antlrcpp::Any visitMulDiv(MiniDecafParser::MulDivContext *ctx);
     antlrcpp::Any visitEqual(MiniDecafParser::EqualContext *ctx);
@@ -27,10 +26,11 @@ public:
     antlrcpp::Any visitParen(MiniDecafParser::ParenContext *ctx);
     antlrcpp::Any visitUnary(MiniDecafParser::UnaryContext *ctx);
     antlrcpp::Any visitLessGreat(MiniDecafParser::LessGreatContext *ctx);
-    antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
-    antlrcpp::Any visitPureAssign(MiniDecafParser::PureAssignContext *ctx);
     antlrcpp::Any visitCallFunc(MiniDecafParser::CallFuncContext *ctx);
     antlrcpp::Any visitSizeOf(MiniDecafParser::SizeOfContext *ctx);
+    antlrcpp::Any visitVarDef(MiniDecafParser::VarDefContext *ctx);
+    // antlrcpp::Any visitArrayCall(MiniDecafParser::ArrayCallContext *ctx);
+    // antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *ctx);
 
 private:
     std::ostringstream code_;

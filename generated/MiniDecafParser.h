@@ -14,9 +14,9 @@ public:
   enum {
     WS = 1, INTEGER = 2, SEMICOLON = 3, COMMA = 4, ADD = 5, SUB = 6, MUL = 7, 
     AND = 8, DIV = 9, LPAREN = 10, RPAREN = 11, LBRACE = 12, RBRACE = 13, 
-    EQ = 14, NEQ = 15, LT = 16, LE = 17, GT = 18, GE = 19, ASSIGN = 20, 
-    SIZEOF = 21, INT = 22, RET = 23, IF = 24, ELSE = 25, WHILE = 26, FOR = 27, 
-    ID = 28
+    LSQUBRACE = 14, RSQUBRACE = 15, EQ = 16, NEQ = 17, LT = 18, LE = 19, 
+    GT = 20, GE = 21, ASSIGN = 22, SIZEOF = 23, INT = 24, RET = 25, IF = 26, 
+    ELSE = 27, WHILE = 28, FOR = 29, ID = 30
   };
 
   enum {
@@ -68,6 +68,12 @@ public:
     antlr4::tree::TerminalNode *SEMICOLON();
     std::vector<antlr4::tree::TerminalNode *> COMMA();
     antlr4::tree::TerminalNode* COMMA(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> LSQUBRACE();
+    antlr4::tree::TerminalNode* LSQUBRACE(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> INTEGER();
+    antlr4::tree::TerminalNode* INTEGER(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> RSQUBRACE();
+    antlr4::tree::TerminalNode* RSQUBRACE(size_t i);
 
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
@@ -181,11 +187,14 @@ public:
    
   };
 
-  class  IdentifierContext : public ExprContext {
+  class  VarDefContext : public ExprContext {
   public:
-    IdentifierContext(ExprContext *ctx);
+    VarDefContext(ExprContext *ctx);
 
     antlr4::tree::TerminalNode *ID();
+    TypeContext *type();
+    antlr4::tree::TerminalNode *ASSIGN();
+    ExprContext *expr();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -229,6 +238,19 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
+  class  ArrayDefContext : public ExprContext {
+  public:
+    ArrayDefContext(ExprContext *ctx);
+
+    TypeContext *type();
+    antlr4::tree::TerminalNode *ID();
+    antlr4::tree::TerminalNode *LSQUBRACE();
+    antlr4::tree::TerminalNode *INTEGER();
+    antlr4::tree::TerminalNode *RSQUBRACE();
+
+    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
+  };
+
   class  LiteralContext : public ExprContext {
   public:
     LiteralContext(ExprContext *ctx);
@@ -249,18 +271,6 @@ public:
     ExprContext* expr(size_t i);
     std::vector<antlr4::tree::TerminalNode *> COMMA();
     antlr4::tree::TerminalNode* COMMA(size_t i);
-
-    virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
-  };
-
-  class  AssignContext : public ExprContext {
-  public:
-    AssignContext(ExprContext *ctx);
-
-    TypeContext *type();
-    antlr4::tree::TerminalNode *ID();
-    antlr4::tree::TerminalNode *ASSIGN();
-    ExprContext *expr();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
@@ -292,13 +302,14 @@ public:
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };
 
-  class  PureAssignContext : public ExprContext {
+  class  ArrayCallContext : public ExprContext {
   public:
-    PureAssignContext(ExprContext *ctx);
+    ArrayCallContext(ExprContext *ctx);
 
     antlr4::tree::TerminalNode *ID();
-    antlr4::tree::TerminalNode *ASSIGN();
+    antlr4::tree::TerminalNode *LSQUBRACE();
     ExprContext *expr();
+    antlr4::tree::TerminalNode *RSQUBRACE();
 
     virtual antlrcpp::Any accept(antlr4::tree::ParseTreeVisitor *visitor) override;
   };

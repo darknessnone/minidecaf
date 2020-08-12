@@ -3,7 +3,7 @@ grammar MiniDecaf;
 toplv : (prog)* EOF
      ;
 
-prog : type ID ('(' (type ID ',')* (type ID)? ')' stmts | ';') 
+prog : type ID ('(' (type ID ',')* (type ID)? ')' stmts | ('[' INTEGER ']')* ';') 
      ;
 
 stmts : 'return' expr ';'                                        # Return
@@ -19,11 +19,11 @@ expr : ('+'|'-'|'*'|'&') expr                                    # Unary
      | expr op=(ADD|SUB) expr                                    # AddSub
      | expr op=(LT|LE|GT|GE) expr                                # LessGreat 
      | expr op=(EQ|NEQ) expr                                     # Equal
-     | type ID '=' expr                                          # Assign
-     | ID '=' expr                                               # PureAssign
+     | (type)? ID ('=' expr)?                                    # VarDef
+     | type ID '[' INTEGER ']'                                   # ArrayDef
      | ID '(' (expr ',')* (expr)? ')'                            # CallFunc
      | SIZEOF '(' ID ')'                                         # SizeOf
-     | ID                                                        # Identifier
+     | ID '[' expr ']'                                           # ArrayCall
      | INTEGER                                                   # Literal
      | '(' expr ')'                                              # Paren
      ;
@@ -44,6 +44,8 @@ LPAREN : '(';
 RPAREN : ')';
 LBRACE : '{';
 RBRACE : '}';
+LSQUBRACE : '[';
+RSQUBRACE : ']';
 EQ : '==';
 NEQ : '!=';
 LT : '<';

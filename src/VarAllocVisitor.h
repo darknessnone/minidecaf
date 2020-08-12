@@ -15,10 +15,11 @@ public:
     antlrcpp::Any visitProg(MiniDecafParser::ProgContext *ctx);
     // antlrcpp::Any visitReturn(MiniDecafParser::ReturnContext *ctx);
     
-    antlrcpp::Any visitPureAssign(MiniDecafParser::PureAssignContext *ctx);
-    antlrcpp::Any visitAssign(MiniDecafParser::AssignContext *ctx);
-    antlrcpp::Any visitIdentifier(MiniDecafParser::IdentifierContext *ctx);
+    antlrcpp::Any visitVarDef(MiniDecafParser::VarDefContext *ctx);
     antlrcpp::Any visitType(MiniDecafParser::TypeContext *ctx);
+
+    // antlrcpp::Any visitArrayCall(MiniDecafParser::ArrayCallContext *ctx);
+    // antlrcpp::Any visitArrayDef(MiniDecafParser::ArrayDefContext *ctx);
 
 private:
     symTab<int> varTab, typeTab;

@@ -14,9 +14,9 @@ public:
   enum {
     WS = 1, INTEGER = 2, SEMICOLON = 3, COMMA = 4, ADD = 5, SUB = 6, MUL = 7, 
     AND = 8, DIV = 9, LPAREN = 10, RPAREN = 11, LBRACE = 12, RBRACE = 13, 
-    EQ = 14, NEQ = 15, LT = 16, LE = 17, GT = 18, GE = 19, ASSIGN = 20, 
-    SIZEOF = 21, INT = 22, RET = 23, IF = 24, ELSE = 25, WHILE = 26, FOR = 27, 
-    ID = 28
+    LSQUBRACE = 14, RSQUBRACE = 15, EQ = 16, NEQ = 17, LT = 18, LE = 19, 
+    GT = 20, GE = 21, ASSIGN = 22, SIZEOF = 23, INT = 24, RET = 25, IF = 26, 
+    ELSE = 27, WHILE = 28, FOR = 29, ID = 30
   };
 
   MiniDecafLexer(antlr4::CharStream *input);

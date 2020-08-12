@@ -23,17 +23,51 @@ antlrcpp::Any CodeGenVisitor::visitProg(MiniDecafParser::ProgContext *ctx) {
     } else {
         curFunc = ctx->ID(0)->getText();
         code_ << curFunc << ":\n"
-            << "\tsd ra, -8(sp)\n"
-            << "\taddi sp, sp, -8\n"
-            << "\tsd fp, -8(sp)\n"
-            << "\taddi fp, sp, -8\n"
-            << "\taddi sp, fp, " << -8 * (int)varTab[curFunc].size() << "\n";
-        for (auto i = 1; i < ctx->ID().size(); ++i) {
-            code_ << "\tld t0, " << 16 + 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
-            code_ << "\tsd t0, " << -8 - 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
-        }
+              << "\tsd ra, -8(sp)\n"
+              << "\taddi sp, sp, -8\n"
+              << "\tsd fp, -8(sp)\n"
+              << "\taddi fp, sp, -8\n"
+              << "\taddi sp, fp, " << -8 * (int)varTab[curFunc].size() << "\n";
+
+        for (int i = 1; i < ctx->ID().size(); ++i) {
+            if (ctx->ID().size() > 8) {
+                code_ << "\tld t0, " << 16 + 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+                code_ << "\tsd t0, " << -8 - 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+            } else {
+                code_ << "\tsd a" << i-1 << ", " << -8 - 8 * varTab[curFunc][ctx->ID(i)->getText()] << "(fp)\n";
+            }
+        } 
         visit(ctx->stmts());
     }
+    return -1;
+}
+
+antlrcpp::Any CodeGenVisitor::visitCallFunc(MiniDecafParser::CallFuncContext *ctx) {
+    if (ctx->expr().size() > 7) { 
+        for (int i = ctx->expr().size()-1; i >= 0; --i) {
+            visit(ctx->expr(i));
+        }
+        code_ << "\tcall " << ctx->ID()->getText() << "\n"
+            << "\taddi sp, sp, " << 8 + 8 * ctx->expr().size() << "\n"
+            << push;
+    } else {
+        for (int i = ctx->expr().size()-1; i >= 0; --i) {
+            visit(ctx->expr(i));
+            code_ << "\tmv a" << i << ", a0\n";
+        }
+        code_ << "\tcall " << ctx->ID()->getText() << "\n"
+            << "\taddi sp, sp, " << 8 + 8 * ctx->expr().size() << "\n"
+            << push;
+    }
+    return -1;
+}
+
+antlrcpp::Any CodeGenVisitor::visitReturn(MiniDecafParser::ReturnContext *ctx) {
+    visit(ctx->expr());
+    code_ << "\taddi sp, fp, 8\n"
+          << "\tld ra, (sp)\n" 
+          << "\tld fp, -8(sp)\n"
+          << "\tret\n";
     return -1;
 }
 
@@ -41,42 +75,38 @@ antlrcpp::Any CodeGenVisitor::visitPrintExpr(MiniDecafParser::PrintExprContext *
     return visit(ctx->expr());
 }
 
-antlrcpp::Any CodeGenVisitor::visitCallFunc(MiniDecafParser::CallFuncContext *ctx) {
-    for (int i = ctx->expr().size()-1; i >= 0; --i) {
-        visit(ctx->expr(i));
-    }
-    code_ << "\tcall " << ctx->ID()->getText() << "\n";
-    return -1;
-}
-
-antlrcpp::Any CodeGenVisitor::visitReturn(MiniDecafParser::ReturnContext *ctx) {
-    visit(ctx->expr());
-    code_ << "\tld ra, 8(fp)\n" 
-          << "\taddi sp, fp, 8\n"
-          << "\tld fp, -8(sp)\n"
-          << "\tret\n";
-    return -1;
-}
-
-antlrcpp::Any CodeGenVisitor::visitAssign(MiniDecafParser::AssignContext *ctx) {
-    visit(ctx->expr());
-    code_ << "\tsd a0, " << -8 - 8 * varTab[curFunc][ctx->ID()->getText()] << "(fp)\n";
-    return -1;
-}
-
-antlrcpp::Any CodeGenVisitor::visitPureAssign(MiniDecafParser::PureAssignContext *ctx) {
+antlrcpp::Any CodeGenVisitor::visitVarDef(MiniDecafParser::VarDefContext *ctx) {
     std::string varName = ctx->ID()->getText();
-    visit(ctx->expr());
-    if (varTab[curFunc].count(varName) == 0) {
-        if (varTab["global"].count(varName) == 0) {
-            std::cerr << "[error] Undeclared variable " << ctx->getText() << " used\n";
-            exit(1);
+    if (ctx->type() && ctx->expr()) {
+        visit(ctx->expr());
+        code_ << "\tsd a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n";       
+    } else if (!ctx->type() && ctx->expr()) {
+        visit(ctx->expr());
+        if (varTab[curFunc].count(varName) == 0) {
+            if (varTab["global"].count(varName) == 0) {
+                std::cerr << "[error] Undeclared variable " << ctx->getText() << " used\n";
+                exit(1);
+            } else {
+                code_ << "\tla t0, " << varName << "\n"
+                    << "\tsd a0, (t0)\n";
+            }
         } else {
-            code_ << "\tla t0, " << varName << "\n"
-                  << "\tsd a0, (t0)\n";
+            code_ << "\tsd a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n";
+        }      
+    } else if (!ctx->type() && !ctx->expr()) {
+        if (varTab[curFunc].count(varName) == 0) {
+            if (varTab["global"].count(varName) == 0) {
+                std::cerr << "[error] Var " << varName << " is used before define\n";
+                exit(1);
+            } else {
+                code_ << "\tla t0, " << varName << "\n"
+                    << "\tld a0, " << "(t0)\n"
+                    << push;
+            }
+        } else {
+            code_ << "\tld a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n"
+                << push;
         }
-    } else {
-        code_ << "\tsd a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n";
     }
     return -1;
 }
@@ -87,24 +117,6 @@ antlrcpp::Any CodeGenVisitor::visitSizeOf(MiniDecafParser::SizeOfContext *ctx) {
         typeTab[curFunc][varName] == VarType::INT_PTR) {
         
         code_ << "\tli a0, 8\n" 
-              << push;
-    }
-    return -1;
-}
-
-antlrcpp::Any CodeGenVisitor::visitIdentifier(MiniDecafParser::IdentifierContext *ctx) {
-    std::string varName = ctx->ID()->getText();
-    if (varTab[curFunc].count(varName) == 0) {
-        if (varTab["global"].count(varName) == 0) {
-            std::cerr << "[error] Var " << varName << " is used before define\n";
-            exit(1);
-        } else {
-            code_ << "\tla t0, " << varName << "\n"
-                  << "\tld a0, " << "(t0)\n"
-                  << push;
-        }
-    } else {
-        code_ << "\tld a0, " << -8 - 8 * varTab[curFunc][varName] << "(fp)\n"
               << push;
     }
     return -1;
@@ -271,17 +283,21 @@ antlrcpp::Any CodeGenVisitor::visitWhileLoop(MiniDecafParser::WhileLoopContext *
 antlrcpp::Any CodeGenVisitor::visitForLoop(MiniDecafParser::ForLoopContext *ctx) {
     int startBranch = labelOrder++;
     int endBranch = labelOrder++;
-    visit(ctx->expr(0));
+    if (ctx->expr(0)) {
+        visit(ctx->expr(0));
+    }
     code_ << "label_" << startBranch << ":\n";
     if (ctx->expr(1)) {
         visit(ctx->expr(1));
         code_ << "\tbeqz a0, label_" << endBranch << "\n";
-    } else {
-        std::cerr << "[error] Missing forloop control expr\n";
-        exit(1);
-    }
+    } 
+    // else {
+    //     std::cerr << "[error] Missing forloop control expr\n";
+    // }
     visit(ctx->stmts());
-    visit(ctx->expr(2));
+    if (ctx->expr(2)) {
+        visit(ctx->expr(2));
+    }
     code_ << "\tj label_" << startBranch << "\n"
                 << "label_" << endBranch << ":\n";
     return -1;
@@ -300,5 +316,5 @@ antlrcpp::Any CodeGenVisitor::visitLiteral(MiniDecafParser::LiteralContext *ctx)
     }
     code_ << "\tli a0, " << literal << "\n"
           << push;
-    return std::stoi(literal);
+    return -1;
 }
