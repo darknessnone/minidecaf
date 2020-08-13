@@ -15,62 +15,155 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
 
     @Override
     public Void visitProgram(ProgramContext ctx) {
-        for (var func: ctx.func())
-            visit(func);
+        for (var child: ctx.children)
+            visit(child);
+        
+        // 将未定义的全局变量放到 bss 段真的合理嘛？
+        // 在 wiki 上看到 bss 段的初始化是平台相关的
+        // 也许我们不该在此处作定义
+        for (String global: declaredGlobalTable)
+            if (!initializedGlobalTable.contains(global))
+                sb.insert(0, "\t.comm " + global + ", 4, 4\n");
+
         return null;
     }
 
     @Override
-    public Void visitFunc(FuncContext ctx) {
+    public Void visitDeclaredFunc(DeclaredFuncContext ctx) {
+        String name = ctx.IDENT(0).getText();
+        int paraSize = 0;
+        for (int i = 1; i < ctx.children.size(); ++i)
+            if (ctx.children.get(i).getText().equals("int"))
+                ++paraSize;
+        if (declaredFuncTable.get(name) != null && declaredFuncTable.get(name) != paraSize)
+            reportError("declare a function with two different signatures", ctx);
+        declaredFuncTable.put(name, paraSize);
+        return null;
+    }
+
+    int localCount;
+    @Override
+    public Void visitCompleteFunc(CompleteFuncContext ctx) {
+        // C++ 可以支持同名，但参数不同的函数；但 C 不能支持。
+
+        // TODO: 可以尝试完全兼容 gcc 的 calling convention
+
         currentFunc = ctx.IDENT().get(0).getText();
 
         sb.append(".global " + currentFunc + "\n")
           .append(currentFunc + ":\n");
-        funcTable.add(currentFunc);
+        if (definedFuncTable.get(currentFunc) != null)
+            reportError("define two functions as a same name", ctx);
+        if (declaredFuncTable.get(currentFunc) != null && declaredFuncTable.get(currentFunc) != ctx.IDENT().size() - 1)
+            reportError("the number of parameters of the defined function is not the same as declared", ctx);
+        
+        declaredFuncTable.put(currentFunc, ctx.IDENT().size() - 1);
+        definedFuncTable.put(currentFunc, ctx.IDENT().size() - 1);
 
         // open a new scope
         symbolTable.add(new HashMap<>());
-        currentOffset.add(2 * 8);
         
         sb.append("# prologue\n");
         push("ra");
         push("fp");
         sb.append("\tmv fp, sp\n");
+        int backtracePos = sb.length();
+        localCount = 0;
 
         for (int i = 1; i < ctx.IDENT().size(); ++i) {
             String paraName = ctx.IDENT().get(i).getText();
             if (symbolTable.peek().get(paraName) != null)
-                reportError("two parameters have the same names", ctx);
+                reportError("two parameters have the same name", ctx);
             
             if (i < 9) {
-                push("a" + (i - 1));
-                symbolTable.peek().put(paraName, currentOffset.peek());
-            } else {
-                symbolTable.peek().put(paraName, (i - 9 + 2) * 8);
-            }
+                ++localCount;
+                sb.append("\tsd a" + (i - 1) + ", " + (-8 * i) + "(fp)\n");
+                symbolTable.peek().put(paraName, i);
+            } else
+                symbolTable.peek().put(paraName, -(i - 9 + 2));
         }
         
         // emit body
-        for (var stmt: ctx.stmt()) visit(stmt);
+        for (var blockItem: ctx.blockItem()) visit(blockItem);
+
+        // TODO: 还需要做 return 的检查
+
+        // backtrace the number of local variables
+        sb.insert(backtracePos, "\taddi sp, sp, " + (-8 * localCount) + "\n");
+        localCount = 0;
 
         // close the scope
         symbolTable.pop();
-        currentOffset.pop();
+
+        if (currentFunc.equals("main")) {
+            sb.append("\tli t1, 0\n")
+              .append("\taddi sp, sp, -8\n")
+              .append("\tsd t1, 0(sp)\n");
+        }
 
         sb.append("# epilogue\n")
-          .append("_exit_" + currentFunc + ":\n")
+          .append(".exit." + currentFunc + ":\n")
           .append("\tld a0, 0(sp)\n")
           .append("\tmv sp, fp\n");
         pop("fp");
         pop("ra");
         sb.append("\tret\n\n");
+
+        currentFunc = null;
+        return null;
+    }
+
+    @Override
+    public Void visitGlobal(GlobalContext ctx) {
+        // C++ 可以支持用表达式初始化全局变量，但 C 只支持用常量初始化
+
+        String name = ctx.IDENT().getText();
+        if (declaredFuncTable.get(name) != null)
+            reportError("a global variable and a function have the same name", ctx);
+
+        declaredGlobalTable.add(name);
+
+        var num = ctx.NUM();
+        if (num != null) {
+            if (initializedGlobalTable.contains(name))
+                reportError("try initializing a global variable twice", ctx);
+            initializedGlobalTable.add(name);
+
+            // TODO: 64-bit intermediate for initialization of global variables
+            sb.append(name + ":\n")
+              .append("\t.word " + num.getText() + "\n");
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitBlockItem(BlockItemContext ctx) {
+        visit(ctx.children.get(0));
+        return null;
+    }
+
+    @Override
+    public Void visitLocal(LocalContext ctx) {
+        // use of uninitialized local variables is an undefined behavior
+
+        String name = ctx.IDENT().getText();
+        var expr = ctx.expr();
+        if (expr != null) visit(expr);
+        else {
+            sb.append("\tli t1, 0\n")
+              .append("\tsd t1, 0(sp)\n");
+        }
+
+        if (symbolTable.peek().get(name) != null)
+            reportError("try declaring a declared variable", ctx);
+        symbolTable.peek().put(name, ++localCount);
+        sb.append("\tld t1, 0(sp)\n")
+          .append("\tsd t1, " + (- 8 * localCount) + "(fp)\n");
         return null;
     }
 
     @Override
     public Void visitExprStmt(ExprStmtContext ctx) {
-        // Although there's a possible useless value in the stack,
-        // we'll remain it for convenience in the current implementation temporarily.
         visit(ctx.expr());
         return null;
     }
@@ -78,54 +171,60 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
     @Override
     public Void visitReturnStmt(ReturnStmtContext ctx) {
         visit(ctx.expr());
-        sb.append("\tj _exit_" + currentFunc + "\n");
+        sb.append("\tj .exit." + currentFunc + "\n");
         return null;
     }
 
     @Override
     public Void visitBlockStmt(BlockStmtContext ctx) {
         symbolTable.add(new HashMap<>());
-        for (var stmt: ctx.stmt())
-            visit(stmt);
+        for (var blockItem: ctx.blockItem())
+            visit(blockItem);
         symbolTable.pop();
         return null;
     }
 
-    int ifNo = 0;
+    int condNo = 0;
     @Override
     public Void visitIfStmt(IfStmtContext ctx) {
+        int currentCondNo = condNo++;
         sb.append("# # if\n");
         visit(ctx.expr());
         sb.append("\tld t1, 0(sp)\n")
-          .append("\tbeqz t1, _else" + ifNo + "\n");
+          .append("\tbeqz t1, .else" + currentCondNo + "\n");
         visit(ctx.stmt().get(0));
-        sb.append("\tj _afterIf" + ifNo + "\n")
-          .append("_else" + ifNo + ":\n");
+        sb.append("\tj .afterCond" + currentCondNo + "\n")
+          .append(".else" + currentCondNo + ":\n");
         if (ctx.stmt().size() > 1)
             visit(ctx.stmt().get(1));
-        sb.append("_afterIf" + ifNo + ":\n");
-        ++ifNo;
+        sb.append(".afterCond" + currentCondNo + ":\n");
         return null;
     }
 
-    int loopNo = 0;
     @Override
     public Void visitWhileStmt(WhileStmtContext ctx) {
+        int currentLoopNo = loopNo++;
+        inLoop = true;
+
         sb.append("# while\n");
-        sb.append("_beforeLoop" + loopNo + ":\n");
+        sb.append(".beforeLoop" + currentLoopNo + ":\n");
+        sb.append(".continueLoop" + currentLoopNo + ":\n");
         visit(ctx.expr());
         sb.append("\tld t1, 0(sp)\n")
-          .append("\tbeqz t1, _afterLoop" + loopNo + "\n");
+          .append("\tbeqz t1, .afterLoop" + currentLoopNo + "\n");
+        loopNos.push(currentLoopNo);
         visit(ctx.stmt());
-        sb.append("\tj _beforeLoop" + loopNo + "\n")
-          .append("_afterLoop" + loopNo + ":\n");
-        ++loopNo;
+        loopNos.pop();
+        sb.append("\tj .beforeLoop" + currentLoopNo + "\n")
+          .append(".afterLoop" + currentLoopNo + ":\n");
+        
+        inLoop = false;
         return null;
     }
 
-    int forNo = 0;
     @Override
     public Void visitForStmt(ForStmtContext ctx) {
+        int currentLoopNo = loopNo++;
         sb.append("# for\n");
         
         ExprContext initExpr = null;
@@ -142,133 +241,290 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
                     afterExpr = expr;
             }
         
+        symbolTable.add(new HashMap<>());
+        
+        // the following two situations will not happen
+        // simultaneously because of the grammar
         if (initExpr != null) visit(initExpr);
-        sb.append("_beforeLoop" + loopNo + ":\n");
+        if (ctx.local() != null) visit(ctx.local());
+
+        inLoop = true;
+
+        sb.append(".beforeLoop" + currentLoopNo + ":\n");
         if (condExpr != null) {
             visit(condExpr);
             sb.append("\tld t1, 0(sp)\n")
-              .append("\tbeqz t1, _afterLoop" + loopNo + "\n");
+              .append("\tbeqz t1, .afterLoop" + currentLoopNo + "\n");
         }
+        loopNos.push(currentLoopNo);
+        symbolTable.add(new HashMap<>());
         visit(ctx.stmt());
+        symbolTable.pop();
+        loopNos.pop();
+
+        sb.append(".continueLoop" + currentLoopNo + ":\n");
         if (afterExpr != null) visit(afterExpr);
-        sb.append("\tj _beforeLoop" + loopNo + "\n")
-          .append("_afterLoop" + loopNo + ":\n");
-        ++forNo;
+        symbolTable.pop();
+        sb.append("\tj .beforeLoop" + currentLoopNo + "\n")
+          .append(".afterLoop" + currentLoopNo + ":\n");
+        
+        inLoop = false;
+        return null;
+    }
+
+    @Override
+    public Void visitDoStmt(DoStmtContext ctx) {
+        int currentLoopNo = loopNo++;
+        sb.append("# do-while\n");
+
+        inLoop = true;
+
+        sb.append(".beforeLoop" + currentLoopNo + ":\n");
+        loopNos.push(currentLoopNo);
+        visit(ctx.stmt());
+        loopNos.pop();
+        sb.append(".continueLoop" + currentLoopNo + ":\n");
+        visit(ctx.expr());
+        sb.append("\tld t1, 0(sp)\n")
+          .append("\tbnez t1, .beforeLoop" + currentLoopNo + "\n")
+          .append(".afterLoop" + currentLoopNo + ":\n");
+        
+        inLoop = false;
+        return null;
+    }
+
+    @Override
+    public Void visitBreakStmt(BreakStmtContext ctx) {
+        if (!inLoop)
+            reportError("break statement not within loop or switch", ctx);
+        sb.append("\tj .afterLoop" + loopNos.peek() + "\n");
+        return null;
+    }
+
+    @Override
+    public Void visitContinueStmt(ContinueStmtContext ctx) {
+        if (!inLoop)
+            reportError("continue statement not within loop or switch", ctx);
+        sb.append("\tj .continueLoop" + loopNos.peek() + "\n");
+        return null;
+    }
+
+    @Override
+    public Void visitEmptyStmt(EmptyStmtContext ctx) {
         return null;
     }
 
     @Override
     public Void visitExpr(ExprContext ctx) {
-        if (ctx.children.size() == 1) visit(ctx.relational());
-        else {
-            // Check if the left hand side of the equation symbol
-            // is a complete variable name.
-            // TODO: in the future maybe it's allowed that
-            // the left hand side is no need to be a variable name.
-            String v = ctx.relational().getText();
-            boolean isVar = true;
-            if (isAlpha(v.charAt(0))) { 
-                for (char c: v.toCharArray())
-                    if (!Character.isDigit(c) && !isAlpha(c))
-                        isVar = false;
-            }
-            else isVar = false;
-            if (!isVar) reportError("only a single variable could be assigned", ctx.relational());
-
-            visit(ctx.expr());
-            currentOffset.push(currentOffset.peek() - 8);
-
-            var optionOffset = lookupSymbol(v);
+        if (ctx.children.size() > 1) {
+            visit(ctx.expr());  
+            
+            String name = ctx.IDENT().getText();
+            sb.append("# assign\n");
+            var optionOffset = lookupSymbol(name);
             if (optionOffset.isPresent()) {
                 sb.append("\tld t1, 0(sp)\n")
-                  .append("\tsd t1, " + optionOffset.get() + "(fp)\n");
+                  .append("\tsd t1, " + (- 8 * optionOffset.get()) + "(fp)\n");
+            } else if (declaredGlobalTable.contains(name)) {
+                sb.append("\tld t1, 0(sp)\n")
+                  .append("\tsd t1, %lo(" + name + ")(t1)\n");
             } else {
-                // create a new symbol
-                symbolTable.peek().put(v, currentOffset.peek());
+                reportError("assign to a undeclared variable", ctx);
             }
+        } else {
+            visit(ctx.ternary());
+        }
+
+        return null;
+    }
+
+    @Override
+    public Void visitTernary(TernaryContext ctx) {
+        if (ctx.children.size() > 1) {
+            // 这里可以加一些测三目运算符本身的结合性，
+            // 以及测三目运算符和赋值符号的结合性和优先级的例子。
+
+            int currentCondNo = condNo++;
+            sb.append("# ternary conditional\n");
+            visit(ctx.or());
+
+            sb.append("\tld t1, 0(sp)\n")
+              .append("\tbeqz t1, .else" + currentCondNo + "\n");
+            visit(ctx.expr());
+            sb.append("\tj .afterCond" + currentCondNo + "\n")
+              .append(".else" + currentCondNo + ":\n");
+            visit(ctx.ternary());
+            sb.append(".afterCond" + currentCondNo + ":\n");
+        } else {
+            visit(ctx.or());
         }
         return null;
     }
 
     @Override
-    public Void visitRelational(RelationalContext ctx) {
-        visit(ctx.add(0));
-        AddContext add1 = ctx.add(1);
-        if (add1 != null) {
-            visit(add1);
+    public Void visitOr(OrContext ctx) {
+        if (ctx.children.size() > 1) {
+            visit(ctx.or(0));
+            visit(ctx.or(1));
+
+            // TODO: 短路
+            sb.append("\tld t2, 0(sp)\n")
+              .append("\tld t1, 8(sp)\n")
+              .append("\taddi sp, sp, 8\n")
+              .append("\tsnez t1, t1\n")
+              .append("\tsnez t2, t2\n")
+              .append("\tor t1, t1, t2\n")
+              .append("\tsd t1, 0(sp)\n");
+        } else {
+            visit(ctx.and());
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitAnd(AndContext ctx) {
+        if (ctx.children.size() > 1) {
+            visit(ctx.and(0));
+            visit(ctx.and(1));
+
+            // TODO: 短路
+            sb.append("\tld t2, 0(sp)\n")
+              .append("\tld t1, 8(sp)\n")
+              .append("\taddi sp, sp, 8\n")
+              .append("\tsnez t1, t1\n")
+              .append("\tsnez t2, t2\n")
+              .append("\tand t1, t1, t2\n")
+              .append("\tsd t1, 0(sp)\n");
+        } else {
+            visit(ctx.eq());
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitEq(EqContext ctx) {
+        if (ctx.children.size() > 1) {
+            visit(ctx.eq(0));
+            visit(ctx.eq(1));
+            
             sb.append("\tld t2, 0(sp)\n")
               .append("\tld t1, 8(sp)\n")
               .append("\taddi sp, sp, 8\n");
-            if (ctx.EQ() != null) {
+            String op = ctx.children.get(1).getText();
+            if (op.equals("==")) {
                 sb.append("# eq\n")
                   .append("\tsub t1, t1, t2\n")
                   .append("\tseqz t1, t1\n")
                   .append("\tsd t1, 0(sp)\n");
-            } else if (ctx.NE() != null) {
+            } else {
+                assert op.equals("!=");
                 sb.append("# ne\n")
                   .append("\tsub t1, t1, t2\n")
                   .append("\tsnez t1, t1\n")
                   .append("\tsd t1, 0(sp)\n");
-            } else if (ctx.LT() != null) {
-                sb.append("\tslt t1, t1, t2\n")
+            }
+        } else {
+            visit(ctx.rel());
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitRel(RelContext ctx) {
+        if (ctx.children.size() > 1) {
+            visit(ctx.rel(0));
+            visit(ctx.rel(1));
+
+            sb.append("\tld t2, 0(sp)\n")
+              .append("\tld t1, 8(sp)\n")
+              .append("\taddi sp, sp, 8\n");
+
+            String op = ctx.children.get(1).getText();
+            if (op.equals("<")) {
+                sb.append("# <\n")
+                  .append("\tslt t1, t1, t2\n")
                   .append("\tsd t1, 0(sp)\n");
-            } else if (ctx.LE() != null) {
-                sb.append("\tsgt t1, t1, t2\n")
+            } else if (op.equals("<=")) {
+                sb.append("# <=\n")
+                  .append("\tsgt t1, t1, t2\n")
                   .append("\txori t1, t1, 1\n")
                   .append("\tsd t1, 0(sp)\n");
-            } else if (ctx.GT() != null) {
-                sb.append("\tsgt t1, t1, t2\n")
+            } else if (op.equals(">")) {
+                sb.append("# >\n")
+                  .append("\tsgt t1, t1, t2\n")
                   .append("\tsd t1, 0(sp)\n");
-            } else if (ctx.GE() != null) {
-                sb.append("\tslt t1, t1, t2\n")
+            } else {
+                assert op.equals(">=");
+                sb.append("# >=\n")
+                  .append("\tslt t1, t1, t2\n")
                   .append("\txori t1, t1, 1\n")
                   .append("\tsd t1, 0(sp)\n");
             }
+        } else {
+            visit(ctx.add());
         }
         return null;
     }
 
     @Override
     public Void visitAdd(AddContext ctx) {
-        visit(ctx.mul(0));
-        for (int i = 2; i < ctx.children.size(); i += 2) {
-            visit(ctx.children.get(i));
+        if (ctx.children.size() > 1) {
+            visit(ctx.add(0));
+            visit(ctx.add(1));
 
-            String op = ctx.children.get(i - 1).getText().equals("+") ? "add" : "sub";
+            String op = ctx.children.get(1).getText().equals("+") ? "add" : "sub";
             sb.append("# " + op + "\n")
-              .append("\tld t2, 0(sp)\n")
-              .append("\tld t1, 8(sp)\n")
-              .append("\t" + op + " t1, t1, t2\n")
-              .append("\taddi sp, sp, 8\n")
-              .append("\tsd t1, 0(sp)\n");
+            .append("\tld t2, 0(sp)\n")
+            .append("\tld t1, 8(sp)\n")
+            .append("\t" + op + " t1, t1, t2\n")
+            .append("\taddi sp, sp, 8\n")
+            .append("\tsd t1, 0(sp)\n");
+        } else {
+            visit(ctx.term());
         }
         return null;
     }
 
     @Override
-    public Void visitMul(MulContext ctx) {
-        visit(ctx.unary(0));
-        for (int i = 2; i < ctx.children.size(); i += 2) {
-            visit(ctx.children.get(i));
+    public Void visitTerm(TermContext ctx) {
+        if (ctx.children.size() > 1) {
+            visit(ctx.term(0));
+            visit(ctx.term(1));
 
-            String op = ctx.children.get(i - 1).getText().equals("*") ? "mul" : "div";
+            String op = ctx.children.get(1).getText();
+            op = op.equals("*") ? "mul" : op.equals("/") ? "div" : "rem";
             sb.append("# " + op + "\n")
               .append("\tld t2, 0(sp)\n")
               .append("\tld t1, 8(sp)\n")
               .append("\t" + op + " t1, t1, t2\n")
               .append("\taddi sp, sp, 8\n")
               .append("\tsd t1, 0(sp)\n");
+        } else {
+            visit(ctx.unary());
         }
         return null;
     }
 
     @Override
     public Void visitUnary(UnaryContext ctx) {
-        visit(ctx.primary());
-        if (ctx.children.get(0).getText().equals('-')) {
-            sb.append("\tld t1, 0(sp)\n")
-              .append("\tneg t1, t1\n")
-              .append("\tsd t1, 0(sp)\n");
+        if (ctx.children.size() > 1) {
+            visit(ctx.unary());
+            String op = ctx.children.get(0).getText();
+            if (op.equals("-")) {
+                sb.append("\tld t1, 0(sp)\n")
+                  .append("\tneg t1, t1\n")
+                  .append("\tsd t1, 0(sp)\n");
+            } else if (op.equals("!")) {
+                sb.append("\tld t1, 0(sp)\n")
+                  .append("\tseqz t1, t1\n")
+                  .append("\tsd t1, 0(sp)\n");
+            } else if (op.equals("~")) {
+                sb.append("\tld t1, 0(sp)\n")
+                  .append("\tnot t1, t1\n")
+                  .append("\tsd t1, 0(sp)\n");
+            }
+        } else {
+            visit(ctx.primary());
         }
         return null;
     }
@@ -278,6 +534,9 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
         TerminalNode node = ctx.NUM();
         if (compare(Integer.toString(Integer.MAX_VALUE), node.getText()) == -1)
             reportError("too large number", ctx);
+        
+        // TODO: 目前这里只能作 32 位的，将来需要改成 64 位
+
         sb.append("# number " + ctx.NUM().getText() + "\n")
           .append("\tli t1, " + ctx.NUM().getText() + "\n")
           .append("\taddi sp, sp, -8\n")
@@ -287,14 +546,23 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
 
     @Override
     public Void visitIdentPrimary(IdentPrimaryContext ctx) {
-        String v = ctx.IDENT().getText();
-        Optional<Integer> optionOffset = lookupSymbol(v);
-        if (optionOffset.isEmpty())
+        String name = ctx.IDENT().getText();
+        Optional<Integer> optionOffset = lookupSymbol(name);
+        if (!optionOffset.isEmpty()) {
+            sb.append("# read variable\n")
+              .append("\tld t1, " + (- 8 * optionOffset.get()) + "(fp)\n")
+              .append("\taddi sp, sp, -8\n")
+              .append("\tsd t1, 0(sp)\n");    
+        } else if (declaredGlobalTable.contains(name)) {
+            sb.append("# read global variable\n")
+              .append("\tlui t1, %hi(" + name + ")\n")
+              .append("\tld t1, %lo(" + name + ")(t1)\n")
+              .append("\taddi sp, sp, -8\n")
+              .append("\tsd t1, 0(sp)\n");
+        } else {
             reportError("use variable that is not defined", ctx);
-        sb.append("# read variable\n")
-          .append("\tld t1, " + optionOffset.get() + "(fp)\n")
-          .append("\taddi sp, sp, -8\n")
-          .append("\tsd t1, 0(sp)\n");
+        }
+        
         return null;
     }
     
@@ -307,9 +575,12 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
     @Override
     public Void visitCallPrimary(CallPrimaryContext ctx) {
         String name = ctx.IDENT().getText();
-        if (!funcTable.contains(name))
+        if (declaredFuncTable.get(name) == null)
             reportError("try calling a undeclared function", ctx);
+        else if (declaredFuncTable.get(name) != ctx.expr().size())
+            reportError("the number of arguments is not equal to the number of parameters", ctx);
         sb.append("# prepare arguments\n");
+
         for (int i = ctx.expr().size() - 1; i >= 0; --i) {
             var expr = ctx.expr().get(i);
             visit(expr);
@@ -318,13 +589,12 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
 
         sb.append("\tcall " + name + "\n");
 
-        for (int i = ctx.expr().size() - 1; i >= 8; --i) pop();
         push("a0");
         return null;
     }
 
-    Stack<Map<String, Integer>> symbolTable = new Stack<>();
-    Stack<Integer> currentOffset = new Stack<>();
+    /* symbol */
+    Stack<Map<String, Integer>> symbolTable = new Stack<>(); // map to the number of the symbol in the function
 
     // look the symbol up for the offset (0 means non-existence)
     private Optional<Integer> lookupSymbol(String v) {
@@ -336,10 +606,20 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
         return Optional.empty();
     }
 
-    Set<String> funcTable = new HashSet<>();
+    // map to the number of parameters of the function
+    Map<String, Integer> declaredFuncTable = new HashMap<>();
+    Map<String, Integer> definedFuncTable = new HashMap<>();
     String currentFunc;
 
-    // Utils
+    Set<String> declaredGlobalTable = new HashSet<>();
+    Set<String> initializedGlobalTable = new HashSet<>();
+
+    /* loop */
+    int loopNo = 0;
+    boolean inLoop = false;
+    Stack<Integer> loopNos = new Stack<>();
+
+    /* utils */
     private int compare(String s, String t) {
         if (s.length() != t.length())
             return s.length() < t.length() ? -1 : 1;
@@ -364,16 +644,12 @@ public class MainVisitor extends MiniDecafBaseVisitor<Void> {
         sb.append("# push " + reg + "\n")
           .append("\taddi sp, sp, -8\n")
           .append("\tsd " + reg + ", 0(sp)\n");
-        currentOffset.push(currentOffset.pop() - 8);
     }
 
     private void pop(String reg) {
         sb.append("# pop " + reg + "\n")
           .append("\tld " + reg + ", 0(sp)\n")
           .append("\taddi sp, sp, 8\n");
-    }
-    private void pop() {
-        currentOffset.push(currentOffset.pop() + 8);
     }
 }
 

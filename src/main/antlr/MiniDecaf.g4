@@ -1,57 +1,61 @@
 grammar MiniDecaf;
 
-program: func*;
+program: (func | global)*;
 
-func: 'int' IDENT '(' ('int' IDENT (',' 'int' IDENT)*)?  ')' '{' stmt* '}';
-
-stmt: expr ';' # exprStmt
-    | 'int' IDENT '=' expr ';' #declStmt
-    | 'return' expr ';' # returnStmt
-    | '{' stmt* '}' # blockStmt
-    | 'if' '(' expr ',' stmt ('else' stmt)? # ifStmt
-    | 'while' '(' expr ',' stmt # whileStmt
-    | 'for' '(' expr? ';' expr? ';' expr? ',' stmt # forStmt
+func: 'int' IDENT '(' ('int' IDENT (',' 'int' IDENT)*)?  ')' '{' blockItem* '}' #completeFunc
+    | 'int' IDENT '(' ('int' IDENT? (',' 'int' IDENT?)*)? ')' ';' #declaredFunc
     ;
 
-expr: relational ('=' expr)?;
+global: 'int' IDENT ('=' NUM)? ';';
 
-relational: add (EQ add | NE add | LT add | LE add | GT add | GE add)?;
+blockItem: local | stmt;
 
-add: mul ('+' mul | '-' mul)*;
+local: 'int' IDENT ('=' expr)? ';';
 
-mul: unary ('*' unary | '/' unary)*;
+stmt: expr ';' #exprStmt
+    | 'return' expr ';' #returnStmt
+    | '{' blockItem* '}' #blockStmt
+    | 'if' '(' expr ')' stmt ('else' stmt)? #ifStmt
+    | 'while' '(' expr ')' stmt #whileStmt
+    | 'for' '(' (local | expr? ';') expr? ';' expr? ')' stmt #forStmt
+    | 'do' stmt 'while' '(' expr ')' ';' #doStmt
+    | 'break' ';' #breakStmt
+    | 'continue' ';' #continueStmt
+    | ';' #emptyStmt
+    ;
 
-unary: '+'? primary
-     | '-'? primary;
-        //    | AND unary
-        //    | MUL unary
-        //    | SIZEOF unary
-        //    | primary LBRACK expr RBRACK;
+// TODO: right associativity of ternary conditional expression
+expr: IDENT '=' expr | ternary;
 
-primary: NUM # numPrimary
-	| IDENT # identPrimary
-	| '(' expr ',' # parenthesizePrimary
-        | IDENT '(' (expr (',' expr)*)? ')' # callPrimary
+ternary: or '?' expr ':' ternary | or;
+
+or: or '||' or | and;
+
+and: and '&&' and | eq;
+
+eq: eq ('==' | '!=') eq | rel;
+
+rel: rel ('<' | '<=' | '>' | '>=') rel | add;
+
+add: add ('+' | '-') add | term;
+
+term: term ('*' | '/' | '%') term | unary;
+
+unary: ('!' | '~' | '-') unary | primary;
+
+primary: NUM #numPrimary
+	| IDENT #identPrimary
+	| '(' expr ')' #parenthesizePrimary
+        | IDENT '(' (expr (',' expr)*)? ')' #callPrimary
         ;
 
-// keywords
-SIZEOF: 'sizeof';
-
-// Operators
-AND: '&';
-GT: '>';
-LT: '<';
-LE: '<=';
-GE: '>=';
-EQ: '==';
-NE: '!=';
+/* lexer */ 
 
 WS: [ \t\r\n\u000C] -> skip;
-// TBA: comment
+
+// comment
 COMMENT: '/*' .*? '*/' -> skip;
 LINE_COMMENT: '//' ~[\r\n]* -> skip;
 
-// TBA: what characters will constitute an identifier?
-IDENT: [a-z] [a-z0-9]*;
-
+IDENT: [a-zA-Z_] [a-zA-Z_0-9]*;
 NUM: [0-9]+;

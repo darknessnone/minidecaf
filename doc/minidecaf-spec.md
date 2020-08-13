@@ -971,9 +971,12 @@ int main() {
 
 ```
 <program> ::= { <function> | <declaration> }
+
+在仅仅是声明函数的时候，也许可以支持不带 <id>
+
 <function> ::= "int" <id> "(" [ "int" <id> { "," "int" <id> } ] ")" ( "{" { <block-item> } "}" | ";" )
 <block-item> ::= <statement> | <declaration>
-<declaration> ::= "int" <id> [ = <exp> ] ";"
+<declaration> ::= "int" <id> [ = <exp> ] ";" 对于全局变量而言，右边必须要是一个常量。
 <statement> ::= "return" <exp> ";"
               | <exp-option-semicolon> // null statement
               | "if" "(" <exp> ")" <statement> [ "else" <statement> ]
@@ -981,11 +984,11 @@ int main() {
               | "for" "(" <exp-option-semicolon> <exp-option-semicolon> <exp-option-close-paren> ")" <statement>
               | "for" "(" <declaration> <exp-option-semicolon> <exp-option-close-paren> ")" <statement>
               | "while" "(" <exp> ")" <statement>
-              | "do" <statement> "while" <exp> ";"
+              | "do" <statement> "while" <exp> ";" 这里少了括号
               | "break" ";"
               | "continue" ";"
 <exp-option-semicolon> ::= <exp> ";" | ";"	
-<exp-option-close-paren> ::= <exp> ")" | ")"              
+<exp-option-close-paren> ::= <exp> ")" | ")"  这个有点古怪，没太看懂
 <exp> ::= <id> "=" <exp> | <conditional-exp>
 <conditional-exp> ::= <logical-or-exp> [ "?" <exp> ":" <conditional-exp> ]
 <logical-or-exp> ::= <logical-and-exp> { "||" <logical-and-exp> }
@@ -993,7 +996,7 @@ int main() {
 <equality-exp> ::= <relational-exp> { ("!=" | "==") <relational-exp> }
 <relational-exp> ::= <additive-exp> { ("<" | ">" | "<=" | ">=") <additive-exp> }
 <additive-exp> ::= <term> { ("+" | "-") <term> }
-<term> ::= <factor> { ("*" | "/") <factor> }
+<term> ::= <factor> { ("*" | "/") <factor> } 这里少了取模
 <factor> ::= <function-call> | "(" <exp> ")" | <unary_op> <factor> | <int> | <id>
 <function-call> ::= id "(" [ <exp> { "," <exp> } ] ")"
 <unary_op> ::= "!" | "~" | "-"
@@ -1009,6 +1012,9 @@ int main() {
 int
 return
 Identifier [a-zA-Z]\w*
+
+这里到底能不能支持下划线也是个问题，我还以为不能支持呢……
+
 Integer literal [0-9]+
 -
 ~
