@@ -68,7 +68,10 @@ public:
 		ExprAst* expr_ast;
 		if (lookForward("-"))
 			expr_ast = parserNegaUnary();
-		else
+		else if (lookForward("+")){
+			matchToken("+");
+			expr_ast = parserExpr();
+		}else
 			expr_ast = parserConstant();
 		return expr_ast;
 	}
