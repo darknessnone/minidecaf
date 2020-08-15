@@ -66,10 +66,20 @@ public:
 
 	ExprAst* parserExpr(){
 		ExprAst* expr_ast;
-		expr_ast = parserConstant();
+		if (lookForward("-"))
+			expr_ast = parserNegaUnary();
+		else
+			expr_ast = parserConstant();
 		return expr_ast;
 	}
 
+	ExprAst* parserNegaUnary(){
+		NegaUnaryAst* expr_ast = new NegaUnaryAst(tokenlist[pos].row(), tokenlist[pos].column());
+		matchToken("-");
+		ExprAst* new_expr_ast = parserExpr();
+		expr_ast->additem(new_expr_ast);
+		return expr_ast;
+	}
 
 	ConstantAst* parserConstant(){
 		ConstantAst* constant_ast = new ConstantAst(tokenlist[pos].row(), tokenlist[pos].column());

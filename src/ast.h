@@ -50,6 +50,20 @@ public:
 	}
 };
 
+class NegaUnaryAst: public ExprAst{
+	ExprAst* expr;
+public:
+	NegaUnaryAst(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* expr){
+		this->expr = expr;
+	}
+	void printto(ofstream &fout){
+		value_ = "a5";
+		expr->printto(fout);
+		printstream(fout, "neg a5,"+expr->value());
+	}
+};
+
 class StmtAst: public Ast{
 public:
 	StmtAst(int row, int column) : Ast(row, column){}

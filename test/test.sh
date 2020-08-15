@@ -19,3 +19,4 @@ assert() {
 
 assert 0 'int main() { return 0; }'
 assert 42 'int main() { return 42; }'
+assert 10 'int main() { return - -10; }'
