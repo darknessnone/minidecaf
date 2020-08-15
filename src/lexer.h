@@ -42,8 +42,12 @@ public:
 		return ans;
 	}
 
-	bool isLetter(char ch){
+	bool isatozAtoZ(char ch){
         return ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z'));
+	}
+
+	bool isLetter(char ch){
+        return ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch=='_');
 	}
 
 	string getLetter(string &input, int &column, int length){
@@ -81,7 +85,7 @@ public:
     				int numrow = row;
     				string num = getNum(input, column, input.length());
     				tokenlist.push_back(Token("num", num, numrow, numcolumn));
-    			}else if (isLetter(input[column])){
+    			}else if (isatozAtoZ(input[column])){
     				int numcolumn = column;
     				int numrow = row;
     				string letter = getLetter(input, column, input.length());
