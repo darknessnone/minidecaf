@@ -23,8 +23,8 @@ public:
 		}
 	}
 
-	bool lookForward(string expected){
-		if (tokenlist[pos].label() == expected)
+	bool lookForward(string expected, int x = 0){
+		if (tokenlist[pos+x].label() == expected)
 			return true;
 		return false;
 	}
@@ -43,15 +43,51 @@ public:
 		matchToken("(");
 		matchToken(")");
 		matchToken("{");
-		StmtAst* stmt_ast = parserStmt();
+		vector<StmtAst*> stmtlist;
+		int num = 0;
+		stmtlist.clear();
+		while (!lookForward("}")){
+			StmtAst* stmt_ast = parserStmt(num);
+			stmtlist.push_back(stmt_ast);
+		}
 		matchToken("}");
-		function_ast->additem(name, stmt_ast);
+		function_ast->additem(name, num, stmtlist);
 		return function_ast;
 	}
 
-	StmtAst* parserStmt(){
+	StmtAst* parserStmt(int& num){
 		StmtAst* stmt_ast;
-		stmt_ast = parserReturnStmt();
+		if (lookForward("return"))
+			stmt_ast = parserReturnStmt();
+		else if (lookForward("int"))
+			stmt_ast = parserLocalVariables(num);
+		else{
+			stmt_ast = parserExprStmt();
+		}
+		return stmt_ast;
+	}
+
+	StmtAst* parserExprStmt(){
+		ExprStmt* stmt_ast = new ExprStmt(tokenlist[pos].row(), tokenlist[pos].column());
+		ExprAst* expr_ast = parserExpr();
+		matchToken(";");
+		stmt_ast->additem(expr_ast);
+		return stmt_ast;
+	}
+
+	StmtAst* parserLocalVariables(int& num){
+		LocalVariablesAst* stmt_ast = new LocalVariablesAst(tokenlist[pos].row(), tokenlist[pos].column());
+		matchToken("int");
+		matchToken("id");
+		string name = tokenlist[pos-1].value();
+		ExprAst* expr_ast = NULL;
+		if (lookForward("=")){
+			matchToken("=");
+			expr_ast = parserExpr();
+		}
+		matchToken(";");
+		num++;
+		stmt_ast->additem(name, num, expr_ast);
 		return stmt_ast;
 	}
 
@@ -66,8 +102,21 @@ public:
 
 	ExprAst* parserExpr(){
 		ExprAst* expr_ast;
-		expr_ast = parserLogicalExpr();
+		if (lookForward("=",1)){
+			expr_ast = parserAssign();	
+		}else
+			expr_ast = parserLogicalExpr();
 		return expr_ast;
+	}
+
+	ExprAst* parserAssign(){
+		AssignAst* assign_ast = new AssignAst(tokenlist[pos].row(), tokenlist[pos].column());
+		matchToken("id");
+		string name = tokenlist[pos-1].value();
+		matchToken("=");
+		ExprAst* expr_ast = parserExpr();
+		assign_ast->additem(name, expr_ast);
+		return assign_ast;
 	}
 
 	ExprAst* parserLogicalExpr(){
@@ -178,8 +227,18 @@ public:
 			matchToken("(");
 			expr_ast = parserExpr();
 			matchToken(")");
-		}else 
+		}else if (lookForward("id"))
+			expr_ast = parserLocalExpr();
+		else
 			expr_ast = parserConstant();
+		return expr_ast;
+	}
+
+	ExprAst* parserLocalExpr(){
+		LocalExpr* expr_ast = new LocalExpr(tokenlist[pos].row(), tokenlist[pos].column());
+		matchToken("id");
+		string name = tokenlist[pos-1].value();
+		expr_ast->additem(name);
 		return expr_ast;
 	}
 

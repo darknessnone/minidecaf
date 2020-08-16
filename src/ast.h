@@ -3,17 +3,20 @@
 #include<vector>
 #include<fstream>
 #include<string>
+#include<map>
 using std::string;
 using std::vector;
 using std::endl;
+using std::map;
 using std::ofstream;
 class Ast{
 protected:
 	int row, column;
 	static int indent;
 	static int functionnum;
+	static map<string, int> exprnum;
 public:
-	Ast(int row, int column) : row(row), column(column){ indent = 0;}
+	Ast(int row, int column) : row(row), column(column){ } 
 	void addIndent() { indent ++; }
 	void decIndent() { indent --; }
 	void printstream(ofstream &fout, string st){
@@ -28,13 +31,15 @@ public:
 
 int Ast::indent = 0;
 int Ast::functionnum = 0;
-
+map<string, int> Ast::exprnum = {};
 class ExprAst: public Ast{
-// protected:
-// 	string value_;
+protected:
+	bool isVariable_;
+	string variable_;
 public:
-	ExprAst(int row, int column) : Ast(row, column){}
-	// string value() { return value_;}
+	ExprAst(int row, int column, bool isVariable = false) : Ast(row, column), isVariable_(isVariable){}
+	bool isVariable() { return isVariable_;}
+	string variable() { return variable_; };
 };
 
 class ConstantAst: public ExprAst{
@@ -58,6 +63,9 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr->printto(fout);
+		if (expr->isVariable()){
+			printstream(fout, "lw a5,"+expr->variable());
+		}
 		printstream(fout, "neg a5,a5");
 	}
 };
@@ -71,6 +79,9 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr->printto(fout);
+		if (expr->isVariable()){
+			printstream(fout, "lw a5,"+expr->variable());
+		}
 		printstream(fout, "not a5,a5");
 	}
 };
@@ -84,6 +95,9 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr->printto(fout);
+		if (expr->isVariable()){
+			printstream(fout, "lw a5,"+expr->variable());
+		}
 		printstream(fout, "seqz a5,a5");
 	}
 };
@@ -99,9 +113,15 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr1->printto(fout);
+		if (expr1->isVariable()){
+			printstream(fout, "lw a5,"+expr1->variable());
+		}
 		printstream(fout, "sd a5, -8(sp)");
 		printstream(fout, "addi sp, sp, -8");
 		expr2->printto(fout);
+		if (expr2->isVariable()){
+			printstream(fout, "lw a5,"+expr2->variable());
+		}
 		printstream(fout, "ld a4, 0(sp)");
 		printstream(fout, "addi sp, sp, 8");
 		printstream(fout, "mul a5, a4, a5");
@@ -119,9 +139,15 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr1->printto(fout);
+		if (expr1->isVariable()){
+			printstream(fout, "lw a5,"+expr1->variable());
+		}
 		printstream(fout, "sd a5, -8(sp)");
 		printstream(fout, "addi sp, sp, -8");
 		expr2->printto(fout);
+		if (expr2->isVariable()){
+			printstream(fout, "lw a5,"+expr2->variable());
+		}
 		printstream(fout, "ld a4, 0(sp)");
 		printstream(fout, "addi sp, sp, 8");
 		printstream(fout, "div a5, a4, a5");
@@ -139,9 +165,15 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr1->printto(fout);
+		if (expr1->isVariable()){
+			printstream(fout, "lw a5,"+expr1->variable());
+		}
 		printstream(fout, "sd a5, -8(sp)");
 		printstream(fout, "addi sp, sp, -8");
 		expr2->printto(fout);
+		if (expr2->isVariable()){
+			printstream(fout, "lw a5,"+expr2->variable());
+		}
 		printstream(fout, "ld a4, 0(sp)");
 		printstream(fout, "addi sp, sp, 8");
 		printstream(fout, "add a5, a4, a5");
@@ -159,9 +191,15 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr1->printto(fout);
+		if (expr1->isVariable()){
+			printstream(fout, "lw a5,"+expr1->variable());
+		}
 		printstream(fout, "sd a5, -8(sp)");
 		printstream(fout, "addi sp, sp, -8");
 		expr2->printto(fout);
+		if (expr2->isVariable()){
+			printstream(fout, "lw a5,"+expr2->variable());
+		}
 		printstream(fout, "ld a4, 0(sp)");
 		printstream(fout, "addi sp, sp, 8");
 		printstream(fout, "sub a5, a4, a5");
@@ -180,9 +218,15 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr1->printto(fout);
+		if (expr1->isVariable()){
+			printstream(fout, "lw a5,"+expr1->variable());
+		}
 		printstream(fout, "sd a5, -8(sp)");
 		printstream(fout, "addi sp, sp, -8");
 		expr2->printto(fout);
+		if (expr2->isVariable()){
+			printstream(fout, "lw a5,"+expr2->variable());
+		}
 		printstream(fout, "ld a4, 0(sp)");
 		printstream(fout, "addi sp, sp, 8");
 		if (label == "<")
@@ -211,9 +255,15 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr1->printto(fout);
+		if (expr1->isVariable()){
+			printstream(fout, "lw a5,"+expr1->variable());
+		}
 		printstream(fout, "sd a5, -8(sp)");
 		printstream(fout, "addi sp, sp, -8");
 		expr2->printto(fout);
+		if (expr2->isVariable()){
+			printstream(fout, "lw a5,"+expr2->variable());
+		}
 		printstream(fout, "ld a4, 0(sp)");
 		printstream(fout, "addi sp, sp, 8");
 		if (label == "!="){
@@ -237,9 +287,15 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr1->printto(fout);
+		if (expr1->isVariable()){
+			printstream(fout, "lw a5,"+expr1->variable());
+		}
 		printstream(fout, "sd a5, -8(sp)");
 		printstream(fout, "addi sp, sp, -8");
 		expr2->printto(fout);
+		if (expr2->isVariable()){
+			printstream(fout, "lw a5,"+expr2->variable());
+		}
 		printstream(fout, "ld a4, 0(sp)");
 		printstream(fout, "addi sp, sp, 8");
 		printstream(fout, "snez a4, a4");
@@ -259,13 +315,50 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr1->printto(fout);
+		if (expr1->isVariable()){
+			printstream(fout, "lw a5,"+expr1->variable());
+		}
 		printstream(fout, "sd a5, -8(sp)");
 		printstream(fout, "addi sp, sp, -8");
 		expr2->printto(fout);
+		if (expr2->isVariable()){
+			printstream(fout, "lw a5,"+expr2->variable());
+		}
 		printstream(fout, "ld a4, 0(sp)");
 		printstream(fout, "addi sp, sp, 8");
 		printstream(fout, "or a5, a5, a4");
 		printstream(fout, "snez a5, a5");
+	}
+};
+
+class AssignAst : public ExprAst{
+	ExprAst* expr;
+	string name;
+public:
+	AssignAst(int row, int column) : ExprAst(row, column){}
+	void additem(string name_, ExprAst* e){
+		expr = e;
+		name = name_;
+	}
+	void printto(ofstream &fout){
+		expr->printto(fout);
+		if (expr->isVariable()){
+			printstream(fout, "lw a5,"+expr->variable());
+		}
+		printstream(fout, "sw a5, -"+std::to_string(exprnum[name])+"(s0)");
+	}
+};
+
+
+class LocalExpr: public ExprAst{
+	string name;
+public:
+	LocalExpr(int row, int column) : ExprAst(row, column, true){}
+	void additem(string name){
+		this->name = name;
+	    this->variable_ = "-"+std::to_string(exprnum[name])+"(s0)";
+	}
+	void printto(ofstream &fout){
 	}
 };
 
@@ -287,14 +380,48 @@ public:
 	}
 };
 
+class LocalVariablesAst: public StmtAst{
+	string name;
+	ExprAst* expr;
+	int position;
+public:
+	LocalVariablesAst(int row, int column) : StmtAst(row, column){}
+	void additem(string name, int num, ExprAst* item){
+		this->name = name;
+		expr = item;
+		this->position = num*8+8;
+		exprnum[name] = position;
+	}
+	void printto(ofstream &fout){
+		if (expr!=NULL){
+			expr->printto(fout);
+			printstream(fout, "sw a5, -"+ std::to_string(position)+"(s0)");
+		}
+	}
+};
+
+class ExprStmt: public StmtAst{
+	ExprAst* expr;
+public:
+	ExprStmt(int row, int column) : StmtAst(row, column){}
+	void additem(ExprAst* item){
+		expr = item;
+	}
+	void printto(ofstream &fout){
+		expr->printto(fout);
+	}
+};
+
 class FunctionAst: public Ast{
 	string name;
-	StmtAst* stmt;
+	vector<StmtAst*> stmtlist;
+	int num_;
 public:
 	FunctionAst(int row, int column) : Ast(row, column){}
-	void additem(string name, StmtAst* item){
+	void additem(string name, int id_num, vector<StmtAst*> list){
 		this->name = name;
-		stmt = item;
+		stmtlist = list;
+		num_ = 16 + id_num * 8;
 	}
 	void printto(ofstream &fout){
 		printstream(fout, ".globl "+name);
@@ -303,12 +430,12 @@ public:
 		printstream(fout, name+":");
 		printstream(fout, ".LFB"+std::to_string(functionnum)+":");
 		addIndent();
-		int num_ = 16;
 		printstream(fout, "addi	sp,sp,-"+std::to_string(num_));
-		printstream(fout, "sw	s0,"+std::to_string(num_-4)+"(sp)");
+		printstream(fout, "sw	s0,"+std::to_string(num_-8)+"(sp)");
 		printstream(fout, "addi	s0,sp,"+std::to_string(num_));
-		stmt->printto(fout);
-		printstream(fout, "lw	s0,"+std::to_string(num_-4)+"(sp)");
+		for (int i = 0; i < stmtlist.size(); ++i)
+				stmtlist[i]->printto(fout);
+		printstream(fout, "lw	s0,"+std::to_string(num_-8)+"(sp)");
 		printstream(fout, "addi	sp,sp,"+std::to_string(num_));
 		printstream(fout, "jr	ra");
 		decIndent();

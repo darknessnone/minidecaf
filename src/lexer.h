@@ -116,12 +116,12 @@ public:
     				int numrow = row;
     				string chars = getChar(input, column, input.length());
     				if (Token::tokenid.count(chars) == 0){
-    					std::cout << "Unrecognized character in Row " <<row << " column " << column << std::endl;
+    					std::cout << "Unrecognized character in Row " <<row << " column " << column <<" " << chars << std::endl;
     					exit(-1);
     				}
     				tokenlist.push_back(Token(chars, chars, numrow, numcolumn));
     			}else{
-    				std::cout << "Unrecognized character in Row " <<row << " column " << column << std::endl;
+    				std::cout << "Unrecognized character in Row " <<row << " column " << column <<" " << input[column] << std::endl;
     				exit(-1);
     			}
 			}
