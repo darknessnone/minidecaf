@@ -168,6 +168,37 @@ public:
 	}
 };
 
+class AdditiveExpr : public ExprAst{
+	ExprAst* expr1;
+	ExprAst* expr2;
+	string label;
+public:
+	AdditiveExpr(int row, int column, string label) : ExprAst(row, column), label(label){}
+	void additem(ExprAst* e1, ExprAst* e2){
+		expr1 = e1;
+		expr2 = e2;
+	}
+	void printto(ofstream &fout){
+		expr1->printto(fout);
+		printstream(fout, "sd a5, -8(sp)");
+		printstream(fout, "addi sp, sp, -8");
+		expr2->printto(fout);
+		printstream(fout, "ld a4, 0(sp)");
+		printstream(fout, "addi sp, sp, 8");
+		if (label == "<")
+			printstream(fout, "slt a5, a4, a5");
+		else if (label == ">")
+			printstream(fout, "sgt a5, a4, a5");
+		else if (label == "<="){
+			printstream(fout, "sgt a5, a4, a5");
+			printstream(fout, "xor a5, a5, 1");
+		}else {
+			printstream(fout, "slt a5, a4, a5");
+			printstream(fout, "xor a5, a5, 1");
+		}
+	}
+};
+
 class StmtAst: public Ast{
 public:
 	StmtAst(int row, int column) : Ast(row, column){}

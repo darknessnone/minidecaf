@@ -1,1 +1,1 @@
-int main() { return -10+20; }
+int main() { return 1>=2; }

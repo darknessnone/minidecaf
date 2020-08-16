@@ -66,8 +66,21 @@ public:
 
 	ExprAst* parserExpr(){
 		ExprAst* expr_ast;
-		expr_ast = parserAddSubAst();
+		expr_ast = parserAdditiveExpr();
 		return expr_ast;
+	}
+
+	ExprAst* parserAdditiveExpr(){
+		ExprAst* expr1_ast = parserAddSubAst();
+		while(lookForward("<") || lookForward(">") || lookForward("<=") || lookForward(">=")){
+			string label = tokenlist[pos].label();
+			AdditiveExpr* add_ast = new AdditiveExpr(tokenlist[pos].row(), tokenlist[pos].column(), label);
+			matchToken(label);
+			ExprAst* expr2_ast = parserAddSubAst();
+			add_ast->additem(expr1_ast, expr2_ast);
+			expr1_ast = add_ast;
+		}
+		return expr1_ast;
 	}
 
 	ExprAst* parserAddSubAst(){
