@@ -61,6 +61,8 @@ public:
 			stmt_ast = parserReturnStmt();
 		else if (lookForward("int"))
 			stmt_ast = parserLocalVariables(num);
+		else if (lookForward("if"))
+			stmt_ast = parserIfStmt(num);
 		else{
 			stmt_ast = parserExprStmt();
 		}
@@ -72,6 +74,22 @@ public:
 		ExprAst* expr_ast = parserExpr();
 		matchToken(";");
 		stmt_ast->additem(expr_ast);
+		return stmt_ast;
+	}
+
+	StmtAst* parserIfStmt(int &num){
+		IfStmt* stmt_ast = new IfStmt(tokenlist[pos].row(), tokenlist[pos].column());
+		matchToken("if");
+		matchToken("(");
+		ExprAst* expr_ast = parserExpr();
+		matchToken(")");
+		StmtAst* stmt1_ast = parserStmt(num);
+		StmtAst* stmt2_ast = NULL;
+		if (lookForward("else")){
+			matchToken("else");
+			stmt2_ast = parserStmt(num);
+		}
+		stmt_ast->additem(expr_ast, stmt1_ast, stmt2_ast);
 		return stmt_ast;
 	}
 
