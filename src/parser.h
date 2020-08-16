@@ -66,16 +66,67 @@ public:
 
 	ExprAst* parserExpr(){
 		ExprAst* expr_ast;
+		expr_ast = parserAddSubAst();
+		return expr_ast;
+	}
+
+	ExprAst* parserAddSubAst(){
+		ExprAst* expr1_ast = parserMulDivAst();
+		while(lookForward("+") || lookForward("-")){
+			if (lookForward("+")){
+				AddAst* add_ast = new AddAst(tokenlist[pos].row(), tokenlist[pos].column());
+				matchToken("+");
+				ExprAst* expr2_ast = parserMulDivAst();
+				add_ast->additem(expr1_ast, expr2_ast);
+				expr1_ast = add_ast;
+			}else{
+				SubAst* sub_ast = new SubAst(tokenlist[pos].row(), tokenlist[pos].column());
+				matchToken("-");
+				ExprAst* expr2_ast = parserMulDivAst();
+				sub_ast->additem(expr1_ast, expr2_ast);
+				expr1_ast = sub_ast;
+			}
+		}
+		return expr1_ast;
+	}
+
+	ExprAst* parserMulDivAst(){
+		ExprAst* expr1_ast = parserUnary();
+		while(lookForward("*") || lookForward("/")){
+			if (lookForward("*")){
+				MulAst* mul_ast = new MulAst(tokenlist[pos].row(), tokenlist[pos].column());
+				matchToken("*");
+				ExprAst* expr2_ast = parserUnary();
+				mul_ast->additem(expr1_ast, expr2_ast);
+				expr1_ast = mul_ast;
+			}else{
+				DivAst* div_ast = new DivAst(tokenlist[pos].row(), tokenlist[pos].column());
+				matchToken("/");
+				ExprAst* expr2_ast = parserUnary();
+				div_ast->additem(expr1_ast, expr2_ast);
+				expr1_ast = div_ast;
+			}
+		}
+		return expr1_ast;
+	}
+
+
+	ExprAst* parserUnary(){
+		ExprAst* expr_ast;
 		if (lookForward("-"))
 			expr_ast = parserNegaUnary();
 		else if (lookForward("+")){
 			matchToken("+");
-			expr_ast = parserExpr();
+			expr_ast = parserUnary();
 		}else if (lookForward("~"))
 			expr_ast = parserBitComUnary();
 		else if (lookForward("!"))
 			expr_ast = parserLogicUnary();
-		else 
+		else if (lookForward("(")){
+			matchToken("(");
+			expr_ast = parserExpr();
+			matchToken(")");
+		}else 
 			expr_ast = parserConstant();
 		return expr_ast;
 	}
@@ -83,7 +134,7 @@ public:
 	ExprAst* parserNegaUnary(){
 		NegaUnaryAst* expr_ast = new NegaUnaryAst(tokenlist[pos].row(), tokenlist[pos].column());
 		matchToken("-");
-		ExprAst* new_expr_ast = parserExpr();
+		ExprAst* new_expr_ast = parserUnary();
 		expr_ast->additem(new_expr_ast);
 		return expr_ast;
 	}
@@ -91,7 +142,7 @@ public:
 	ExprAst* parserBitComUnary(){
 		BitComUnaryAst* expr_ast = new BitComUnaryAst(tokenlist[pos].row(), tokenlist[pos].column());
 		matchToken("~");
-		ExprAst* new_expr_ast = parserExpr();
+		ExprAst* new_expr_ast = parserUnary();
 		expr_ast->additem(new_expr_ast);
 		return expr_ast;
 	}
@@ -99,7 +150,7 @@ public:
 	ExprAst* parserLogicUnary(){
 		LogicUnaryAst* expr_ast = new LogicUnaryAst(tokenlist[pos].row(), tokenlist[pos].column());
 		matchToken("!");
-		ExprAst* new_expr_ast = parserExpr();
+		ExprAst* new_expr_ast = parserUnary();
 		expr_ast->additem(new_expr_ast);
 		return expr_ast;
 	}

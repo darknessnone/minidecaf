@@ -88,6 +88,86 @@ public:
 	}
 };
 
+class MulAst : public ExprAst{
+	ExprAst* expr1;
+	ExprAst* expr2;
+public:
+	MulAst(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* e1, ExprAst* e2){
+		expr1 = e1;
+		expr2 = e2;
+	}
+	void printto(ofstream &fout){
+		expr1->printto(fout);
+		printstream(fout, "sd a5, -8(sp)");
+		printstream(fout, "addi sp, sp, -8");
+		expr2->printto(fout);
+		printstream(fout, "ld a4, 0(sp)");
+		printstream(fout, "addi sp, sp, 8");
+		printstream(fout, "mul a5, a4, a5");
+	}
+};
+
+class DivAst : public ExprAst{
+	ExprAst* expr1;
+	ExprAst* expr2;
+public:
+	DivAst(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* e1, ExprAst* e2){
+		expr1 = e1;
+		expr2 = e2;
+	}
+	void printto(ofstream &fout){
+		expr1->printto(fout);
+		printstream(fout, "sd a5, -8(sp)");
+		printstream(fout, "addi sp, sp, -8");
+		expr2->printto(fout);
+		printstream(fout, "ld a4, 0(sp)");
+		printstream(fout, "addi sp, sp, 8");
+		printstream(fout, "div a5, a4, a5");
+	}
+};
+
+class AddAst : public ExprAst{
+	ExprAst* expr1;
+	ExprAst* expr2;
+public:
+	AddAst(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* e1, ExprAst* e2){
+		expr1 = e1;
+		expr2 = e2;
+	}
+	void printto(ofstream &fout){
+		expr1->printto(fout);
+		printstream(fout, "sd a5, -8(sp)");
+		printstream(fout, "addi sp, sp, -8");
+		expr2->printto(fout);
+		printstream(fout, "ld a4, 0(sp)");
+		printstream(fout, "addi sp, sp, 8");
+		printstream(fout, "add a5, a4, a5");
+	}
+};
+
+class SubAst : public ExprAst{
+	ExprAst* expr1;
+	ExprAst* expr2;
+public:
+	SubAst(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* e1, ExprAst* e2){
+		expr1 = e1;
+		expr2 = e2;
+	}
+	void printto(ofstream &fout){
+		expr1->printto(fout);
+		printstream(fout, "sd a5, -8(sp)");
+		printstream(fout, "addi sp, sp, -8");
+		expr2->printto(fout);
+		printstream(fout, "ld a4, 0(sp)");
+		printstream(fout, "addi sp, sp, 8");
+		printstream(fout, "sub a5, a4, a5");
+	}
+};
+
 class StmtAst: public Ast{
 public:
 	StmtAst(int row, int column) : Ast(row, column){}
