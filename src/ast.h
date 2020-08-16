@@ -30,11 +30,11 @@ int Ast::indent = 0;
 int Ast::functionnum = 0;
 
 class ExprAst: public Ast{
-protected:
-	string value_;
+// protected:
+// 	string value_;
 public:
 	ExprAst(int row, int column) : Ast(row, column){}
-	string value() { return value_;}
+	// string value() { return value_;}
 };
 
 class ConstantAst: public ExprAst{
@@ -45,7 +45,6 @@ public:
 		intvalue = item;
 	}
 	void printto(ofstream &fout){
-		value_ = "a5";
 		printstream(fout, "li a5,"+std::to_string(intvalue));
 	}
 };
@@ -58,9 +57,21 @@ public:
 		this->expr = expr;
 	}
 	void printto(ofstream &fout){
-		value_ = "a5";
 		expr->printto(fout);
-		printstream(fout, "neg a5,"+expr->value());
+		printstream(fout, "neg a5,a5");
+	}
+};
+
+class BitComUnaryAst: public ExprAst{
+	ExprAst* expr;
+public:
+	BitComUnaryAst(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* expr){
+		this->expr = expr;
+	}
+	void printto(ofstream &fout){
+		expr->printto(fout);
+		printstream(fout, "not a5,a5");
 	}
 };
 
@@ -78,7 +89,7 @@ public:
 	}
 	void printto(ofstream &fout){
 		expr->printto(fout);
-		printstream(fout, "mv a0,"+expr->value());
+		printstream(fout, "mv a0,a5");
 	}
 };
 

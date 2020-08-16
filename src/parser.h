@@ -71,7 +71,9 @@ public:
 		else if (lookForward("+")){
 			matchToken("+");
 			expr_ast = parserExpr();
-		}else
+		}else if (lookForward("~"))
+			expr_ast = parserBitComUnary();
+		else 
 			expr_ast = parserConstant();
 		return expr_ast;
 	}
@@ -79,6 +81,14 @@ public:
 	ExprAst* parserNegaUnary(){
 		NegaUnaryAst* expr_ast = new NegaUnaryAst(tokenlist[pos].row(), tokenlist[pos].column());
 		matchToken("-");
+		ExprAst* new_expr_ast = parserExpr();
+		expr_ast->additem(new_expr_ast);
+		return expr_ast;
+	}
+
+	ExprAst* parserBitComUnary(){
+		BitComUnaryAst* expr_ast = new BitComUnaryAst(tokenlist[pos].row(), tokenlist[pos].column());
+		matchToken("~");
 		ExprAst* new_expr_ast = parserExpr();
 		expr_ast->additem(new_expr_ast);
 		return expr_ast;
