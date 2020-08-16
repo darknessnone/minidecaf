@@ -75,6 +75,19 @@ public:
 	}
 };
 
+class LogicUnaryAst: public ExprAst{
+	ExprAst* expr;
+public:
+	LogicUnaryAst(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* expr){
+		this->expr = expr;
+	}
+	void printto(ofstream &fout){
+		expr->printto(fout);
+		printstream(fout, "seqz a5,a5");
+	}
+};
+
 class StmtAst: public Ast{
 public:
 	StmtAst(int row, int column) : Ast(row, column){}
