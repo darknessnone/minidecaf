@@ -199,6 +199,55 @@ public:
 	}
 };
 
+class RelationalExpr : public ExprAst{
+	ExprAst* expr1;
+	ExprAst* expr2;
+	string label;
+public:
+	RelationalExpr(int row, int column, string label) : ExprAst(row, column), label(label){}
+	void additem(ExprAst* e1, ExprAst* e2){
+		expr1 = e1;
+		expr2 = e2;
+	}
+	void printto(ofstream &fout){
+		expr1->printto(fout);
+		printstream(fout, "sd a5, -8(sp)");
+		printstream(fout, "addi sp, sp, -8");
+		expr2->printto(fout);
+		printstream(fout, "ld a4, 0(sp)");
+		printstream(fout, "addi sp, sp, 8");
+		if (label == "!="){
+			printstream(fout, "xor a5, a4, a5");
+			printstream(fout, "snez a5, a5");
+		}else{
+			printstream(fout, "xor a5, a4, a5");
+			printstream(fout, "seqz a5, a5");
+		}
+	}
+};
+
+class RqualityExpr : public ExprAst{
+	ExprAst* expr1;
+	ExprAst* expr2;
+public:
+	RqualityExpr(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* e1, ExprAst* e2){
+		expr1 = e1;
+		expr2 = e2;
+	}
+	void printto(ofstream &fout){
+		expr1->printto(fout);
+		printstream(fout, "sd a5, -8(sp)");
+		printstream(fout, "addi sp, sp, -8");
+		expr2->printto(fout);
+		printstream(fout, "ld a4, 0(sp)");
+		printstream(fout, "addi sp, sp, 8");
+		printstream(fout, "snez a4, a4");
+		printstream(fout, "snez a5, a5");
+		printstream(fout, "and a5, a5, a4");
+	}
+};
+
 class StmtAst: public Ast{
 public:
 	StmtAst(int row, int column) : Ast(row, column){}

@@ -66,8 +66,34 @@ public:
 
 	ExprAst* parserExpr(){
 		ExprAst* expr_ast;
-		expr_ast = parserAdditiveExpr();
+		expr_ast = parserRqualityExpr();
 		return expr_ast;
+	}
+
+	ExprAst* parserRqualityExpr(){
+		ExprAst* expr1_ast = parserRelationalExpr();
+		while(lookForward("&&")){
+			string label = tokenlist[pos].label();
+			RqualityExpr* add_ast = new RqualityExpr(tokenlist[pos].row(), tokenlist[pos].column());
+			matchToken(label);
+			ExprAst* expr2_ast = parserRelationalExpr();
+			add_ast->additem(expr1_ast, expr2_ast);
+			expr1_ast = add_ast;
+		}
+		return expr1_ast;
+	}
+
+	ExprAst* parserRelationalExpr(){
+		ExprAst* expr1_ast = parserAdditiveExpr();
+		while(lookForward("==") || lookForward("!=")){
+			string label = tokenlist[pos].label();
+			RelationalExpr* add_ast = new RelationalExpr(tokenlist[pos].row(), tokenlist[pos].column(), label);
+			matchToken(label);
+			ExprAst* expr2_ast = parserAdditiveExpr();
+			add_ast->additem(expr1_ast, expr2_ast);
+			expr1_ast = add_ast;
+		}
+		return expr1_ast;
 	}
 
 	ExprAst* parserAdditiveExpr(){
