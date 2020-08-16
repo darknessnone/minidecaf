@@ -248,6 +248,27 @@ public:
 	}
 };
 
+class LogicalExpr : public ExprAst{
+	ExprAst* expr1;
+	ExprAst* expr2;
+public:
+	LogicalExpr(int row, int column) : ExprAst(row, column){}
+	void additem(ExprAst* e1, ExprAst* e2){
+		expr1 = e1;
+		expr2 = e2;
+	}
+	void printto(ofstream &fout){
+		expr1->printto(fout);
+		printstream(fout, "sd a5, -8(sp)");
+		printstream(fout, "addi sp, sp, -8");
+		expr2->printto(fout);
+		printstream(fout, "ld a4, 0(sp)");
+		printstream(fout, "addi sp, sp, 8");
+		printstream(fout, "or a5, a5, a4");
+		printstream(fout, "snez a5, a5");
+	}
+};
+
 class StmtAst: public Ast{
 public:
 	StmtAst(int row, int column) : Ast(row, column){}

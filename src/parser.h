@@ -66,8 +66,21 @@ public:
 
 	ExprAst* parserExpr(){
 		ExprAst* expr_ast;
-		expr_ast = parserRqualityExpr();
+		expr_ast = parserLogicalExpr();
 		return expr_ast;
+	}
+
+	ExprAst* parserLogicalExpr(){
+		ExprAst* expr1_ast = parserRqualityExpr();
+		while(lookForward("||")){
+			string label = tokenlist[pos].label();
+			LogicalExpr* add_ast = new LogicalExpr(tokenlist[pos].row(), tokenlist[pos].column());
+			matchToken(label);
+			ExprAst* expr2_ast = parserRqualityExpr();
+			add_ast->additem(expr1_ast, expr2_ast);
+			expr1_ast = add_ast;
+		}
+		return expr1_ast;
 	}
 
 	ExprAst* parserRqualityExpr(){
